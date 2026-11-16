@@ -141,6 +141,11 @@ class ScreenshotTest {
         HomeContent(ResumeInfo(Difficulty.HARD, 1_203_000, 22), DailyInfo(DailyStatus.NOT_STARTED, 0, 6), {}, {}, {})
     }
 
+    /** 번역이 없는 언어(중국어)로 설정된 폰은 영어 기본 문자열이 나와야 한다. */
+    @Test @Config(qualifiers = "zh-w390dp-h844dp-xxhdpi") fun homeUnsupportedLanguageFallsBackToEnglish() = shoot("14_home_unsupported_zh_fallback_english") {
+        HomeContent(ResumeInfo(Difficulty.MEDIUM, 725_000, 47), DailyInfo(DailyStatus.NOT_STARTED, 0, 3), {}, {}, {})
+    }
+
     @Test fun stats() = shoot("09_stats") {
         StatsContent(
             StatsUi(
