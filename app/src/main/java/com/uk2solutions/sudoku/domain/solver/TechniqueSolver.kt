@@ -5,12 +5,13 @@ import com.uk2solutions.sudoku.domain.model.Units
 
 /**
  * 사람 기법 기반 난이도 평가기.
- * 등급 1: 단일 후보, 숨은 단일 / 등급 2: + 포인팅·박스-라인 축소, 노출 쌍 /
- * 등급 3: + 숨은 쌍·삼중, 노출 삼중. (등급 4 이상: X-윙 등은 후속 작업)
+ * 등급 0: 단일 후보(칸 하나의 후보가 1개)만 / 등급 1: + 숨은 단일 /
+ * 등급 2: + 포인팅·박스-라인 축소, 노출 쌍 / 등급 3: + 숨은 쌍·삼중, 노출 삼중.
+ * (등급 4 이상: X-윙 등은 후속 작업)
  */
 class TechniqueSolver {
     /**
-     * [grid]를 [maxLevel] 이하 기법만으로 완전히 풀 수 있으면 실제로 필요했던 최대 등급(1 이상)을,
+     * [grid]를 [maxLevel] 이하 기법만으로 완전히 풀 수 있으면 실제로 필요했던 최대 등급(0 이상)을,
      * 풀 수 없으면 null을 반환한다.
      */
     fun requiredLevel(grid: IntArray, maxLevel: Int): Int? {
@@ -23,7 +24,7 @@ class TechniqueSolver {
             if (m == 0) return null
             cand[i] = m
         }
-        var level = 1
+        var level = 0 // 0: 단일 후보만
 
         fun place(i: Int, d: Int) {
             v[i] = d
@@ -39,13 +40,13 @@ class TechniqueSolver {
                     place(i, Integer.numberOfTrailingZeros(cand[i]) + 1); progress = true
                 }
             }
-            if (!progress) {
+            if (!progress && maxLevel >= 1) {
                 for (u in Units.all) {
                     for (d in 0 until 9) {
                         val bit = 1 shl d
                         var cnt = 0; var at = -1
                         for (i in u) if (cand[i] and bit != 0) { cnt++; at = i }
-                        if (cnt == 1) { place(at, d + 1); progress = true }
+                        if (cnt == 1) { place(at, d + 1); progress = true; level = maxOf(level, 1) }
                     }
                 }
             }

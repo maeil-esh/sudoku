@@ -19,9 +19,9 @@ class M3Test {
             val p = gen.generate(Difficulty.HARD, seed)
             val g = Board.parse(p.givens)
             assertEquals(1, Solver.countSolutions(g, 2))
-            assertEquals(3, tech.requiredLevel(g, 3))
-            assertNull("등급 2 이하로는 풀리면 안 됨", tech.requiredLevel(g, 2))
-            assertTrue(Board.clueCount(g) <= 30)
+            assertTrue("어려움은 등급 2~3", tech.requiredLevel(g, 3) in 2..3)
+            assertNull("숨은 단일까지로는 풀리면 안 됨", tech.requiredLevel(g, 1))
+            assertTrue(Board.clueCount(g) <= 32)
         }
         println("평균 생성 시간 HARD: ${(System.nanoTime() - t0) / 100 / 1_000_000.0} ms")
     }

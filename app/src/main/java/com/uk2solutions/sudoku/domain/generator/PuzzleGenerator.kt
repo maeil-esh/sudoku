@@ -13,22 +13,26 @@ data class Puzzle(val difficulty: Difficulty, val givens: String, val solution: 
  */
 class PuzzleGenerator(private val techniques: TechniqueSolver = TechniqueSolver()) {
 
+    /** 난이도별 필요 기법 등급 범위. EASY=단일 후보만, MEDIUM=숨은 단일까지, HARD=포인팅·쌍·삼중까지(2~3). */
+    private fun levelRange(d: Difficulty): IntRange = when (d) {
+        Difficulty.EASY -> 0..0
+        Difficulty.MEDIUM -> 1..1
+        Difficulty.HARD -> 2..3
+        else -> throw UnsupportedOperationException("$d 는 아직 지원하지 않음")
+    }
+
     fun generate(difficulty: Difficulty, seed: Long): Puzzle {
-        val cap = when (difficulty) {
-            Difficulty.EASY -> 1
-            Difficulty.MEDIUM -> 2
-            Difficulty.HARD -> 3
-            else -> throw UnsupportedOperationException("$difficulty 는 아직 지원하지 않음")
-        }
+        val levels = levelRange(difficulty)
         var attempt = 0L
         while (true) {
             val rnd = SeededRandom(seed * 1_000_003L + attempt++)
-            val p = tryGenerate(difficulty, cap, rnd)
+            val p = tryGenerate(difficulty, levels, rnd)
             if (p != null) return p
         }
     }
 
-    private fun tryGenerate(difficulty: Difficulty, cap: Int, rnd: SeededRandom): Puzzle? {
+    private fun tryGenerate(difficulty: Difficulty, levels: IntRange, rnd: SeededRandom): Puzzle? {
+        val cap = levels.last
         val solution = Solver.randomFilledGrid(rnd)
         val grid = solution.copyOf()
         val range = difficulty.clueRange
@@ -47,7 +51,7 @@ class PuzzleGenerator(private val techniques: TechniqueSolver = TechniqueSolver(
         }
         if (clues > range.last) return null
         val level = techniques.requiredLevel(grid, cap) ?: return null
-        if (level != cap) return null
+        if (level !in levels) return null
         return Puzzle(difficulty, Board.format(grid), Board.format(solution))
     }
 }
