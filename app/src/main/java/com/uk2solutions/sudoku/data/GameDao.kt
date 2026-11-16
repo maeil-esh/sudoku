@@ -35,6 +35,9 @@ interface GameDao {
     @Query("SELECT dailyDate FROM game WHERE mode = 'DAILY' AND status = 'COMPLETED' AND dailyDate IS NOT NULL")
     fun observeDailyCompleted(): Flow<List<String>>
 
+    @Query("SELECT finishedAt FROM game WHERE status = 'COMPLETED' AND finishedAt IS NOT NULL")
+    fun observeFinishedAt(): Flow<List<Long>>
+
     @Query("SELECT difficulty, COUNT(*) AS cnt, MIN(elapsedMs) AS best, AVG(elapsedMs) AS avg FROM game WHERE status = 'COMPLETED' GROUP BY difficulty")
     fun observeStats(): Flow<List<DifficultyStat>>
 }

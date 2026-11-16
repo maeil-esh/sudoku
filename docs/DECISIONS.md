@@ -23,3 +23,17 @@
 - **점수 애니메이션**: 칸을 채울 때 +N/−N이 칸 위로 떠오름(설정에서 끔).
 - **스크린샷**: `ScreenshotTest`(Robolectric)로 설치 없이 `docs/screens/`에 PNG 생성. 릴리스 변형 테스트에서는 제외. (네트워크: Robolectric 네이티브 jar 때문에 `gcp.mirrors.maven.org` 허용 필요)
 - **기본 언어를 영어로 변경**: `values/`(기본)=English, 한국어는 `values-ko/`. 번역이 없는 언어를 쓰는 폰은 영어가 나온다(한국어 폰은 그대로 한국어). 새 문자열은 기본(영어)에 먼저 추가하고 모든 언어 파일에 번역을 넣는다.
+
+## 2026-11-16 M4 프리미엄 (공식 문서 확인 근거)
+- **Billing Library 9.1.0** (developer.android.com/google/play/billing/integrate 확인 시점의 최신 안정판). `billing-ktx`는 더 새로운 Kotlin(메타데이터 2.3)으로 빌드되어 현재 Kotlin 2.0.21에서 컴파일 불가 → Java 코어 `billing:9.1.0`을 쓰고 콜백을 코루틴으로 감쌌다. Kotlin을 올리면 ktx로 바꿀 수 있다.
+- **승인(acknowledge)**: 3일 내 승인하지 않으면 자동 환불(integrate 문서). 부여 대상 구매는 항상 acknowledge, 같은 세션에서 중복 호출 방지.
+- **PENDING**: 일회성 상품은 `enablePendingPurchases(enableOneTimeProducts)` 필수. PENDING → PURCHASED가 될 때만 프리미엄 부여.
+- **앱 밖 상환 감지**: `queryPurchasesAsync`를 앱 시작/onResume마다, 그리고 `PurchasesUpdatedListener`로 감지(integrate 문서 "Detect and process purchases").
+- **프로모 코드(promo 문서)**: 일회용 코드는 Play 스토어 또는 앱 안 결제 화면의 "상환"에서 사용. 앱에서는 딥링크 `https://play.google.com/redeem?code=<코드>`로 Play 상환 화면을 연다(Play 앱 패키지 `com.android.vending`을 우선 지정, 없으면 브라우저). 일회성 상품 코드는 앱당 분기 500개, 생성 후 수 변경 불가, 미사용분 이월 없음.
+- **코드 취급**: 입력값은 공백 제거 후 URL 인코딩만 하고, 화면 상태(`remember`, 저장 안 함)에만 둔다. 로그·DataStore·Room에 저장하지 않는다. 유효성은 Play가 판단.
+- **판정 규칙**: PURCHASED + `premium_lifetime`만 부여, 조회 성공 + 구매 없음일 때만 해제(환불), 조회 실패 시 캐시 유지. 캐시는 DataStore `premiumCached`/`lastVerifiedAt`.
+- **잠금 제어**: `Entitlement` 한 곳(전문가·악마 잠금, 힌트 무제한, 상세 통계, 추가 컬러 테마). 경계를 바꾸면 이 파일만 수정.
+- **추가 컬러 테마 3종**(그린·오렌지·퍼플, 라이트/다크 각각): 사용자 입력 숫자(accent)와 같은 숫자 강조색(cellSame) 대비를 4.5:1 부근으로 유지하는 연한 톤.
+- **상세 통계**: 최근 7일 일별 완료 수, 난이도별 완료 비율(프리미엄 전용).
+- **알려진 공백**: 전문가·악마 난이도는 기법(X-윙, Y-윙, 스워드피시 등)이 아직 없어 프리미엄 사용자에게도 "준비 중"이다. 프리미엄 판매 전에 구현해야 한다(BACKLOG).
+- **2차 언어**: 중국어 간체(zh-CN)·번체(zh-TW), 힌디어, 인도네시아어(`values-in`, 태그 `id`), 태국어, 베트남어, 튀르키예어 추가(총 15개 언어). 번역은 초안, 원어민 검수 필요.

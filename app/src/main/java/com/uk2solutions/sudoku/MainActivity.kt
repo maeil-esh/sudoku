@@ -12,7 +12,11 @@ import androidx.compose.runtime.LaunchedEffect
 import com.uk2solutions.sudoku.notify.ReminderScheduler
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.lifecycle.lifecycleScope
+import com.uk2solutions.sudoku.billing.PremiumManager
 import com.uk2solutions.sudoku.data.AppSettings
+import com.uk2solutions.sudoku.domain.premium.Entitlement
+import kotlinx.coroutines.launch
 import com.uk2solutions.sudoku.data.SettingsRepository
 import com.uk2solutions.sudoku.ui.SudokuNavHost
 import com.uk2solutions.sudoku.ui.theme.SudokuTheme
@@ -22,11 +26,20 @@ import javax.inject.Inject
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
     @Inject lateinit var settingsRepo: SettingsRepository
+    @Inject lateinit var premiumManager: PremiumManager
+
+    /** 포그라운드 복귀마다 보유 구매를 조회한다(Play 스토어에서 먼저 코드를 상환한 경우도 여기서 반영, SPEC §7.2-1). */
+    override fun onResume() {
+        super.onResume()
+        lifecycleScope.launch { premiumManager.refresh() }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
             val settings by settingsRepo.settings.collectAsState(initial = AppSettings())
+            val premium by premiumManager.isPremium.collectAsState(initial = false)
+            val palette = if (Entitlement(premium).canUsePalette(settings.palette)) settings.palette else 0
             val dark = when (settings.themeMode) {
                 1 -> false
                 2 -> true
@@ -42,7 +55,7 @@ class MainActivity : AppCompatActivity() {
                 enableEdgeToEdge(statusBarStyle = style, navigationBarStyle = style)
                 onDispose {}
             }
-            SudokuTheme(dark = dark) { SudokuNavHost() }
+            SudokuTheme(dark = dark, palette = palette) { SudokuNavHost() }
         }
     }
 }

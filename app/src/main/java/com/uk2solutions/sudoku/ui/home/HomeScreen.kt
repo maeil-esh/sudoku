@@ -12,6 +12,14 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
+import com.uk2solutions.sudoku.domain.premium.Entitlement
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.Alignment
+import androidx.compose.foundation.layout.size
+import androidx.compose.material3.Icon
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -31,20 +39,31 @@ import com.uk2solutions.sudoku.ui.game.labelRes
 import com.uk2solutions.sudoku.ui.theme.SudokuTheme
 
 @Composable
-fun HomeScreen(onResume: () -> Unit, onDaily: () -> Unit, onNewGame: (Difficulty) -> Unit, vm: HomeViewModel = hiltViewModel()) {
+fun HomeScreen(onResume: () -> Unit, onDaily: () -> Unit, onNewGame: (Difficulty) -> Unit, onPremium: () -> Unit, vm: HomeViewModel = hiltViewModel()) {
     val resume by vm.resume.collectAsStateWithLifecycle()
     val daily by vm.daily.collectAsStateWithLifecycle()
-    HomeContent(resume, daily, onResume, onDaily, onNewGame)
+    val premium by vm.premium.collectAsStateWithLifecycle()
+    HomeContent(resume, daily, onResume, onDaily, onNewGame, premium, onPremium)
 }
 
 @Composable
-fun HomeContent(resume: ResumeInfo?, daily: DailyInfo, onResume: () -> Unit, onDaily: () -> Unit, onNewGame: (Difficulty) -> Unit) {
+fun HomeContent(
+    resume: ResumeInfo?, daily: DailyInfo, onResume: () -> Unit, onDaily: () -> Unit, onNewGame: (Difficulty) -> Unit,
+    premium: Boolean = false, onPremium: () -> Unit = {},
+) {
     val c = SudokuTheme.colors
     Column(
         Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(20.dp),
         verticalArrangement = Arrangement.spacedBy(14.dp),
     ) {
-        Text(stringResource(R.string.home_title), fontSize = 28.sp, fontWeight = FontWeight.Bold, color = c.ink)
+        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+            Text(stringResource(R.string.home_title), fontSize = 28.sp, fontWeight = FontWeight.Bold, color = c.ink, modifier = Modifier.weight(1f))
+            if (premium) Text(stringResource(R.string.premium_member), color = c.accent, fontWeight = FontWeight.SemiBold)
+            else Button(
+                onClick = onPremium, shape = RoundedCornerShape(14.dp), modifier = Modifier.heightIn(min = 48.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = c.accentSoft, contentColor = c.accent),
+            ) { Text(stringResource(R.string.premium_title), fontWeight = FontWeight.SemiBold) }
+        }
         resume?.let { r ->
             Surface(shape = RoundedCornerShape(20.dp), color = c.surface, border = BorderStroke(1.dp, c.line), modifier = Modifier.fillMaxWidth()) {
                 Column(Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
@@ -86,11 +105,23 @@ fun HomeContent(resume: ResumeInfo?, daily: DailyInfo, onResume: () -> Unit, onD
                 }
             }
         }
-        // 어려움~악마는 M3(기법 평가)·M4(잠금 UI)에서 활성화
+        // 전문가·악마: 무료는 잠금 표시(탭하면 프리미엄 화면), 프리미엄은 기법 확장 전까지 "준비 중"
         Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
             listOf(Difficulty.EXPERT, Difficulty.DEVIL).forEach { d ->
-                OutlinedButton(onClick = {}, enabled = false, shape = RoundedCornerShape(14.dp), modifier = Modifier.weight(1f).heightIn(min = 48.dp)) {
-                    Text("${stringResource(d.labelRes())}\n${stringResource(R.string.home_coming_soon)}", fontSize = 12.sp)
+                val locked = !Entitlement(premium).canPlay(d)
+                val lockDesc = stringResource(R.string.cd_locked)
+                val levelName = stringResource(d.labelRes())
+                OutlinedButton(
+                    onClick = { if (locked) onPremium() }, enabled = locked, shape = RoundedCornerShape(14.dp),
+                    modifier = Modifier.weight(1f).heightIn(min = 56.dp).semantics { if (locked) contentDescription = "$levelName, $lockDesc" },
+                ) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(stringResource(d.labelRes()), fontWeight = FontWeight.SemiBold)
+                        if (locked) Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(painterResource(R.drawable.ic_lock), contentDescription = null, modifier = Modifier.size(14.dp))
+                            Text(" " + stringResource(R.string.premium_title), fontSize = 12.sp)
+                        } else Text(stringResource(R.string.home_coming_soon), fontSize = 12.sp)
+                    }
                 }
             }
         }

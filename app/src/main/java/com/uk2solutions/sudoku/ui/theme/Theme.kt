@@ -34,6 +34,21 @@ val DarkSudokuColors = SudokuColors(
     error = Color(0xFFFF8A80), errorBg = Color(0xFF4A2523),
 )
 
+/** 추가 컬러 테마(프리미엄). 0=기본(블루). 강조색 위 텍스트 대비 4.5:1을 유지하도록 연한 톤을 쓴다. */
+fun sudokuColors(dark: Boolean, palette: Int): SudokuColors {
+    val base = if (dark) DarkSudokuColors else LightSudokuColors
+    fun c(v: Long) = Color(v)
+    return when (palette) {
+        1 -> if (dark) base.copy(accent = c(0xFF6FD3A0), accentSoft = c(0xFF1F3A2E), cellSelected = c(0xFF2F5A45), cellSame = c(0xFF24493A))
+        else base.copy(accent = c(0xFF17663F), accentSoft = c(0xFFE1F2E8), cellSelected = c(0xFFD3EBDD), cellSame = c(0xFFBFE3CE))
+        2 -> if (dark) base.copy(accent = c(0xFFFFB26B), accentSoft = c(0xFF3F2C1A), cellSelected = c(0xFF6B4624), cellSame = c(0xFF523620))
+        else base.copy(accent = c(0xFF9A3F05), accentSoft = c(0xFFFBE9D8), cellSelected = c(0xFFF8DEC4), cellSame = c(0xFFF6D5B5))
+        3 -> if (dark) base.copy(accent = c(0xFFC0A2FF), accentSoft = c(0xFF33284D), cellSelected = c(0xFF513F85), cellSame = c(0xFF3F3166))
+        else base.copy(accent = c(0xFF6D28D9), accentSoft = c(0xFFEDE5FB), cellSelected = c(0xFFE4D8FA), cellSame = c(0xFFDCCBFA))
+        else -> base
+    }
+}
+
 val LocalSudokuColors = staticCompositionLocalOf { LightSudokuColors }
 
 object SudokuTheme {
@@ -42,8 +57,8 @@ object SudokuTheme {
 }
 
 @Composable
-fun SudokuTheme(dark: Boolean = false, content: @Composable () -> Unit) {
-    val c = if (dark) DarkSudokuColors else LightSudokuColors
+fun SudokuTheme(dark: Boolean = false, palette: Int = 0, content: @Composable () -> Unit) {
+    val c = sudokuColors(dark, palette)
     val scheme = if (dark) {
         darkColorScheme(
             primary = c.accent, onPrimary = c.onAccent, primaryContainer = c.accentSoft, onPrimaryContainer = c.ink,

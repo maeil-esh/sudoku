@@ -33,6 +33,7 @@ import com.uk2solutions.sudoku.domain.model.Difficulty
 import com.uk2solutions.sudoku.ui.theme.SudokuTheme
 
 private const val GAME_ROUTE = "game"
+private const val PREMIUM_ROUTE = "premium"
 
 enum class Tab(val route: String, @StringRes val label: Int, val icon: ImageVector) {
     Home("home", R.string.tab_home, Icons.Filled.Home),
@@ -45,7 +46,7 @@ fun SudokuNavHost() {
     val nav = rememberNavController()
     val entry by nav.currentBackStackEntryAsState()
     val current = entry?.destination?.route
-    val inGame = current?.startsWith(GAME_ROUTE) == true
+    val inGame = current?.startsWith(GAME_ROUTE) == true || current == PREMIUM_ROUTE
     Scaffold(
         containerColor = SudokuTheme.colors.background,
         bottomBar = {
@@ -73,6 +74,7 @@ fun SudokuNavHost() {
                     onResume = { nav.navigate(GAME_ROUTE) },
                     onDaily = { nav.navigate("$GAME_ROUTE?difficulty=DAILY") },
                     onNewGame = { nav.navigate("$GAME_ROUTE?difficulty=${it.name}") },
+                    onPremium = { nav.navigate(PREMIUM_ROUTE) },
                 )
             }
             composable(
@@ -86,8 +88,9 @@ fun SudokuNavHost() {
                     },
                 )
             }
-            composable(Tab.Stats.route) { com.uk2solutions.sudoku.ui.stats.StatsScreen() }
-            composable(Tab.Settings.route) { com.uk2solutions.sudoku.ui.settings.SettingsScreen() }
+            composable(Tab.Stats.route) { com.uk2solutions.sudoku.ui.stats.StatsScreen(onPremium = { nav.navigate(PREMIUM_ROUTE) }) }
+            composable(Tab.Settings.route) { com.uk2solutions.sudoku.ui.settings.SettingsScreen(onPremium = { nav.navigate(PREMIUM_ROUTE) }) }
+            composable(PREMIUM_ROUTE) { com.uk2solutions.sudoku.ui.premium.PremiumScreen(onBack = { nav.popBackStack() }) }
         }
     }
 }

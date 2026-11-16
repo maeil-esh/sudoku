@@ -1,6 +1,10 @@
 package com.uk2solutions.sudoku.ui.settings
 
 import android.Manifest
+import com.uk2solutions.sudoku.domain.premium.Entitlement
+import androidx.compose.ui.res.painterResource
+import androidx.compose.material3.Icon
+import androidx.compose.foundation.layout.size
 import android.content.pm.PackageManager
 import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -53,6 +57,7 @@ fun SettingsBody(
     s: AppSettings, langTag: String, permDenied: Boolean, themeLabels: List<Int>,
     onTheme: () -> Unit, onLang: () -> Unit, onHour: () -> Unit, onNotify: (Boolean) -> Unit,
     onUpdate: ((AppSettings) -> AppSettings) -> Unit,
+    premium: Boolean = false, onPalette: () -> Unit = {},
 ) {
     val c = SudokuTheme.colors
     Column(
@@ -66,6 +71,7 @@ fun SettingsBody(
             Toggle(R.string.set_sound, R.string.set_sound_desc, s.sound) { v -> onUpdate { it.copy(sound = v) } }
             Toggle(R.string.set_vibration, R.string.set_vibration_desc, s.vibration) { v -> onUpdate { it.copy(vibration = v) } }
             ChoiceRow(stringResource(R.string.set_language), stringResource(langLabel(langTag)), onLang)
+            ChoiceRow(stringResource(R.string.set_palette), stringResource(paletteLabel(if (Entitlement(premium).canUsePalette(s.palette)) s.palette else 0)), onPalette)
         }
         Card {
             Toggle(R.string.set_notify, R.string.set_notify_desc, s.notifyEnabled, onNotify)
@@ -105,7 +111,9 @@ fun SettingsBody(
 }
 
 @Composable
-fun SettingsScreen(vm: SettingsViewModel = hiltViewModel()) {
+fun SettingsScreen(onPremium: () -> Unit, vm: SettingsViewModel = hiltViewModel()) {
+    val premium by vm.premium.collectAsStateWithLifecycle()
+    var paletteDialog by remember { mutableStateOf(false) }
     val s by vm.settings.collectAsStateWithLifecycle()
     val c = SudokuTheme.colors
     val ctx = LocalContext.current
@@ -130,8 +138,36 @@ fun SettingsScreen(vm: SettingsViewModel = hiltViewModel()) {
             ) permLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
             else vm.update { it.copy(notifyEnabled = true) }
         },
+        premium = premium, onPalette = { paletteDialog = true },
         onUpdate = vm::update,
     )
+
+    if (paletteDialog) {
+        AlertDialog(
+            onDismissRequest = { paletteDialog = false },
+            title = { Text(stringResource(R.string.set_palette)) },
+            text = {
+                Column {
+                    (0 until Entitlement.PALETTE_COUNT).forEach { i ->
+                        val allowed = Entitlement(premium).canUsePalette(i)
+                        val selected = (if (Entitlement(premium).canUsePalette(s.palette)) s.palette else 0) == i
+                        Row(
+                            Modifier.fillMaxWidth().heightIn(min = 48.dp).selectable(selected = selected, role = Role.RadioButton) {
+                                paletteDialog = false
+                                if (allowed) vm.update { it.copy(palette = i) } else onPremium()
+                            },
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            RadioButton(selected = selected, onClick = null)
+                            Text(stringResource(paletteLabel(i)), modifier = Modifier.padding(start = 12.dp).weight(1f))
+                            if (!allowed) Icon(painterResource(R.drawable.ic_lock), contentDescription = stringResource(R.string.cd_locked), modifier = Modifier.size(18.dp))
+                        }
+                    }
+                }
+            },
+            confirmButton = { TextButton(onClick = { paletteDialog = false }) { Text(stringResource(R.string.action_close)) } },
+        )
+    }
 
     if (themeDialog) {
         AlertDialog(
@@ -202,8 +238,15 @@ fun SettingsScreen(vm: SettingsViewModel = hiltViewModel()) {
     }
 }
 
+fun paletteLabel(i: Int) = when (i) {
+    1 -> R.string.palette_green
+    2 -> R.string.palette_orange
+    3 -> R.string.palette_purple
+    else -> R.string.palette_blue
+}
+
 /** 앱이 지원하는 언어. 빈 문자열은 시스템 설정을 따른다. */
-val LANGUAGE_TAGS = listOf("", "ko", "en", "ja", "es", "pt-BR", "ru", "de", "fr")
+val LANGUAGE_TAGS = listOf("", "ko", "en", "ja", "es", "pt-BR", "ru", "de", "fr", "zh-CN", "zh-TW", "hi", "id", "th", "vi", "tr")
 
 fun langLabel(tag: String) = when {
     tag.startsWith("ko") -> R.string.lang_ko
@@ -214,6 +257,13 @@ fun langLabel(tag: String) = when {
     tag.startsWith("ru") -> R.string.lang_ru
     tag.startsWith("de") -> R.string.lang_de
     tag.startsWith("fr") -> R.string.lang_fr
+    tag == "zh-TW" || tag.startsWith("zh-Hant") || tag == "zh-HK" -> R.string.lang_zh_tw
+    tag.startsWith("zh") -> R.string.lang_zh_cn
+    tag.startsWith("hi") -> R.string.lang_hi
+    tag.startsWith("id") || tag.startsWith("in") -> R.string.lang_id
+    tag.startsWith("th") -> R.string.lang_th
+    tag.startsWith("vi") -> R.string.lang_vi
+    tag.startsWith("tr") -> R.string.lang_tr
     else -> R.string.lang_system
 }
 

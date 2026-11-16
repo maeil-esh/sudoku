@@ -21,7 +21,9 @@ enum class DailyStatus { NOT_STARTED, IN_PROGRESS, DONE }
 data class DailyInfo(val status: DailyStatus = DailyStatus.NOT_STARTED, val percent: Int = 0, val streak: Int = 0)
 
 @HiltViewModel
-class HomeViewModel @Inject constructor(repo: GameRepository) : ViewModel() {
+class HomeViewModel @Inject constructor(repo: GameRepository, premiumManager: com.uk2solutions.sudoku.billing.PremiumManager) : ViewModel() {
+    val premium: StateFlow<Boolean> = premiumManager.isPremium.stateIn(viewModelScope, SharingStarted.Eagerly, false)
+
     val resume: StateFlow<ResumeInfo?> = repo.observeResumable().map { e ->
         e?.let {
             val s = it.toState()

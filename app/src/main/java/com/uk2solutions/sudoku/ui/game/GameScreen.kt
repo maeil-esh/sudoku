@@ -128,7 +128,7 @@ fun GameBody(
         Spacer(Modifier.height(14.dp))
         ToolRow(
             canUndo = state.undo.isNotEmpty() && !ui.paused, noteMode = ui.noteMode,
-            hintsLeft = (HintPolicy.FREE_PER_DAY - ui.settings.hintsUsedToday).coerceAtLeast(0),
+            hintsLeft = if (ui.premium) null else (HintPolicy.FREE_PER_DAY - ui.settings.hintsUsedToday).coerceAtLeast(0),
             onUndo = onUndo, onErase = onErase, onNote = onNote, onHint = onHint,
         )
         Spacer(Modifier.height(14.dp))
@@ -288,14 +288,14 @@ private fun PausedCover(onContinue: () -> Unit, onExit: () -> Unit) {
 
 @Composable
 private fun ToolRow(
-    canUndo: Boolean, noteMode: Boolean, hintsLeft: Int,
+    canUndo: Boolean, noteMode: Boolean, hintsLeft: Int?,
     onUndo: () -> Unit, onErase: () -> Unit, onNote: () -> Unit, onHint: () -> Unit,
 ) {
     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
         ToolButton(R.drawable.ic_undo, stringResource(R.string.game_undo), canUndo, null, false, onUndo)
         ToolButton(R.drawable.ic_eraser, stringResource(R.string.game_erase), true, null, false, onErase)
         ToolButton(R.drawable.ic_pencil, stringResource(R.string.game_notes), true, stringResource(if (noteMode) R.string.badge_on else R.string.badge_off), noteMode, onNote)
-        ToolButton(R.drawable.ic_bulb, stringResource(R.string.game_hint), true, hintsLeft.toString(), hintsLeft > 0, onHint)
+        ToolButton(R.drawable.ic_bulb, stringResource(R.string.game_hint), true, hintsLeft?.toString() ?: "∞", hintsLeft == null || hintsLeft > 0, onHint)
     }
 }
 

@@ -50,6 +50,7 @@ data class GameUiState(
     val hintsExhausted: Boolean = false,
     val effect: Effect? = null,
     val scoreGain: ScoreGain? = null,
+    val premium: Boolean = false,
 )
 
 /** 칸을 채운 자리에 잠깐 떠오르는 점수 변화(+10, -30 ...). */
@@ -64,6 +65,7 @@ class GameViewModel @Inject constructor(
     private val handle: SavedStateHandle,
     private val repo: GameRepository,
     private val settingsRepo: SettingsRepository,
+    private val premium: com.uk2solutions.sudoku.billing.PremiumManager,
 ) : ViewModel() {
     private val _ui = MutableStateFlow(GameUiState())
     val ui: StateFlow<GameUiState> = _ui.asStateFlow()
@@ -77,6 +79,7 @@ class GameViewModel @Inject constructor(
     private val saveRequests = MutableSharedFlow<Unit>(extraBufferCapacity = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
 
     init {
+        viewModelScope.launch { premium.isPremium.collect { p -> _ui.update { it.copy(premium = p) } } }
         viewModelScope.launch { settingsRepo.settings.collect { s -> _ui.update { it.copy(settings = s) } } }
         viewModelScope.launch { load(handle.get<String>("difficulty")) }
         // SPEC §5.5: 이동 후 500ms 디바운스 자동 저장
@@ -212,8 +215,7 @@ class GameViewModel @Inject constructor(
             return
         }
         viewModelScope.launch {
-            // 프리미엄 무제한은 M4(Entitlement)에서 연결
-            if (settingsRepo.consumeHint(HintPolicy.FREE_PER_DAY, unlimited = false)) {
+            if (settingsRepo.consumeHint(HintPolicy.FREE_PER_DAY, unlimited = u.premium)) {
                 val next = Hints.next(s, u.selected) ?: return@launch
                 _ui.update { it.copy(hint = next, selected = next.index, hintsExhausted = false) }
             } else _ui.update { it.copy(hintsExhausted = true) }

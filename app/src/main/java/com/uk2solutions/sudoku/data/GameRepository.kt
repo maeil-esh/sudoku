@@ -41,6 +41,7 @@ class GameRepository @Inject constructor(private val dao: GameDao) {
     fun observeDaily(date: String) = dao.observeDaily(date)
     fun observeDailyCompleted() = dao.observeDailyCompleted()
     fun observeStats() = dao.observeStats()
+    fun observeFinishedAt() = dao.observeFinishedAt()
 
     /** 오늘의 도전: 같은 날짜의 게임이 있으면 그것을, 없으면 날짜 시드로 만든다(모든 사용자 동일 퍼즐). */
     suspend fun startOrGetDaily(date: java.time.LocalDate): Long {

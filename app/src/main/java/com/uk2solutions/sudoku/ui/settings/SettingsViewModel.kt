@@ -12,7 +12,9 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class SettingsViewModel @Inject constructor(private val repo: SettingsRepository) : ViewModel() {
+class SettingsViewModel @Inject constructor(private val repo: SettingsRepository, premiumManager: com.uk2solutions.sudoku.billing.PremiumManager) : ViewModel() {
+    val premium: StateFlow<Boolean> = premiumManager.isPremium.stateIn(viewModelScope, SharingStarted.Eagerly, false)
+
     val settings: StateFlow<AppSettings> = repo.settings.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), AppSettings())
 
     fun update(block: (AppSettings) -> AppSettings) { viewModelScope.launch { repo.update(block) } }

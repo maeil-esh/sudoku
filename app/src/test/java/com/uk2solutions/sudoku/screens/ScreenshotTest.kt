@@ -23,6 +23,8 @@ import com.uk2solutions.sudoku.ui.home.HomeContent
 import com.uk2solutions.sudoku.ui.home.ResumeInfo
 import com.uk2solutions.sudoku.ui.settings.SettingsBody
 import com.uk2solutions.sudoku.ui.stats.StatsContent
+import com.uk2solutions.sudoku.ui.premium.PremiumContent
+import com.uk2solutions.sudoku.ui.premium.PremiumMessage
 import com.uk2solutions.sudoku.ui.stats.StatsUi
 import com.uk2solutions.sudoku.ui.theme.SudokuTheme
 import androidx.compose.foundation.background
@@ -45,10 +47,10 @@ class ScreenshotTest {
 
     private val outDir = File(System.getProperty("user.dir"), "../docs/screens").apply { mkdirs() }
 
-    private fun shoot(name: String, dark: Boolean = false, advanceMs: Long = 0, content: @Composable () -> Unit) {
+    private fun shoot(name: String, dark: Boolean = false, advanceMs: Long = 0, palette: Int = 0, content: @Composable () -> Unit) {
         val show = androidx.compose.runtime.mutableStateOf(advanceMs == 0L)
         rule.setContent {
-            SudokuTheme(dark = dark) {
+            SudokuTheme(dark = dark, palette = palette) {
                 Box(Modifier.fillMaxSize().background(com.uk2solutions.sudoku.ui.theme.SudokuTheme.colors.background)) {
                     if (show.value) content()
                 }
@@ -171,5 +173,56 @@ class ScreenshotTest {
             AppSettings(themeMode = 2, numberFirst = true), "ko", false, listOf(R.string.theme_system, R.string.theme_light, R.string.theme_dark),
             {}, {}, {}, {}, {},
         )
+    }
+
+    @Test fun premiumScreen() = shoot("15_premium") {
+        PremiumContent(false, false, "₩3,900", true, null, {}, {}, {}, {})
+    }
+
+    @Test fun premiumScreenPendingAndMessage() = shoot("16_premium_promo_not_confirmed") {
+        PremiumContent(false, true, "₩3,900", true, PremiumMessage.PROMO_NOT_CONFIRMED, {}, {}, {}, {})
+    }
+
+    @Test fun premiumActive() = shoot("17_premium_active", dark = true) {
+        PremiumContent(true, false, null, true, PremiumMessage.PROMO_APPLIED, {}, {}, {}, {})
+    }
+
+    @Test fun statsPremiumDetail() = shoot("18_stats_premium_detail") {
+        StatsContent(
+            StatsUi(
+                mapOf(
+                    "EASY" to DifficultyStat("EASY", 24, 151_000, 232_000.0),
+                    "MEDIUM" to DifficultyStat("MEDIUM", 17, 318_000, 441_000.0),
+                    "HARD" to DifficultyStat("HARD", 6, 702_000, 913_000.0),
+                ),
+                streak = 6, weekly = listOf(0, 1, 0, 2, 1, 3, 1), premium = true,
+            ),
+        )
+    }
+
+    @Test fun homePremiumMember() = shoot("19_home_premium_member") {
+        HomeContent(ResumeInfo(Difficulty.HARD, 1_203_000, 22), DailyInfo(DailyStatus.DONE, 100, 7), {}, {}, {}, premium = true)
+    }
+
+    @Test fun gameGreenPalette() { val (ui, s) = gameUi { copy(premium = true) }; shoot("20_game_green_theme", palette = 1) { Game(ui, s) } }
+
+    @Test fun gameOrangeDark() { val (ui, s) = gameUi { copy(premium = true) }; shoot("21_game_orange_dark", dark = true, palette = 2) { Game(ui, s) } }
+
+    @Test fun gamePurple() { val (ui, s) = gameUi { copy(premium = true) }; shoot("22_game_purple_theme", palette = 3) { Game(ui, s) } }
+
+    @Test @Config(qualifiers = "zh-rCN-w390dp-h844dp-xxhdpi") fun homeChinese() = shoot("23_home_chinese") {
+        HomeContent(ResumeInfo(Difficulty.MEDIUM, 725_000, 47), DailyInfo(DailyStatus.IN_PROGRESS, 40, 6), {}, {}, {})
+    }
+
+    @Test @Config(qualifiers = "th-w390dp-h844dp-xxhdpi") fun homeThai() = shoot("24_home_thai") {
+        HomeContent(ResumeInfo(Difficulty.MEDIUM, 725_000, 47), DailyInfo(DailyStatus.IN_PROGRESS, 40, 6), {}, {}, {})
+    }
+
+    @Test @Config(qualifiers = "hi-w390dp-h844dp-xxhdpi") fun homeHindi() = shoot("25_home_hindi") {
+        HomeContent(ResumeInfo(Difficulty.MEDIUM, 725_000, 47), DailyInfo(DailyStatus.IN_PROGRESS, 40, 6), {}, {}, {})
+    }
+
+    @Test @Config(qualifiers = "tr-w390dp-h844dp-xxhdpi") fun premiumTurkish() = shoot("26_premium_turkish") {
+        PremiumContent(false, false, "₺49,99", true, null, {}, {}, {}, {})
     }
 }

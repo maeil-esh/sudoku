@@ -61,6 +61,7 @@ dependencies {
     implementation("androidx.datastore:datastore-preferences:1.1.1")
     implementation("androidx.appcompat:appcompat:1.7.0")
     implementation("androidx.work:work-runtime-ktx:2.9.1")
+    implementation("com.android.billingclient:billing:9.1.0")
 
     testImplementation("junit:junit:4.13.2")
     // 화면 스크린샷(설치 없이 PC에서 렌더링)
