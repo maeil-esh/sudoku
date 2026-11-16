@@ -31,6 +31,11 @@ import com.uk2solutions.sudoku.ui.theme.SudokuTheme
 @Composable
 fun StatsScreen(vm: StatsViewModel = hiltViewModel()) {
     val ui by vm.ui.collectAsStateWithLifecycle()
+    StatsContent(ui)
+}
+
+@Composable
+fun StatsContent(ui: StatsUi) {
     val c = SudokuTheme.colors
     val none = stringResource(R.string.stats_none)
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(20.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {

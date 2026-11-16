@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
@@ -95,6 +96,48 @@ fun formatTime(ms: Long): String {
     return if (h > 0) "%d:%02d:%02d".format(h, m, s) else "%02d:%02d".format(m, s)
 }
 
+/** 게임 화면의 상태 비저장 본체. 미리보기·스크린샷에도 쓴다. */
+@Composable
+fun GameBody(
+    ui: GameUiState, state: GameState, elapsedMs: Long,
+    onBack: () -> Unit, onCell: (Int) -> Unit, onUndo: () -> Unit, onErase: () -> Unit, onNote: () -> Unit,
+    onHint: () -> Unit, onPause: () -> Unit, onResume: () -> Unit, onDigit: (Int) -> Unit,
+) {
+    val c = SudokuTheme.colors
+    val padDigit = if (ui.settings.numberFirst) ui.selectedDigit else if (ui.selected >= 0) state.values[ui.selected] else 0
+    val score = remember(state.values, state.mistakes, state.hintsUsed, ui.difficulty) { Scoring.score(state, ui.difficulty) }
+
+    Column(Modifier.fillMaxSize().background(c.background).verticalScroll(rememberScrollState()).padding(horizontal = 12.dp)) {
+        Row(Modifier.fillMaxWidth().heightIn(min = 56.dp), verticalAlignment = Alignment.CenterVertically) {
+            IconButton(onClick = onBack) {
+                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.game_back), tint = c.ink)
+            }
+            Text(
+                stringResource(if (ui.daily) R.string.daily_title else R.string.app_name),
+                color = c.ink, fontWeight = FontWeight.SemiBold, fontSize = 20.sp,
+            )
+        }
+        InfoBlock(elapsedMs, ui, state, score, onPause = onPause)
+        Spacer(Modifier.height(8.dp))
+        if (ui.paused) PausedCover(onContinue = onResume, onExit = onBack)
+        else SudokuBoard(
+            state, ui.selected, padDigit, ui.conflicts, ui.settings,
+            onCell = onCell, effect = ui.effect, gain = ui.scoreGain, hintCell = ui.hint?.index ?: -1,
+        )
+        HintBanner(ui.hint, ui.hintsExhausted)
+        Spacer(Modifier.height(14.dp))
+        ToolRow(
+            canUndo = state.undo.isNotEmpty() && !ui.paused, noteMode = ui.noteMode,
+            hintsLeft = (HintPolicy.FREE_PER_DAY - ui.settings.hintsUsedToday).coerceAtLeast(0),
+            onUndo = onUndo, onErase = onErase, onNote = onNote, onHint = onHint,
+        )
+        Spacer(Modifier.height(14.dp))
+        DigitRow(state, padDigit, ui.settings.showRemaining, enabled = !ui.paused, effect = ui.effect, onDigit = onDigit)
+        Spacer(Modifier.height(16.dp))
+    }
+
+}
+
 @Composable
 fun GameScreen(onExit: () -> Unit, onNewGame: (Difficulty) -> Unit, vm: GameViewModel = hiltViewModel()) {
     val ui by vm.ui.collectAsStateWithLifecycle()
@@ -124,37 +167,13 @@ fun GameScreen(onExit: () -> Unit, onNewGame: (Difficulty) -> Unit, vm: GameView
         if (ui.settings.sound) view.playSoundEffect(SoundEffectConstants.CLICK)
     }
 
-    val padDigit = if (ui.settings.numberFirst) ui.selectedDigit else if (ui.selected >= 0) state.values[ui.selected] else 0
+    val elapsedNow by vm.elapsedMs.collectAsState()
     val score = remember(state.values, state.mistakes, state.hintsUsed, ui.difficulty) { Scoring.score(state, ui.difficulty) }
-
-    Column(Modifier.fillMaxSize().background(c.background).verticalScroll(rememberScrollState()).padding(horizontal = 12.dp)) {
-        Row(Modifier.fillMaxWidth().heightIn(min = 56.dp), verticalAlignment = Alignment.CenterVertically) {
-            IconButton(onClick = { leave() }) {
-                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.game_back), tint = c.ink)
-            }
-            Text(
-                stringResource(if (ui.daily) R.string.daily_title else R.string.app_name),
-                color = c.ink, fontWeight = FontWeight.SemiBold, fontSize = 20.sp,
-            )
-        }
-        InfoBlock(vm, ui, state, score, onPause = vm::pause)
-        Spacer(Modifier.height(8.dp))
-        if (ui.paused) PausedCover(onContinue = vm::resume, onExit = { leave() })
-        else SudokuBoard(
-            state, ui.selected, padDigit, ui.conflicts, ui.settings,
-            onCell = { feedback(vm.onCell(it)) }, effect = ui.effect, gain = ui.scoreGain, hintCell = ui.hint?.index ?: -1,
-        )
-        HintBanner(ui.hint, ui.hintsExhausted)
-        Spacer(Modifier.height(14.dp))
-        ToolRow(
-            canUndo = state.undo.isNotEmpty() && !ui.paused, noteMode = ui.noteMode,
-            hintsLeft = (HintPolicy.FREE_PER_DAY - ui.settings.hintsUsedToday).coerceAtLeast(0),
-            onUndo = vm::onUndo, onErase = { feedback(vm.onErase()) }, onNote = vm::onToggleNote, onHint = vm::onHint,
-        )
-        Spacer(Modifier.height(14.dp))
-        DigitRow(state, padDigit, ui.settings.showRemaining, enabled = !ui.paused, effect = ui.effect, onDigit = { feedback(vm.onDigit(it)) })
-        Spacer(Modifier.height(16.dp))
-    }
+    GameBody(
+        ui, state, elapsedNow, onBack = { leave() }, onCell = { feedback(vm.onCell(it)) }, onUndo = vm::onUndo,
+        onErase = { feedback(vm.onErase()) }, onNote = vm::onToggleNote, onHint = vm::onHint, onPause = vm::pause,
+        onResume = vm::resume, onDigit = { feedback(vm.onDigit(it)) },
+    )
 
     if (ui.mistakeLimitReached) {
         AlertDialog(
@@ -166,11 +185,10 @@ fun GameScreen(onExit: () -> Unit, onNewGame: (Difficulty) -> Unit, vm: GameView
         )
     }
     if (ui.completed) {
-        val elapsed by vm.elapsedMs.collectAsState()
         AlertDialog(
             onDismissRequest = {},
             title = { Text(stringResource(R.string.game_complete_title)) },
-            text = { Text(stringResource(R.string.game_complete_desc, formatTime(elapsed), state.mistakes, score)) },
+            text = { Text(stringResource(R.string.game_complete_desc, formatTime(elapsedNow), state.mistakes, score)) },
             confirmButton = { TextButton(onClick = { onNewGame(ui.difficulty) }) { Text(stringResource(R.string.game_complete_new)) } },
             dismissButton = { TextButton(onClick = onExit) { Text(stringResource(R.string.game_complete_home)) } },
         )
@@ -179,9 +197,8 @@ fun GameScreen(onExit: () -> Unit, onNewGame: (Difficulty) -> Unit, vm: GameView
 
 /** 보드 위 정보: [진행 n/m] [점수] / [실수 x/3] [난이도] [타이머 ⏸]. 각 항목은 설정으로 끌 수 있다. */
 @Composable
-private fun InfoBlock(vm: GameViewModel, ui: GameUiState, state: GameState, score: Int, onPause: () -> Unit) {
+private fun InfoBlock(elapsed: Long, ui: GameUiState, state: GameState, score: Int, onPause: () -> Unit) {
     val c = SudokuTheme.colors
-    val elapsed by vm.elapsedMs.collectAsState()
     val (filled, total) = Scoring.progress(state)
     Column(Modifier.fillMaxWidth().padding(horizontal = 4.dp)) {
         Row(Modifier.fillMaxWidth().heightIn(min = 36.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -297,7 +314,7 @@ private fun ToolButton(@androidx.annotation.DrawableRes icon: Int, label: String
             if (badge != null) {
                 Surface(
                     shape = CircleShape, color = if (badgeOn) c.accent else c.line,
-                    modifier = Modifier.align(Alignment.TopEnd),
+                    modifier = Modifier.align(Alignment.TopEnd).offset(x = 12.dp, y = (-4).dp),
                 ) {
                     Text(badge, fontSize = 10.sp, fontWeight = FontWeight.Bold, color = if (badgeOn) c.onAccent else c.muted, modifier = Modifier.padding(horizontal = 5.dp, vertical = 1.dp))
                 }

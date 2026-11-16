@@ -34,6 +34,11 @@ import com.uk2solutions.sudoku.ui.theme.SudokuTheme
 fun HomeScreen(onResume: () -> Unit, onDaily: () -> Unit, onNewGame: (Difficulty) -> Unit, vm: HomeViewModel = hiltViewModel()) {
     val resume by vm.resume.collectAsStateWithLifecycle()
     val daily by vm.daily.collectAsStateWithLifecycle()
+    HomeContent(resume, daily, onResume, onDaily, onNewGame)
+}
+
+@Composable
+fun HomeContent(resume: ResumeInfo?, daily: DailyInfo, onResume: () -> Unit, onDaily: () -> Unit, onNewGame: (Difficulty) -> Unit) {
     val c = SudokuTheme.colors
     Column(
         Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(20.dp),

@@ -47,6 +47,63 @@ import com.uk2solutions.sudoku.R
 import com.uk2solutions.sudoku.data.AppSettings
 import com.uk2solutions.sudoku.ui.theme.SudokuTheme
 
+/** 설정 목록 본체(상태 비저장). 스크린샷에도 쓴다. */
+@Composable
+fun SettingsBody(
+    s: AppSettings, langTag: String, permDenied: Boolean, themeLabels: List<Int>,
+    onTheme: () -> Unit, onLang: () -> Unit, onHour: () -> Unit, onNotify: (Boolean) -> Unit,
+    onUpdate: ((AppSettings) -> AppSettings) -> Unit,
+) {
+    val c = SudokuTheme.colors
+    Column(
+        Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(20.dp),
+        verticalArrangement = Arrangement.spacedBy(14.dp),
+    ) {
+        Text(stringResource(R.string.settings_title), fontSize = 28.sp, fontWeight = FontWeight.Bold, color = c.ink)
+
+        Card {
+            ChoiceRow(stringResource(R.string.set_theme), stringResource(themeLabels[s.themeMode.coerceIn(0, 2)]), onTheme)
+            Toggle(R.string.set_sound, R.string.set_sound_desc, s.sound) { v -> onUpdate { it.copy(sound = v) } }
+            Toggle(R.string.set_vibration, R.string.set_vibration_desc, s.vibration) { v -> onUpdate { it.copy(vibration = v) } }
+            ChoiceRow(stringResource(R.string.set_language), stringResource(langLabel(langTag)), onLang)
+        }
+        Card {
+            Toggle(R.string.set_notify, R.string.set_notify_desc, s.notifyEnabled, onNotify)
+            if (permDenied) Text(
+                stringResource(R.string.notify_permission_needed), color = c.error, fontSize = 13.sp,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
+            )
+            if (s.notifyEnabled) ChoiceRow(stringResource(R.string.set_notify_time), stringResource(R.string.hour_label, s.notifyHour), onHour)
+        }
+        Card {
+            Toggle(R.string.set_mistake_limit, R.string.set_mistake_limit_desc, s.mistakeLimitEnabled) { v -> onUpdate { it.copy(mistakeLimitEnabled = v) } }
+            Toggle(R.string.set_number_first, R.string.set_number_first_desc, s.numberFirst) { v -> onUpdate { it.copy(numberFirst = v) } }
+            Toggle(R.string.set_auto_next, R.string.set_auto_next_desc, s.autoNextNumber) { v -> onUpdate { it.copy(autoNextNumber = v) } }
+            Toggle(R.string.set_auto_remove, R.string.set_auto_remove_desc, s.autoRemoveNotes) { v -> onUpdate { it.copy(autoRemoveNotes = v) } }
+            Toggle(R.string.set_show_errors, R.string.set_show_errors_desc, s.showErrors) { v -> onUpdate { it.copy(showErrors = v) } }
+        }
+        Card {
+            Toggle(R.string.set_highlight_area, R.string.set_highlight_area_desc, s.highlightArea) { v -> onUpdate { it.copy(highlightArea = v) } }
+            Toggle(R.string.set_highlight_same, R.string.set_highlight_same_desc, s.highlightSame) { v -> onUpdate { it.copy(highlightSame = v) } }
+            Toggle(R.string.set_timer, R.string.set_timer_desc, s.showTimer) { v -> onUpdate { it.copy(showTimer = v) } }
+            Toggle(R.string.set_progress, R.string.set_progress_desc, s.showProgress) { v -> onUpdate { it.copy(showProgress = v) } }
+            Toggle(R.string.set_score, R.string.set_score_desc, s.showScore) { v -> onUpdate { it.copy(showScore = v) } }
+            Toggle(R.string.set_score_anim, R.string.set_score_anim_desc, s.scoreAnimation) { v -> onUpdate { it.copy(scoreAnimation = v) } }
+            Toggle(R.string.set_complete_anim, R.string.set_complete_anim_desc, s.completeAnimation) { v -> onUpdate { it.copy(completeAnimation = v) } }
+            Toggle(R.string.set_remaining, R.string.set_remaining_desc, s.showRemaining) { v -> onUpdate { it.copy(showRemaining = v) } }
+        }
+        Card {
+            val ctx = LocalContext.current
+            val version = remember { runCatching { ctx.packageManager.getPackageInfo(ctx.packageName, 0).versionName }.getOrNull().orEmpty() }
+            Row(Modifier.fillMaxWidth().heightIn(min = 56.dp).padding(horizontal = 16.dp), verticalAlignment = Alignment.CenterVertically) {
+                Text(stringResource(R.string.set_version), color = c.ink, modifier = Modifier.weight(1f))
+                Text(version, color = c.muted)
+            }
+        }
+    }
+
+}
+
 @Composable
 fun SettingsScreen(vm: SettingsViewModel = hiltViewModel()) {
     val s by vm.settings.collectAsStateWithLifecycle()
@@ -63,58 +120,18 @@ fun SettingsScreen(vm: SettingsViewModel = hiltViewModel()) {
     }
     val themeLabels = listOf(R.string.theme_system, R.string.theme_light, R.string.theme_dark)
 
-    Column(
-        Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(20.dp),
-        verticalArrangement = Arrangement.spacedBy(14.dp),
-    ) {
-        Text(stringResource(R.string.settings_title), fontSize = 28.sp, fontWeight = FontWeight.Bold, color = c.ink)
-
-        Card {
-            ChoiceRow(stringResource(R.string.set_theme), stringResource(themeLabels[s.themeMode.coerceIn(0, 2)])) { themeDialog = true }
-            Toggle(R.string.set_sound, R.string.set_sound_desc, s.sound) { v -> vm.update { it.copy(sound = v) } }
-            Toggle(R.string.set_vibration, R.string.set_vibration_desc, s.vibration) { v -> vm.update { it.copy(vibration = v) } }
-            ChoiceRow(stringResource(R.string.set_language), stringResource(langLabel(langTag))) { langDialog = true }
-        }
-        Card {
-            Toggle(R.string.set_notify, R.string.set_notify_desc, s.notifyEnabled) { v ->
-                if (!v) { vm.update { it.copy(notifyEnabled = false) }; permDenied = false }
-                else if (Build.VERSION.SDK_INT >= 33 &&
-                    ContextCompat.checkSelfPermission(ctx, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
-                ) permLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
-                else vm.update { it.copy(notifyEnabled = true) }
-            }
-            if (permDenied) Text(
-                stringResource(R.string.notify_permission_needed), color = c.error, fontSize = 13.sp,
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
-            )
-            if (s.notifyEnabled) ChoiceRow(stringResource(R.string.set_notify_time), stringResource(R.string.hour_label, s.notifyHour)) { hourDialog = true }
-        }
-        Card {
-            Toggle(R.string.set_mistake_limit, R.string.set_mistake_limit_desc, s.mistakeLimitEnabled) { v -> vm.update { it.copy(mistakeLimitEnabled = v) } }
-            Toggle(R.string.set_number_first, R.string.set_number_first_desc, s.numberFirst) { v -> vm.update { it.copy(numberFirst = v) } }
-            Toggle(R.string.set_auto_next, R.string.set_auto_next_desc, s.autoNextNumber) { v -> vm.update { it.copy(autoNextNumber = v) } }
-            Toggle(R.string.set_auto_remove, R.string.set_auto_remove_desc, s.autoRemoveNotes) { v -> vm.update { it.copy(autoRemoveNotes = v) } }
-            Toggle(R.string.set_show_errors, R.string.set_show_errors_desc, s.showErrors) { v -> vm.update { it.copy(showErrors = v) } }
-        }
-        Card {
-            Toggle(R.string.set_highlight_area, R.string.set_highlight_area_desc, s.highlightArea) { v -> vm.update { it.copy(highlightArea = v) } }
-            Toggle(R.string.set_highlight_same, R.string.set_highlight_same_desc, s.highlightSame) { v -> vm.update { it.copy(highlightSame = v) } }
-            Toggle(R.string.set_timer, R.string.set_timer_desc, s.showTimer) { v -> vm.update { it.copy(showTimer = v) } }
-            Toggle(R.string.set_progress, R.string.set_progress_desc, s.showProgress) { v -> vm.update { it.copy(showProgress = v) } }
-            Toggle(R.string.set_score, R.string.set_score_desc, s.showScore) { v -> vm.update { it.copy(showScore = v) } }
-            Toggle(R.string.set_score_anim, R.string.set_score_anim_desc, s.scoreAnimation) { v -> vm.update { it.copy(scoreAnimation = v) } }
-            Toggle(R.string.set_complete_anim, R.string.set_complete_anim_desc, s.completeAnimation) { v -> vm.update { it.copy(completeAnimation = v) } }
-            Toggle(R.string.set_remaining, R.string.set_remaining_desc, s.showRemaining) { v -> vm.update { it.copy(showRemaining = v) } }
-        }
-        Card {
-            val ctx = LocalContext.current
-            val version = remember { runCatching { ctx.packageManager.getPackageInfo(ctx.packageName, 0).versionName }.getOrNull().orEmpty() }
-            Row(Modifier.fillMaxWidth().heightIn(min = 56.dp).padding(horizontal = 16.dp), verticalAlignment = Alignment.CenterVertically) {
-                Text(stringResource(R.string.set_version), color = c.ink, modifier = Modifier.weight(1f))
-                Text(version, color = c.muted)
-            }
-        }
-    }
+    SettingsBody(
+        s, langTag, permDenied, themeLabels,
+        onTheme = { themeDialog = true }, onLang = { langDialog = true }, onHour = { hourDialog = true },
+        onNotify = { v ->
+            if (!v) { vm.update { it.copy(notifyEnabled = false) }; permDenied = false }
+            else if (Build.VERSION.SDK_INT >= 33 &&
+                ContextCompat.checkSelfPermission(ctx, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
+            ) permLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+            else vm.update { it.copy(notifyEnabled = true) }
+        },
+        onUpdate = vm::update,
+    )
 
     if (themeDialog) {
         AlertDialog(
@@ -185,7 +202,7 @@ fun SettingsScreen(vm: SettingsViewModel = hiltViewModel()) {
     }
 }
 
-private fun langLabel(tag: String) = when {
+fun langLabel(tag: String) = when {
     tag.startsWith("ko") -> R.string.lang_ko
     tag.startsWith("en") -> R.string.lang_en
     else -> R.string.lang_system

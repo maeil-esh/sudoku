@@ -185,7 +185,7 @@ private fun Cell(
                     for (k in 0 until 3) {
                         val d = r * 3 + k + 1
                         Box(Modifier.weight(1f).fillMaxHeight(), contentAlignment = Alignment.Center) {
-                            if (notes and (1 shl (d - 1)) != 0) Text(d.toString(), fontSize = 10.sp, color = c.muted)
+                            if (notes and (1 shl (d - 1)) != 0) Text(d.toString(), fontSize = 10.sp, lineHeight = 10.sp, color = c.muted)
                         }
                     }
                 }
