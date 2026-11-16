@@ -27,6 +27,17 @@ import javax.inject.Inject
 class MainActivity : AppCompatActivity() {
     @Inject lateinit var settingsRepo: SettingsRepository
     @Inject lateinit var premiumManager: PremiumManager
+    @Inject lateinit var challengeInbox: com.uk2solutions.sudoku.data.ChallengeInbox
+
+    /** 메신저에서 "공유"로 도전장 문구가 오면 홈이 받기 창을 연다. */
+    private fun handleShare(intent: android.content.Intent?) {
+        if (intent?.action == android.content.Intent.ACTION_SEND) challengeInbox.offer(intent.getStringExtra(android.content.Intent.EXTRA_TEXT))
+    }
+
+    override fun onNewIntent(intent: android.content.Intent) {
+        super.onNewIntent(intent)
+        handleShare(intent)
+    }
 
     /** 포그라운드 복귀마다 보유 구매를 조회한다(Play 스토어에서 먼저 코드를 상환한 경우도 여기서 반영, SPEC §7.2-1). */
     override fun onResume() {
@@ -36,6 +47,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        handleShare(intent)
         setContent {
             val settings by settingsRepo.settings.collectAsState(initial = AppSettings())
             val premium by premiumManager.isPremium.collectAsState(initial = false)
@@ -55,7 +67,8 @@ class MainActivity : AppCompatActivity() {
                 enableEdgeToEdge(statusBarStyle = style, navigationBarStyle = style)
                 onDispose {}
             }
-            SudokuTheme(dark = dark, palette = palette) { SudokuNavHost() }
+            val pending by challengeInbox.pending.collectAsState()
+            SudokuTheme(dark = dark, palette = palette) { SudokuNavHost(hasPendingChallenge = pending != null) }
         }
     }
 }

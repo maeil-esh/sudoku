@@ -155,4 +155,23 @@
     <string name="stats_distribution">Seviyeye göre</string>
     <string name="stats_locked_cta">Premium ile kilidi aç</string>
     <string name="stats_detail_empty">Henüz tamamlanan oyun yok</string>
+    <string name="wrong_banner">Bu sayı yanlış. Devam etmeden önce silmek için İptal\'e dokun</string>
+    <string name="wrong_cancel">İptal</string>
+    <string name="challenge_receive">Meydan okumayı kabul et</string>
+    <string name="challenge_receive_title">Meydan okuma</string>
+    <string name="challenge_receive_desc">Arkadaşının gönderdiği kodu veya mesajı yapıştır</string>
+    <string name="challenge_paste">Yapıştır</string>
+    <string name="challenge_code_hint">Meydan okuma kodu</string>
+    <string name="challenge_start">Başla</string>
+    <string name="challenge_invalid">Bu meydan okuma kodu geçerli değil. Tamamını kopyaladığından emin ol</string>
+    <string name="challenge_send">Meydan okuma gönder</string>
+    <string name="challenge_send_back">Sonucumu gönder</string>
+    <string name="challenge_share_text">Sudoku meydan okuması! Sürem %1$s · puanım %2$d\nSudoku uygulamasını aç, bu kodu yapıştır ve aynı bulmacayı çöz:\n%3$s</string>
+    <string name="challenge_vs_banner">Meydan okuma · rakip %1$d puan</string>
+    <string name="challenge_result_win">Kazandın!</string>
+    <string name="challenge_result_lose">Bu sefer kaybettin</string>
+    <string name="challenge_result_draw">Berabere</string>
+    <string name="challenge_you">Sen</string>
+    <string name="challenge_opponent">Rakip</string>
+    <string name="challenge_compare_line">%1$s · %2$d hata · %3$d puan</string>
 </resources>

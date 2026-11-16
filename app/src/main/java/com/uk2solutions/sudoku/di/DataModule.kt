@@ -15,7 +15,7 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 object DataModule {
     @Provides @Singleton
-    fun db(@ApplicationContext c: Context): AppDatabase = Room.databaseBuilder(c, AppDatabase::class.java, "sudoku.db").build()
+    fun db(@ApplicationContext c: Context): AppDatabase = Room.databaseBuilder(c, AppDatabase::class.java, "sudoku.db").addMigrations(AppDatabase.MIGRATION_1_2).build()
 
     @Provides fun gameDao(db: AppDatabase): GameDao = db.gameDao()
 }

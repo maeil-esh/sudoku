@@ -169,4 +169,23 @@ Tap again to fill in the number</string>
     <string name="lang_th" translatable="false">ไทย</string>
     <string name="lang_vi" translatable="false">Tiếng Việt</string>
     <string name="lang_tr" translatable="false">Türkçe</string>
+    <string name="wrong_banner">That number is wrong. Tap Cancel to clear it before you continue</string>
+    <string name="wrong_cancel">Cancel</string>
+    <string name="challenge_receive">Receive a challenge</string>
+    <string name="challenge_receive_title">Challenge</string>
+    <string name="challenge_receive_desc">Paste the code or message your friend sent</string>
+    <string name="challenge_paste">Paste</string>
+    <string name="challenge_code_hint">Challenge code</string>
+    <string name="challenge_start">Start</string>
+    <string name="challenge_invalid">This challenge code isn\'t valid. Check that you copied all of it</string>
+    <string name="challenge_send">Send challenge</string>
+    <string name="challenge_send_back">Send my result</string>
+    <string name="challenge_share_text">Sudoku challenge! My time %1$s · score %2$d.\nOpen the Sudoku app, paste this code and play the same puzzle:\n%3$s</string>
+    <string name="challenge_vs_banner">Challenge · opponent %1$d pts</string>
+    <string name="challenge_result_win">You win!</string>
+    <string name="challenge_result_lose">You lost this time</string>
+    <string name="challenge_result_draw">It\'s a tie</string>
+    <string name="challenge_you">You</string>
+    <string name="challenge_opponent">Opponent</string>
+    <string name="challenge_compare_line">%1$s · %2$d mistakes · %3$d pts</string>
 </resources>

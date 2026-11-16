@@ -225,4 +225,36 @@ class ScreenshotTest {
     @Test @Config(qualifiers = "tr-w390dp-h844dp-xxhdpi") fun premiumTurkish() = shoot("26_premium_turkish") {
         PremiumContent(false, false, "₺49,99", true, null, {}, {}, {}, {})
     }
+
+    /** 틀린 숫자 하나가 남아 있으면 안내가 뜨고 숫자 패드가 막힌다(기본 게임 상태에 틀린 칸 포함). */
+    @Test fun gameWrongNumberBlocked() { val (ui, s) = gameUi { copy(blockedNudge = 1) }; shoot("27_game_wrong_number_blocked", advanceMs = 100) { Game(ui, s) } }
+
+    @Test fun challengeWin() = shoot("28_challenge_result_win") {
+        com.uk2solutions.sudoku.ui.challenge.CompleteCard(
+            elapsedMs = 612_000, mistakes = 0, score = 2860,
+            opponent = com.uk2solutions.sudoku.domain.challenge.ChallengeResult(725, 1, 0, 2340), onSend = {}, onNewGame = {}, onHome = {},
+        )
+    }
+
+    @Test fun challengeLoseDark() = shoot("29_challenge_result_lose_dark", dark = true) {
+        com.uk2solutions.sudoku.ui.challenge.CompleteCard(
+            elapsedMs = 905_000, mistakes = 2, score = 1620,
+            opponent = com.uk2solutions.sudoku.domain.challenge.ChallengeResult(725, 1, 0, 2340), onSend = {}, onNewGame = {}, onHome = {},
+        )
+    }
+
+    @Test fun challengeComplete() = shoot("30_complete_send_challenge") {
+        com.uk2solutions.sudoku.ui.challenge.CompleteCard(elapsedMs = 725_000, mistakes = 1, score = 2340, opponent = null, onSend = {}, onNewGame = {}, onHome = {})
+    }
+
+    @Test fun challengeReceive() = shoot("31_challenge_receive") {
+        com.uk2solutions.sudoku.ui.challenge.ReceiveCard(
+            initialText = "", error = false, onStart = {}, onDismiss = {},
+            pasted = "스도쿠 도전장! 내 기록 12:05 · 점수 2340\n스도쿠 앱을 열고 아래 코드를 붙여 넣어 같은 퍼즐에 도전하세요:\nSDK1-AQEBAAlkIBIJAIAwGAADcAAANwkAADCAQAAIBCAAAGQABXBAgAEGgBaVAAAAAtUBAAAJJM9R",
+        )
+    }
+
+    @Test fun homeWithReceiveButton() = shoot("32_home_receive_challenge_button") {
+        HomeContent(ResumeInfo(Difficulty.MEDIUM, 725_000, 47), DailyInfo(DailyStatus.NOT_STARTED, 0, 2), {}, {}, {})
+    }
 }

@@ -51,6 +51,10 @@ data class GameUiState(
     val effect: Effect? = null,
     val scoreGain: ScoreGain? = null,
     val premium: Boolean = false,
+    /** 도전장으로 시작한 게임이면 상대의 결과. */
+    val opponent: com.uk2solutions.sudoku.domain.challenge.ChallengeResult? = null,
+    /** 틀린 숫자가 남은 채 입력하려 할 때마다 1씩 늘어 화면이 안내를 강조한다. */
+    val blockedNudge: Int = 0,
 )
 
 /** 칸을 채운 자리에 잠깐 떠오르는 점수 변화(+10, -30 ...). */
@@ -106,7 +110,7 @@ class GameViewModel @Inject constructor(
         limitDismissed = false
         _ui.update { cur ->
             cur.copy(
-                loading = false, state = loaded.state, difficulty = loaded.difficulty, daily = loaded.daily,
+                loading = false, state = loaded.state, difficulty = loaded.difficulty, daily = loaded.daily, opponent = loaded.opponent,
                 conflicts = GameRules.conflicts(loaded.state.values),
                 mistakeLimitReached = limitReached(loaded.state, cur.settings),
             )
@@ -134,9 +138,10 @@ class GameViewModel @Inject constructor(
         val s = u.state ?: return InputResult.NONE
         if (u.paused || u.completed || u.mistakeLimitReached) return InputResult.NONE
         if (u.settings.numberFirst && u.selectedDigit > 0) {
+            if (blockedByWrong(s)) { _ui.update { it.copy(selected = i) }; return InputResult.NONE }
             _ui.update { it.copy(selected = i) }
             val (next, r) = GameRules.enter(s, i, u.selectedDigit, u.noteMode, u.settings.autoRemoveNotes)
-            if (r != InputResult.NONE) apply(next, i, s)
+            if (r != InputResult.NONE) { apply(next, i, s); if (r == InputResult.MISTAKE) _ui.update { it.copy(selected = i) } }
             return r
         }
         _ui.update { it.copy(selected = if (it.selected == i) -1 else i) }
@@ -154,6 +159,7 @@ class GameViewModel @Inject constructor(
             return InputResult.NONE
         }
         if (u.selected < 0) return InputResult.NONE
+        if (blockedByWrong(s)) return InputResult.NONE
         val (next, r) = GameRules.enter(s, u.selected, d, u.noteMode, u.settings.autoRemoveNotes)
         if (r != InputResult.NONE) apply(next, u.selected, s)
         return r
@@ -173,6 +179,24 @@ class GameViewModel @Inject constructor(
         val s = u.state ?: return
         if (u.paused || u.completed || u.mistakeLimitReached || s.undo.isEmpty()) return
         apply(GameRules.undo(s))
+    }
+
+    /** 틀린 숫자가 있으면 지울 때까지 새 입력·힌트를 막는다. 막았으면 true. */
+    private fun blockedByWrong(s: GameState): Boolean {
+        if (GameRules.wrongCells(s).isEmpty()) return false
+        _ui.update { it.copy(blockedNudge = it.blockedNudge + 1) }
+        return true
+    }
+
+    /** 틀린 숫자를 취소(지우기)해 빈칸으로 만든다. */
+    fun onCancelWrong(): InputResult {
+        val u = _ui.value
+        val s = u.state ?: return InputResult.NONE
+        if (u.paused || u.completed) return InputResult.NONE
+        val i = GameRules.wrongCells(s).firstOrNull() ?: return InputResult.NONE
+        val (next, r) = GameRules.erase(s, i)
+        if (r != InputResult.NONE) { apply(next); _ui.update { it.copy(selected = i) } }
+        return r
     }
 
     private fun blocked(u: GameUiState) = u.selected < 0 || u.paused || u.completed || u.mistakeLimitReached
@@ -207,6 +231,7 @@ class GameViewModel @Inject constructor(
         val u = _ui.value
         val s = u.state ?: return
         if (u.paused || u.completed || u.mistakeLimitReached) return
+        if (blockedByWrong(s)) return
         val h = u.hint
         if (h != null && s.values[h.index] != s.solution[h.index]) {
             val (next, _) = GameRules.enter(s, h.index, h.digit, false, u.settings.autoRemoveNotes)

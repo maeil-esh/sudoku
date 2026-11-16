@@ -156,4 +156,23 @@ Noch einmal tippen, um die Zahl einzutragen</string>
     <string name="stats_distribution">Nach Stufe</string>
     <string name="stats_locked_cta">Mit Premium freischalten</string>
     <string name="stats_detail_empty">Noch keine abgeschlossenen Spiele</string>
+    <string name="wrong_banner">Diese Zahl ist falsch. Tippe auf Abbrechen, um sie zu löschen, bevor du weitermachst</string>
+    <string name="wrong_cancel">Abbrechen</string>
+    <string name="challenge_receive">Herausforderung annehmen</string>
+    <string name="challenge_receive_title">Herausforderung</string>
+    <string name="challenge_receive_desc">Füge den Code oder die Nachricht deines Freundes ein</string>
+    <string name="challenge_paste">Einfügen</string>
+    <string name="challenge_code_hint">Herausforderungscode</string>
+    <string name="challenge_start">Starten</string>
+    <string name="challenge_invalid">Dieser Code ist ungültig. Prüfe, ob du ihn vollständig kopiert hast</string>
+    <string name="challenge_send">Herausforderung senden</string>
+    <string name="challenge_send_back">Mein Ergebnis senden</string>
+    <string name="challenge_share_text">Sudoku-Herausforderung! Meine Zeit %1$s · Punkte %2$d\nÖffne die Sudoku-App, füge diesen Code ein und löse dasselbe Rätsel:\n%3$s</string>
+    <string name="challenge_vs_banner">Herausforderung · Gegner %1$d Pkt.</string>
+    <string name="challenge_result_win">Du hast gewonnen!</string>
+    <string name="challenge_result_lose">Diesmal verloren</string>
+    <string name="challenge_result_draw">Unentschieden</string>
+    <string name="challenge_you">Du</string>
+    <string name="challenge_opponent">Gegner</string>
+    <string name="challenge_compare_line">%1$s · %2$d Fehler · %3$d Pkt.</string>
 </resources>

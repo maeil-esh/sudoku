@@ -74,6 +74,10 @@ object GameRules {
         return out
     }
 
+    /** 정답과 다르게 채워진 칸(주어진 숫자 제외). 이 칸이 하나라도 있으면 지워서 빈칸으로 만들기 전까지 입력을 막는다. */
+    fun wrongCells(s: GameState): Set<Int> =
+        s.values.indices.filter { s.values[it] != 0 && !s.isGiven(it) && s.values[it] != s.solution[it] }.toSet()
+
     /** 채워진 칸 비율(0..100). */
     fun progressPercent(values: IntArray) = values.count { it != 0 } * 100 / Board.SIZE
 

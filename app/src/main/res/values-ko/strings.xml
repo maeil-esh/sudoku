@@ -155,4 +155,23 @@
     <string name="stats_distribution">난이도별 분포</string>
     <string name="stats_locked_cta">프리미엄으로 잠금 해제</string>
     <string name="stats_detail_empty">아직 완료한 게임이 없습니다</string>
+    <string name="wrong_banner">틀린 숫자입니다. 취소를 눌러 지운 뒤 계속하세요</string>
+    <string name="wrong_cancel">취소</string>
+    <string name="challenge_receive">도전장 받기</string>
+    <string name="challenge_receive_title">도전장</string>
+    <string name="challenge_receive_desc">친구가 보낸 코드나 메시지를 붙여 넣으세요</string>
+    <string name="challenge_paste">붙여넣기</string>
+    <string name="challenge_code_hint">도전장 코드</string>
+    <string name="challenge_start">도전 시작</string>
+    <string name="challenge_invalid">올바르지 않은 도전장 코드입니다. 전체를 복사했는지 확인해 주세요</string>
+    <string name="challenge_send">도전장 보내기</string>
+    <string name="challenge_send_back">내 결과 보내기</string>
+    <string name="challenge_share_text">스도쿠 도전장! 내 기록 %1$s · 점수 %2$d\n스도쿠 앱을 열고 아래 코드를 붙여 넣어 같은 퍼즐에 도전하세요:\n%3$s</string>
+    <string name="challenge_vs_banner">도전 중 · 상대 %1$d점</string>
+    <string name="challenge_result_win">이겼어요!</string>
+    <string name="challenge_result_lose">이번엔 졌어요</string>
+    <string name="challenge_result_draw">비겼어요</string>
+    <string name="challenge_you">나</string>
+    <string name="challenge_opponent">상대</string>
+    <string name="challenge_compare_line">%1$s · 실수 %2$d번 · %3$d점</string>
 </resources>

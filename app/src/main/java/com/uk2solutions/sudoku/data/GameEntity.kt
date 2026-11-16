@@ -21,6 +21,8 @@ data class GameEntity(
     val dailyDate: String? = null,
     val startedAt: Long,
     val finishedAt: Long? = null,
+    /** 도전장으로 시작한 게임이면 상대의 결과("초,실수,힌트,점수"). 일반 게임은 null. */
+    val opponent: String? = null,
 ) {
     companion object {
         const val MODE_NORMAL = "NORMAL"

@@ -155,4 +155,23 @@
     <string name="stats_distribution">Theo cấp độ</string>
     <string name="stats_locked_cta">Mở khóa bằng Premium</string>
     <string name="stats_detail_empty">Chưa có ván nào hoàn thành</string>
+    <string name="wrong_banner">Số này sai. Chạm Hủy để xóa nó trước khi tiếp tục</string>
+    <string name="wrong_cancel">Hủy</string>
+    <string name="challenge_receive">Nhận thử thách</string>
+    <string name="challenge_receive_title">Thử thách</string>
+    <string name="challenge_receive_desc">Dán mã hoặc tin nhắn mà bạn bè đã gửi</string>
+    <string name="challenge_paste">Dán</string>
+    <string name="challenge_code_hint">Mã thử thách</string>
+    <string name="challenge_start">Bắt đầu</string>
+    <string name="challenge_invalid">Mã thử thách này không hợp lệ. Hãy kiểm tra bạn đã sao chép đủ chưa</string>
+    <string name="challenge_send">Gửi thử thách</string>
+    <string name="challenge_send_back">Gửi kết quả của tôi</string>
+    <string name="challenge_share_text">Thử thách Sudoku! Thời gian của tôi %1$s · điểm %2$d\nMở ứng dụng Sudoku, dán mã này và chơi cùng câu đố:\n%3$s</string>
+    <string name="challenge_vs_banner">Thử thách · đối thủ %1$d điểm</string>
+    <string name="challenge_result_win">Bạn đã thắng!</string>
+    <string name="challenge_result_lose">Lần này bạn thua</string>
+    <string name="challenge_result_draw">Hòa</string>
+    <string name="challenge_you">Bạn</string>
+    <string name="challenge_opponent">Đối thủ</string>
+    <string name="challenge_compare_line">%1$s · %2$d lỗi · %3$d điểm</string>
 </resources>

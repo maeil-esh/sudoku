@@ -155,4 +155,23 @@
     <string name="stats_distribution">स्तर के अनुसार</string>
     <string name="stats_locked_cta">प्रीमियम से अनलॉक करें</string>
     <string name="stats_detail_empty">अभी तक कोई गेम पूरा नहीं हुआ</string>
+    <string name="wrong_banner">यह अंक गलत है। आगे बढ़ने से पहले इसे मिटाने के लिए रद्द करें पर टैप करें</string>
+    <string name="wrong_cancel">रद्द करें</string>
+    <string name="challenge_receive">चुनौती स्वीकार करें</string>
+    <string name="challenge_receive_title">चुनौती</string>
+    <string name="challenge_receive_desc">दोस्त का भेजा कोड या संदेश यहाँ चिपकाएँ</string>
+    <string name="challenge_paste">चिपकाएँ</string>
+    <string name="challenge_code_hint">चुनौती कोड</string>
+    <string name="challenge_start">शुरू करें</string>
+    <string name="challenge_invalid">यह चुनौती कोड मान्य नहीं है। जाँच लें कि आपने पूरा कॉपी किया है</string>
+    <string name="challenge_send">चुनौती भेजें</string>
+    <string name="challenge_send_back">मेरा नतीजा भेजें</string>
+    <string name="challenge_share_text">सुडोकू चुनौती! मेरा समय %1$s · स्कोर %2$d\nसुडोकू ऐप खोलें, यह कोड चिपकाएँ और वही पहेली खेलें:\n%3$s</string>
+    <string name="challenge_vs_banner">चुनौती · प्रतिद्वंद्वी %1$d अंक</string>
+    <string name="challenge_result_win">आप जीत गए!</string>
+    <string name="challenge_result_lose">इस बार आप हार गए</string>
+    <string name="challenge_result_draw">बराबरी रही</string>
+    <string name="challenge_you">आप</string>
+    <string name="challenge_opponent">प्रतिद्वंद्वी</string>
+    <string name="challenge_compare_line">%1$s · %2$d गलतियाँ · %3$d अंक</string>
 </resources>

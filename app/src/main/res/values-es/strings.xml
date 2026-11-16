@@ -156,4 +156,23 @@ Toca de nuevo para poner el número</string>
     <string name="stats_distribution">Por nivel</string>
     <string name="stats_locked_cta">Desbloquear con Premium</string>
     <string name="stats_detail_empty">Aún no has completado ninguna partida</string>
+    <string name="wrong_banner">Ese número es incorrecto. Toca Cancelar para borrarlo antes de continuar</string>
+    <string name="wrong_cancel">Cancelar</string>
+    <string name="challenge_receive">Recibir un reto</string>
+    <string name="challenge_receive_title">Reto</string>
+    <string name="challenge_receive_desc">Pega el código o el mensaje que te envió tu amigo</string>
+    <string name="challenge_paste">Pegar</string>
+    <string name="challenge_code_hint">Código del reto</string>
+    <string name="challenge_start">Empezar</string>
+    <string name="challenge_invalid">Este código de reto no es válido. Comprueba que lo has copiado completo</string>
+    <string name="challenge_send">Enviar reto</string>
+    <string name="challenge_send_back">Enviar mi resultado</string>
+    <string name="challenge_share_text">¡Reto de Sudoku! Mi tiempo %1$s · puntos %2$d\nAbre la app de Sudoku, pega este código y juega el mismo sudoku:\n%3$s</string>
+    <string name="challenge_vs_banner">Reto · rival %1$d pts</string>
+    <string name="challenge_result_win">¡Has ganado!</string>
+    <string name="challenge_result_lose">Esta vez has perdido</string>
+    <string name="challenge_result_draw">Empate</string>
+    <string name="challenge_you">Tú</string>
+    <string name="challenge_opponent">Rival</string>
+    <string name="challenge_compare_line">%1$s · %2$d errores · %3$d pts</string>
 </resources>

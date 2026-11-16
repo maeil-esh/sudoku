@@ -155,4 +155,23 @@
     <string name="stats_distribution">ตามระดับ</string>
     <string name="stats_locked_cta">ปลดล็อกด้วยพรีเมียม</string>
     <string name="stats_detail_empty">ยังไม่มีเกมที่เล่นสำเร็จ</string>
+    <string name="wrong_banner">ตัวเลขนี้ไม่ถูกต้อง แตะ "ยกเลิก" เพื่อลบก่อนเล่นต่อ</string>
+    <string name="wrong_cancel">ยกเลิก</string>
+    <string name="challenge_receive">รับคำท้า</string>
+    <string name="challenge_receive_title">คำท้า</string>
+    <string name="challenge_receive_desc">วางรหัสหรือข้อความที่เพื่อนส่งมา</string>
+    <string name="challenge_paste">วาง</string>
+    <string name="challenge_code_hint">รหัสคำท้า</string>
+    <string name="challenge_start">เริ่ม</string>
+    <string name="challenge_invalid">รหัสคำท้านี้ไม่ถูกต้อง ตรวจสอบว่าคัดลอกมาครบ</string>
+    <string name="challenge_send">ส่งคำท้า</string>
+    <string name="challenge_send_back">ส่งผลของฉัน</string>
+    <string name="challenge_share_text">คำท้าซูโดกุ! เวลาของฉัน %1$s · คะแนน %2$d\nเปิดแอปซูโดกุ วางรหัสนี้ แล้วเล่นปริศนาเดียวกัน:\n%3$s</string>
+    <string name="challenge_vs_banner">คำท้า · คู่แข่ง %1$d คะแนน</string>
+    <string name="challenge_result_win">คุณชนะ!</string>
+    <string name="challenge_result_lose">ครั้งนี้คุณแพ้</string>
+    <string name="challenge_result_draw">เสมอกัน</string>
+    <string name="challenge_you">คุณ</string>
+    <string name="challenge_opponent">คู่แข่ง</string>
+    <string name="challenge_compare_line">%1$s · ผิด %2$d ครั้ง · %3$d คะแนน</string>
 </resources>

@@ -42,8 +42,11 @@ enum class Tab(val route: String, @StringRes val label: Int, val icon: ImageVect
 }
 
 @Composable
-fun SudokuNavHost() {
+fun SudokuNavHost(hasPendingChallenge: Boolean = false) {
     val nav = rememberNavController()
+    androidx.compose.runtime.LaunchedEffect(hasPendingChallenge) {
+        if (hasPendingChallenge) nav.navigate(Tab.Home.route) { popUpTo(nav.graph.findStartDestination().id); launchSingleTop = true }
+    }
     val entry by nav.currentBackStackEntryAsState()
     val current = entry?.destination?.route
     val inGame = current?.startsWith(GAME_ROUTE) == true || current == PREMIUM_ROUTE

@@ -59,6 +59,7 @@ fun SudokuBoard(
     selected: Int,
     sameDigit: Int,
     conflicts: Set<Int>,
+    wrongCells: Set<Int>,
     settings: AppSettings,
     onCell: (Int) -> Unit,
     effect: Effect? = null,
@@ -97,7 +98,7 @@ fun SudokuBoard(
                         val isSel = i == selected
                         val isPeer = settings.highlightArea && selected >= 0 && !isSel &&
                             (Board.row(i) == Board.row(selected) || Board.col(i) == Board.col(selected) || Board.box(i) == Board.box(selected))
-                        val isErr = settings.showErrors && i in conflicts
+                        val isErr = (settings.showErrors && i in conflicts) || i in wrongCells
                         val isSame = settings.highlightSame && sameDigit != 0 && state.values[i] == sameDigit
                         val bg = when {
                             isErr -> c.errorBg

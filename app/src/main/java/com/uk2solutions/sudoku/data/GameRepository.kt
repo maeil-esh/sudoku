@@ -1,5 +1,8 @@
 package com.uk2solutions.sudoku.data
 
+import com.uk2solutions.sudoku.domain.challenge.Challenge
+import com.uk2solutions.sudoku.domain.challenge.ChallengeResult
+import com.uk2solutions.sudoku.domain.solver.Solver
 import com.uk2solutions.sudoku.domain.game.GameCodec
 import com.uk2solutions.sudoku.domain.game.GameRules
 import com.uk2solutions.sudoku.domain.game.GameState
@@ -38,6 +41,23 @@ class GameRepository @Inject constructor(private val dao: GameDao) {
         )
     }
 
+    /**
+     * 도전장으로 새 게임을 만든다. 일반 게임 자리를 쓰므로 홈의 "이어하기"로 그대로 이어진다.
+     * 정답은 코드에 없고, 유일해 퍼즐이므로 풀이기로 구한다.
+     */
+    suspend fun startChallenge(c: Challenge): Long {
+        val solution = withContext(Dispatchers.Default) { Solver.solve(Board.parse(c.givens)) } ?: error("invalid challenge")
+        val now = System.currentTimeMillis()
+        dao.abandonInProgress(GameEntity.MODE_NORMAL, now)
+        return dao.insert(
+            GameEntity(
+                mode = GameEntity.MODE_NORMAL, difficulty = c.difficulty.name, givens = c.givens, solution = Board.format(solution),
+                cellValues = c.givens, notes = GameCodec.encodeInts(IntArray(Board.SIZE)), startedAt = now,
+                opponent = c.result?.serialize(),
+            ),
+        )
+    }
+
     fun observeDaily(date: String) = dao.observeDaily(date)
     fun observeDailyCompleted() = dao.observeDailyCompleted()
     fun observeStats() = dao.observeStats()
@@ -56,7 +76,7 @@ class GameRepository @Inject constructor(private val dao: GameDao) {
         )
     }
 
-    suspend fun load(id: Long): Loaded? = dao.get(id)?.let { Loaded(it.status, Difficulty.valueOf(it.difficulty), it.toState(), it.mode == "DAILY") }
+    suspend fun load(id: Long): Loaded? = dao.get(id)?.let { Loaded(it.status, Difficulty.valueOf(it.difficulty), it.toState(), it.mode == "DAILY", ChallengeResult.parse(it.opponent)) }
 
     suspend fun save(id: Long, s: GameState) = dao.updateProgress(
         id, Board.format(s.values), GameCodec.encodeInts(s.notes),
@@ -65,7 +85,7 @@ class GameRepository @Inject constructor(private val dao: GameDao) {
 
     suspend fun complete(id: Long) = dao.markCompleted(id, System.currentTimeMillis())
 
-    class Loaded(val status: String, val difficulty: Difficulty, val state: GameState, val daily: Boolean)
+    class Loaded(val status: String, val difficulty: Difficulty, val state: GameState, val daily: Boolean, val opponent: ChallengeResult?)
 
     companion object {
         fun GameEntity.toState(): GameState = GameRules.newState(givens, solution).copy(

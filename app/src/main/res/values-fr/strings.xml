@@ -156,4 +156,23 @@ Appuyez à nouveau pour placer le chiffre</string>
     <string name="stats_distribution">Par niveau</string>
     <string name="stats_locked_cta">Débloquer avec Premium</string>
     <string name="stats_detail_empty">Aucune partie terminée pour l’instant</string>
+    <string name="wrong_banner">Ce chiffre est faux. Touchez Annuler pour l’effacer avant de continuer</string>
+    <string name="wrong_cancel">Annuler</string>
+    <string name="challenge_receive">Recevoir un défi</string>
+    <string name="challenge_receive_title">Défi</string>
+    <string name="challenge_receive_desc">Collez le code ou le message envoyé par votre ami</string>
+    <string name="challenge_paste">Coller</string>
+    <string name="challenge_code_hint">Code du défi</string>
+    <string name="challenge_start">Commencer</string>
+    <string name="challenge_invalid">Ce code de défi n’est pas valide. Vérifiez que vous l’avez copié en entier</string>
+    <string name="challenge_send">Envoyer un défi</string>
+    <string name="challenge_send_back">Envoyer mon résultat</string>
+    <string name="challenge_share_text">Défi Sudoku ! Mon temps %1$s · score %2$d\nOuvrez l’appli Sudoku, collez ce code et jouez la même grille :\n%3$s</string>
+    <string name="challenge_vs_banner">Défi · adversaire %1$d pts</string>
+    <string name="challenge_result_win">Vous avez gagné !</string>
+    <string name="challenge_result_lose">Perdu cette fois</string>
+    <string name="challenge_result_draw">Égalité</string>
+    <string name="challenge_you">Vous</string>
+    <string name="challenge_opponent">Adversaire</string>
+    <string name="challenge_compare_line">%1$s · %2$d erreurs · %3$d pts</string>
 </resources>

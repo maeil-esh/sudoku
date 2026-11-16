@@ -24,6 +24,10 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import com.uk2solutions.sudoku.ui.challenge.ChallengeReceiveDialog
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -43,13 +47,23 @@ fun HomeScreen(onResume: () -> Unit, onDaily: () -> Unit, onNewGame: (Difficulty
     val resume by vm.resume.collectAsStateWithLifecycle()
     val daily by vm.daily.collectAsStateWithLifecycle()
     val premium by vm.premium.collectAsStateWithLifecycle()
-    HomeContent(resume, daily, onResume, onDaily, onNewGame, premium, onPremium)
+    val pending by vm.pendingChallenge.collectAsStateWithLifecycle()
+    var dialog by remember { mutableStateOf(false) }
+    var error by remember { mutableStateOf(false) }
+    HomeContent(resume, daily, onResume, onDaily, onNewGame, premium, onPremium, onReceiveChallenge = { error = false; dialog = true })
+    if (dialog || pending != null) {
+        ChallengeReceiveDialog(
+            initialText = pending.orEmpty(), error = error,
+            onStart = { text -> vm.acceptChallenge(text, onStarted = { dialog = false; onResume() }, onInvalid = { error = true }) },
+            onDismiss = { dialog = false; error = false; vm.clearPendingChallenge() },
+        )
+    }
 }
 
 @Composable
 fun HomeContent(
     resume: ResumeInfo?, daily: DailyInfo, onResume: () -> Unit, onDaily: () -> Unit, onNewGame: (Difficulty) -> Unit,
-    premium: Boolean = false, onPremium: () -> Unit = {},
+    premium: Boolean = false, onPremium: () -> Unit = {}, onReceiveChallenge: () -> Unit = {},
 ) {
     val c = SudokuTheme.colors
     Column(
@@ -104,6 +118,9 @@ fun HomeContent(
                     Text(stringResource(d.labelRes()))
                 }
             }
+        }
+        OutlinedButton(onClick = onReceiveChallenge, shape = RoundedCornerShape(14.dp), modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) {
+            Text(stringResource(R.string.challenge_receive))
         }
         // 전문가·악마: 무료는 잠금 표시(탭하면 프리미엄 화면), 프리미엄은 기법 확장 전까지 "준비 중"
         Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {

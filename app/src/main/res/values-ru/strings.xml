@@ -156,4 +156,23 @@
     <string name="stats_distribution">По уровням</string>
     <string name="stats_locked_cta">Открыть с Премиумом</string>
     <string name="stats_detail_empty">Пока нет завершённых игр</string>
+    <string name="wrong_banner">Эта цифра неверная. Нажмите «Отмена», чтобы стереть её и продолжить</string>
+    <string name="wrong_cancel">Отмена</string>
+    <string name="challenge_receive">Принять вызов</string>
+    <string name="challenge_receive_title">Вызов</string>
+    <string name="challenge_receive_desc">Вставьте код или сообщение, которое прислал друг</string>
+    <string name="challenge_paste">Вставить</string>
+    <string name="challenge_code_hint">Код вызова</string>
+    <string name="challenge_start">Начать</string>
+    <string name="challenge_invalid">Код вызова недействителен. Проверьте, что скопировали его целиком</string>
+    <string name="challenge_send">Отправить вызов</string>
+    <string name="challenge_send_back">Отправить мой результат</string>
+    <string name="challenge_share_text">Вызов по судоку! Моё время %1$s · очки %2$d\nОткройте приложение «Судоку», вставьте этот код и решите ту же головоломку:\n%3$s</string>
+    <string name="challenge_vs_banner">Вызов · соперник %1$d очк.</string>
+    <string name="challenge_result_win">Вы победили!</string>
+    <string name="challenge_result_lose">В этот раз вы проиграли</string>
+    <string name="challenge_result_draw">Ничья</string>
+    <string name="challenge_you">Вы</string>
+    <string name="challenge_opponent">Соперник</string>
+    <string name="challenge_compare_line">%1$s · ошибок: %2$d · %3$d очк.</string>
 </resources>

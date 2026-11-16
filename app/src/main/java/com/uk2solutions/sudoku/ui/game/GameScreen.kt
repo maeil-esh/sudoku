@@ -51,6 +51,7 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
@@ -71,6 +72,11 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.uk2solutions.sudoku.R
+import com.uk2solutions.sudoku.domain.challenge.Challenge
+import com.uk2solutions.sudoku.domain.challenge.ChallengeResult
+import com.uk2solutions.sudoku.domain.model.Board
+import com.uk2solutions.sudoku.ui.challenge.CompleteDialog
+import com.uk2solutions.sudoku.ui.challenge.shareChallenge
 import com.uk2solutions.sudoku.domain.game.GameRules
 import com.uk2solutions.sudoku.domain.game.GameState
 import com.uk2solutions.sudoku.domain.game.Hint
@@ -102,10 +108,12 @@ fun GameBody(
     ui: GameUiState, state: GameState, elapsedMs: Long,
     onBack: () -> Unit, onCell: (Int) -> Unit, onUndo: () -> Unit, onErase: () -> Unit, onNote: () -> Unit,
     onHint: () -> Unit, onPause: () -> Unit, onResume: () -> Unit, onDigit: (Int) -> Unit,
+    onCancelWrong: () -> Unit = {},
 ) {
     val c = SudokuTheme.colors
     val padDigit = if (ui.settings.numberFirst) ui.selectedDigit else if (ui.selected >= 0) state.values[ui.selected] else 0
     val score = remember(state.values, state.mistakes, state.hintsUsed, ui.difficulty) { Scoring.score(state, ui.difficulty) }
+    val wrong = remember(state.values) { GameRules.wrongCells(state) }
 
     Column(Modifier.fillMaxSize().background(c.background).verticalScroll(rememberScrollState()).padding(horizontal = 12.dp)) {
         Row(Modifier.fillMaxWidth().heightIn(min = 56.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -117,14 +125,21 @@ fun GameBody(
                 color = c.ink, fontWeight = FontWeight.SemiBold, fontSize = 20.sp,
             )
         }
+        ui.opponent?.let {
+            Text(
+                stringResource(R.string.challenge_vs_banner, it.score), color = c.accent, fontWeight = FontWeight.SemiBold, fontSize = 14.sp,
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp),
+            )
+        }
         InfoBlock(elapsedMs, ui, state, score, onPause = onPause)
         Spacer(Modifier.height(8.dp))
         if (ui.paused) PausedCover(onContinue = onResume, onExit = onBack)
         else SudokuBoard(
-            state, ui.selected, padDigit, ui.conflicts, ui.settings,
+            state, ui.selected, padDigit, ui.conflicts, wrong, ui.settings,
             onCell = onCell, effect = ui.effect, gain = ui.scoreGain, hintCell = ui.hint?.index ?: -1,
         )
-        HintBanner(ui.hint, ui.hintsExhausted)
+        if (wrong.isNotEmpty() && !ui.paused) WrongBanner(ui.blockedNudge, onCancelWrong)
+        else HintBanner(ui.hint, ui.hintsExhausted)
         Spacer(Modifier.height(14.dp))
         ToolRow(
             canUndo = state.undo.isNotEmpty() && !ui.paused, noteMode = ui.noteMode,
@@ -132,7 +147,7 @@ fun GameBody(
             onUndo = onUndo, onErase = onErase, onNote = onNote, onHint = onHint,
         )
         Spacer(Modifier.height(14.dp))
-        DigitRow(state, padDigit, ui.settings.showRemaining, enabled = !ui.paused, effect = ui.effect, onDigit = onDigit)
+        DigitRow(state, padDigit, ui.settings.showRemaining, enabled = !ui.paused && wrong.isEmpty(), effect = ui.effect, onDigit = onDigit)
         Spacer(Modifier.height(16.dp))
     }
 
@@ -156,6 +171,9 @@ fun GameScreen(onExit: () -> Unit, onNewGame: (Difficulty) -> Unit, vm: GameView
         Box(Modifier.fillMaxSize().background(c.background))
         return
     }
+    LaunchedEffect(ui.blockedNudge) {
+        if (ui.blockedNudge > 0 && ui.settings.vibration) haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+    }
     LaunchedEffect(ui.effect?.id) {
         if (ui.effect != null && ui.settings.vibration) haptic.performHapticFeedback(HapticFeedbackType.LongPress)
     }
@@ -172,7 +190,7 @@ fun GameScreen(onExit: () -> Unit, onNewGame: (Difficulty) -> Unit, vm: GameView
     GameBody(
         ui, state, elapsedNow, onBack = { leave() }, onCell = { feedback(vm.onCell(it)) }, onUndo = vm::onUndo,
         onErase = { feedback(vm.onErase()) }, onNote = vm::onToggleNote, onHint = vm::onHint, onPause = vm::pause,
-        onResume = vm::resume, onDigit = { feedback(vm.onDigit(it)) },
+        onResume = vm::resume, onDigit = { feedback(vm.onDigit(it)) }, onCancelWrong = { feedback(vm.onCancelWrong()) },
     )
 
     if (ui.mistakeLimitReached) {
@@ -185,12 +203,12 @@ fun GameScreen(onExit: () -> Unit, onNewGame: (Difficulty) -> Unit, vm: GameView
         )
     }
     if (ui.completed) {
-        AlertDialog(
-            onDismissRequest = {},
-            title = { Text(stringResource(R.string.game_complete_title)) },
-            text = { Text(stringResource(R.string.game_complete_desc, formatTime(elapsedNow), state.mistakes, score)) },
-            confirmButton = { TextButton(onClick = { onNewGame(ui.difficulty) }) { Text(stringResource(R.string.game_complete_new)) } },
-            dismissButton = { TextButton(onClick = onExit) { Text(stringResource(R.string.game_complete_home)) } },
+        val ctx = androidx.compose.ui.platform.LocalContext.current
+        val mine = ChallengeResult(elapsedNow.toInt() / 1000, state.mistakes, state.hintsUsed, score)
+        CompleteDialog(
+            elapsedMs = elapsedNow, mistakes = state.mistakes, score = score, opponent = ui.opponent,
+            onSend = { shareChallenge(ctx, Challenge(ui.difficulty, Board.format(state.givens), mine), mine, opponent = ui.opponent) },
+            onNewGame = { onNewGame(ui.difficulty) }, onHome = onExit,
         )
     }
 }
@@ -357,9 +375,28 @@ private fun DigitKey(
         Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally) {
             Text(
                 digit.toString(), fontSize = 28.sp, fontWeight = FontWeight.Medium,
-                color = if (left > 0) c.accent else c.muted.copy(alpha = 0.4f),
+                color = if (enabled) c.accent else c.muted.copy(alpha = 0.4f),
             )
             if (showRemaining) Text(if (left > 0) left.toString() else "", fontSize = 13.sp, color = if (selected) c.ink else c.muted)
+        }
+    }
+}
+
+/** 틀린 숫자 안내: 지울 때까지 다음 입력이 막힌다. 막힌 채 입력하려 하면(nudge) 잠깐 강조된다. */
+@Composable
+private fun WrongBanner(nudge: Int, onCancel: () -> Unit) {
+    val c = SudokuTheme.colors
+    val flash = remember { Animatable(0f) }
+    LaunchedEffect(nudge) { if (nudge > 0) { flash.snapTo(1f); flash.animateTo(0f, tween(600)) } }
+    Surface(
+        shape = RoundedCornerShape(12.dp), color = lerp(c.errorBg, c.error.copy(alpha = 0.35f).compositeOver(c.errorBg), flash.value),
+        modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+    ) {
+        Row(Modifier.padding(start = 12.dp, top = 4.dp, bottom = 4.dp, end = 4.dp), verticalAlignment = Alignment.CenterVertically) {
+            Text(stringResource(R.string.wrong_banner), color = c.error, fontWeight = FontWeight.SemiBold, fontSize = 13.sp, modifier = Modifier.weight(1f))
+            TextButton(onClick = onCancel, modifier = Modifier.heightIn(min = 48.dp)) {
+                Text(stringResource(R.string.wrong_cancel), color = c.error, fontWeight = FontWeight.Bold)
+            }
         }
     }
 }

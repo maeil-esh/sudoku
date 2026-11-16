@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 import java.time.LocalDate
 import javax.inject.Inject
 
@@ -21,7 +22,27 @@ enum class DailyStatus { NOT_STARTED, IN_PROGRESS, DONE }
 data class DailyInfo(val status: DailyStatus = DailyStatus.NOT_STARTED, val percent: Int = 0, val streak: Int = 0)
 
 @HiltViewModel
-class HomeViewModel @Inject constructor(repo: GameRepository, premiumManager: com.uk2solutions.sudoku.billing.PremiumManager) : ViewModel() {
+class HomeViewModel @Inject constructor(
+    private val repo: GameRepository,
+    premiumManager: com.uk2solutions.sudoku.billing.PremiumManager,
+    private val inbox: com.uk2solutions.sudoku.data.ChallengeInbox,
+) : ViewModel() {
+    /** 다른 앱에서 공유로 넘어온 도전장 문구(있으면 홈이 받기 창을 연다). */
+    val pendingChallenge: StateFlow<String?> = inbox.pending
+
+    fun clearPendingChallenge() = inbox.clear()
+
+    /** 도전장 문구(코드만 또는 공유 문구 전체)로 같은 퍼즐을 시작한다. 코드가 올바르지 않으면 false. */
+    fun acceptChallenge(text: String, onStarted: () -> Unit, onInvalid: () -> Unit) {
+        val c = com.uk2solutions.sudoku.domain.challenge.ChallengeCode.decode(text)
+        if (c == null) { onInvalid(); return }
+        viewModelScope.launch {
+            repo.startChallenge(c)
+            inbox.clear()
+            onStarted()
+        }
+    }
+
     val premium: StateFlow<Boolean> = premiumManager.isPremium.stateIn(viewModelScope, SharingStarted.Eagerly, false)
 
     val resume: StateFlow<ResumeInfo?> = repo.observeResumable().map { e ->

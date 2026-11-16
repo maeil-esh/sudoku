@@ -155,4 +155,23 @@
     <string name="stats_distribution">按难度分布</string>
     <string name="stats_locked_cta">开通高级版解锁</string>
     <string name="stats_detail_empty">还没有完成的游戏</string>
+    <string name="wrong_banner">这个数字不对。请点“取消”擦掉后再继续</string>
+    <string name="wrong_cancel">取消</string>
+    <string name="challenge_receive">接受挑战</string>
+    <string name="challenge_receive_title">挑战</string>
+    <string name="challenge_receive_desc">粘贴朋友发来的挑战码或消息</string>
+    <string name="challenge_paste">粘贴</string>
+    <string name="challenge_code_hint">挑战码</string>
+    <string name="challenge_start">开始</string>
+    <string name="challenge_invalid">挑战码无效。请确认已完整复制</string>
+    <string name="challenge_send">发送挑战</string>
+    <string name="challenge_send_back">发送我的成绩</string>
+    <string name="challenge_share_text">数独挑战！我的用时 %1$s · 得分 %2$d\n打开数独应用，粘贴下面的挑战码，挑战同一道题：\n%3$s</string>
+    <string name="challenge_vs_banner">挑战中 · 对手 %1$d 分</string>
+    <string name="challenge_result_win">你赢了！</string>
+    <string name="challenge_result_lose">这次输了</string>
+    <string name="challenge_result_draw">平局</string>
+    <string name="challenge_you">你</string>
+    <string name="challenge_opponent">对手</string>
+    <string name="challenge_compare_line">%1$s · 错误 %2$d 次 · %3$d 分</string>
 </resources>

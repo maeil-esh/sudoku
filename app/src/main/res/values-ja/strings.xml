@@ -156,4 +156,23 @@
     <string name="stats_distribution">難易度別の割合</string>
     <string name="stats_locked_cta">プレミアムでロック解除</string>
     <string name="stats_detail_empty">クリアしたゲームがまだありません</string>
+    <string name="wrong_banner">数字が間違っています。「取り消し」を押して消してから続けてください</string>
+    <string name="wrong_cancel">取り消し</string>
+    <string name="challenge_receive">挑戦状を受け取る</string>
+    <string name="challenge_receive_title">挑戦状</string>
+    <string name="challenge_receive_desc">友だちから届いたコードやメッセージを貼り付けてください</string>
+    <string name="challenge_paste">貼り付け</string>
+    <string name="challenge_code_hint">挑戦状コード</string>
+    <string name="challenge_start">挑戦する</string>
+    <string name="challenge_invalid">挑戦状コードが正しくありません。全体をコピーしたか確認してください</string>
+    <string name="challenge_send">挑戦状を送る</string>
+    <string name="challenge_send_back">結果を送る</string>
+    <string name="challenge_share_text">数独の挑戦状！私の記録 %1$s · スコア %2$d\n数独アプリを開き、下のコードを貼り付けて同じ問題に挑戦してください:\n%3$s</string>
+    <string name="challenge_vs_banner">挑戦中 · 相手 %1$d点</string>
+    <string name="challenge_result_win">勝ちました！</string>
+    <string name="challenge_result_lose">今回は負けました</string>
+    <string name="challenge_result_draw">引き分けです</string>
+    <string name="challenge_you">あなた</string>
+    <string name="challenge_opponent">相手</string>
+    <string name="challenge_compare_line">%1$s · ミス %2$d回 · %3$d点</string>
 </resources>

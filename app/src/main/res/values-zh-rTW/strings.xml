@@ -155,4 +155,23 @@
     <string name="stats_distribution">依難度分布</string>
     <string name="stats_locked_cta">升級進階版即可解鎖</string>
     <string name="stats_detail_empty">還沒有完成的遊戲</string>
+    <string name="wrong_banner">這個數字不對。請點「取消」擦掉後再繼續</string>
+    <string name="wrong_cancel">取消</string>
+    <string name="challenge_receive">接受挑戰</string>
+    <string name="challenge_receive_title">挑戰</string>
+    <string name="challenge_receive_desc">貼上朋友傳來的挑戰碼或訊息</string>
+    <string name="challenge_paste">貼上</string>
+    <string name="challenge_code_hint">挑戰碼</string>
+    <string name="challenge_start">開始</string>
+    <string name="challenge_invalid">挑戰碼無效。請確認已完整複製</string>
+    <string name="challenge_send">傳送挑戰</string>
+    <string name="challenge_send_back">傳送我的成績</string>
+    <string name="challenge_share_text">數獨挑戰！我的時間 %1$s · 分數 %2$d\n開啟數獨應用程式，貼上下面的挑戰碼，挑戰同一道題：\n%3$s</string>
+    <string name="challenge_vs_banner">挑戰中 · 對手 %1$d 分</string>
+    <string name="challenge_result_win">你贏了！</string>
+    <string name="challenge_result_lose">這次輸了</string>
+    <string name="challenge_result_draw">平手</string>
+    <string name="challenge_you">你</string>
+    <string name="challenge_opponent">對手</string>
+    <string name="challenge_compare_line">%1$s · 錯誤 %2$d 次 · %3$d 分</string>
 </resources>
