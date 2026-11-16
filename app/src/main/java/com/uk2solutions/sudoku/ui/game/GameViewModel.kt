@@ -13,6 +13,7 @@ import com.uk2solutions.sudoku.domain.game.GameRules
 import com.uk2solutions.sudoku.domain.game.Hint
 import com.uk2solutions.sudoku.domain.game.HintPolicy
 import com.uk2solutions.sudoku.domain.game.Hints
+import com.uk2solutions.sudoku.domain.game.Scoring
 import com.uk2solutions.sudoku.domain.game.GameState
 import com.uk2solutions.sudoku.domain.game.InputResult
 import com.uk2solutions.sudoku.domain.model.Difficulty
@@ -48,7 +49,11 @@ data class GameUiState(
     val hint: Hint? = null,
     val hintsExhausted: Boolean = false,
     val effect: Effect? = null,
+    val scoreGain: ScoreGain? = null,
 )
+
+/** 칸을 채운 자리에 잠깐 떠오르는 점수 변화(+10, -30 ...). */
+data class ScoreGain(val id: Int, val index: Int, val delta: Int)
 
 /** 완성 연출. [id]가 바뀔 때마다 한 번 재생. */
 data class Effect(val id: Int, val cells: Set<Int>, val digit: Int?)
@@ -170,13 +175,20 @@ class GameViewModel @Inject constructor(
     private fun blocked(u: GameUiState) = u.selected < 0 || u.paused || u.completed || u.mistakeLimitReached
 
     private var effectId = 0
+    private var gainId = 0
 
     private fun apply(next: GameState, changed: Int = -1, prev: GameState? = null) {
         val done = GameRules.isComplete(next)
         val c: Completion? =
             if (changed >= 0 && prev != null && _ui.value.settings.completeAnimation) Completions.between(prev, next, changed) else null
+        val gain: ScoreGain? = if (changed >= 0 && prev != null && _ui.value.settings.scoreAnimation) {
+            val diff = _ui.value.difficulty
+            val d = Scoring.score(next, diff) - Scoring.score(prev, diff)
+            if (d != 0) ScoreGain(++gainId, changed, d) else null
+        } else null
         _ui.update {
             it.copy(
+                scoreGain = gain ?: it.scoreGain,
                 selectedDigit = nextDigit(it, next),
                 state = next, hint = null, hintsExhausted = false,
                 effect = c?.let { x -> Effect(++effectId, x.cells, x.digit) } ?: it.effect, conflicts = GameRules.conflicts(next.values), completed = done,

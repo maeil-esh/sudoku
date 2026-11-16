@@ -7,7 +7,6 @@
     <string name="home_title">스도쿠</string>
     <string name="stats_title">기록</string>
     <string name="settings_title">설정</string>
-    <string name="placeholder_coming">준비 중입니다</string>
     <string name="diff_easy">쉬움</string>
     <string name="diff_medium">보통</string>
     <string name="diff_hard">어려움</string>
@@ -21,13 +20,8 @@
     <string name="game_pause">일시정지</string>
     <string name="game_mistakes">실수 %1$d/%2$d</string>
     <string name="game_mistakes_unlimited">실수 %1$d</string>
-    <string name="game_progress">진행 %1$d%%</string>
     <string name="game_undo">되돌리기</string>
-    <string name="game_notes_on">메모 켜짐</string>
-    <string name="game_notes_off">메모 꺼짐</string>
     <string name="game_erase">지우기</string>
-    <string name="game_remaining">남은 %1$d</string>
-    <string name="game_done">완료</string>
     <string name="game_paused_title">일시정지</string>
     <string name="game_paused_desc">보드가 가려져 있습니다</string>
     <string name="game_continue">계속</string>
@@ -46,7 +40,6 @@
     <string name="cell_desc_given">%1$d행 %2$d열, %3$d, 주어진 숫자</string>
     <string name="cell_desc_error">%1$d행 %2$d열, %3$d, 규칙 충돌</string>
     <string name="game_hint">힌트</string>
-    <string name="game_hint_unlimited">힌트</string>
     <string name="game_hint_msg">힌트: %1$d행 %2$d열 · %3$s\n한 번 더 누르면 숫자를 채웁니다</string>
     <string name="game_hint_exhausted">오늘 무료 힌트를 모두 사용했습니다</string>
     <string name="hint_naked_single">단일 후보</string>
@@ -76,10 +69,6 @@
     <string name="game_progress_count">✓ %1$d/%2$d</string>
     <string name="game_score">점수: %1$d</string>
     <string name="game_key_desc">%1$d, 남은 개수 %2$d</string>
-    <string name="settings_group_general">일반</string>
-    <string name="settings_group_game">게임</string>
-    <string name="settings_group_display">표시</string>
-    <string name="settings_group_about">정보</string>
     <string name="set_theme">다크 모드</string>
     <string name="theme_system">시스템 설정</string>
     <string name="theme_light">라이트</string>
@@ -114,4 +103,22 @@
     <string name="set_remaining">남아있는 번호</string>
     <string name="set_remaining_desc">숫자 패드에 각 숫자의 남은 개수를 표시합니다</string>
     <string name="set_version">버전</string>
+    <string name="action_close">닫기</string>
+    <string name="set_score_anim">점수 애니메이션</string>
+    <string name="set_score_anim_desc">칸을 채울 때 얻거나 잃은 점수를 그 자리에서 보여 줍니다</string>
+    <string name="set_notify">알림</string>
+    <string name="set_notify_desc">오늘의 도전을 아직 안 했다면 정해진 시각에 알려 줍니다</string>
+    <string name="set_notify_time">알림 시각</string>
+    <string name="hour_label">%1$d시</string>
+    <string name="notify_permission_needed">알림 권한이 꺼져 있습니다. 기기 설정에서 알림을 허용해 주세요</string>
+    <string name="notify_channel_name">오늘의 도전 알림</string>
+    <string name="notify_title">오늘의 도전이 기다리고 있어요</string>
+    <string name="notify_body">하루 한 판, 지금 도전해 보세요</string>
+    <string name="notify_body_streak">%1$d일 연속 기록을 이어가 보세요</string>
+    <string name="set_language">언어</string>
+    <string name="lang_system">시스템 설정</string>
+    <string name="lang_ko">한국어</string>
+    <string name="lang_en">English</string>
+    <string name="lang_pick_title">언어</string>
+    <string name="cd_score_gain">점수 %1$d</string>
 </resources>

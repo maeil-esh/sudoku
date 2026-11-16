@@ -6,6 +6,17 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.Surface
+import androidx.compose.runtime.key
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.unit.Dp
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
@@ -51,6 +62,7 @@ fun SudokuBoard(
     settings: AppSettings,
     onCell: (Int) -> Unit,
     effect: Effect? = null,
+    gain: ScoreGain? = null,
     hintCell: Int = -1,
     modifier: Modifier = Modifier,
 ) {
@@ -59,7 +71,7 @@ fun SudokuBoard(
     LaunchedEffect(effect?.id) {
         if (effect != null && effect.cells.isNotEmpty()) { flash.snapTo(1f); flash.animateTo(0f, tween(900)) }
     }
-    Box(
+    BoxWithConstraints(
         modifier
             .fillMaxWidth()
             .aspectRatio(1f)
@@ -103,6 +115,34 @@ fun SudokuBoard(
                     }
                 }
             }
+        }
+        if (gain != null) key(gain.id) { ScoreFloat(gain, maxWidth / 9) }
+    }
+}
+
+/** 채운 칸 위로 떠올랐다 사라지는 점수. */
+@Composable
+private fun ScoreFloat(gain: ScoreGain, cell: Dp) {
+    val c = SudokuTheme.colors
+    val p = remember { Animatable(0f) }
+    LaunchedEffect(Unit) { p.animateTo(1f, tween(1000)) }
+    if (p.value >= 1f) return
+    val desc = stringResource(R.string.cd_score_gain, gain.delta)
+    Box(
+        Modifier
+            .offset(cell * (gain.index % 9), cell * (gain.index / 9) - cell * 0.9f * p.value)
+            .size(cell)
+            .graphicsLayer { alpha = 1f - p.value * p.value }
+            .semantics { contentDescription = desc; liveRegion = LiveRegionMode.Polite },
+        contentAlignment = Alignment.Center,
+    ) {
+        Surface(shape = CircleShape, color = c.surface.copy(alpha = 0.9f)) {
+            Text(
+                if (gain.delta > 0) "+${gain.delta}" else "${gain.delta}",
+                fontSize = 14.sp, fontWeight = FontWeight.ExtraBold, maxLines = 1, softWrap = false,
+                color = if (gain.delta > 0) c.accent else c.error,
+                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
+            )
         }
     }
 }

@@ -39,6 +39,9 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -51,6 +54,7 @@ import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
@@ -138,7 +142,7 @@ fun GameScreen(onExit: () -> Unit, onNewGame: (Difficulty) -> Unit, vm: GameView
         if (ui.paused) PausedCover(onContinue = vm::resume, onExit = { leave() })
         else SudokuBoard(
             state, ui.selected, padDigit, ui.conflicts, ui.settings,
-            onCell = { feedback(vm.onCell(it)) }, effect = ui.effect, hintCell = ui.hint?.index ?: -1,
+            onCell = { feedback(vm.onCell(it)) }, effect = ui.effect, gain = ui.scoreGain, hintCell = ui.hint?.index ?: -1,
         )
         HintBanner(ui.hint, ui.hintsExhausted)
         Spacer(Modifier.height(14.dp))
@@ -184,7 +188,18 @@ private fun InfoBlock(vm: GameViewModel, ui: GameUiState, state: GameState, scor
             Box(Modifier.weight(1f)) {
                 if (ui.settings.showProgress) Text(stringResource(R.string.game_progress_count, filled, total), color = c.muted, fontSize = 14.sp)
             }
-            if (ui.settings.showScore) Text(stringResource(R.string.game_score, score), color = c.accent, fontWeight = FontWeight.Bold, fontSize = 20.sp)
+            if (ui.settings.showScore) {
+                val pop = remember { Animatable(1f) }
+                var prev by remember { mutableIntStateOf(score) }
+                LaunchedEffect(score) {
+                    if (score > prev && ui.settings.scoreAnimation) { pop.snapTo(1.3f); pop.animateTo(1f, tween(350)) }
+                    prev = score
+                }
+                Text(
+                    stringResource(R.string.game_score, score), color = c.accent, fontWeight = FontWeight.Bold, fontSize = 20.sp,
+                    modifier = Modifier.graphicsLayer { scaleX = pop.value; scaleY = pop.value },
+                )
+            }
             Box(Modifier.weight(1f))
         }
         Row(Modifier.fillMaxWidth().heightIn(min = 48.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -260,22 +275,25 @@ private fun ToolRow(
     onUndo: () -> Unit, onErase: () -> Unit, onNote: () -> Unit, onHint: () -> Unit,
 ) {
     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
-        ToolButton("↶", stringResource(R.string.game_undo), canUndo, null, false, onUndo)
-        ToolButton("⌫", stringResource(R.string.game_erase), true, null, false, onErase)
-        ToolButton("✎", stringResource(R.string.game_notes), true, stringResource(if (noteMode) R.string.badge_on else R.string.badge_off), noteMode, onNote)
-        ToolButton("💡", stringResource(R.string.game_hint), true, hintsLeft.toString(), hintsLeft > 0, onHint)
+        ToolButton(R.drawable.ic_undo, stringResource(R.string.game_undo), canUndo, null, false, onUndo)
+        ToolButton(R.drawable.ic_eraser, stringResource(R.string.game_erase), true, null, false, onErase)
+        ToolButton(R.drawable.ic_pencil, stringResource(R.string.game_notes), true, stringResource(if (noteMode) R.string.badge_on else R.string.badge_off), noteMode, onNote)
+        ToolButton(R.drawable.ic_bulb, stringResource(R.string.game_hint), true, hintsLeft.toString(), hintsLeft > 0, onHint)
     }
 }
 
 @Composable
-private fun ToolButton(glyph: String, label: String, enabled: Boolean, badge: String?, badgeOn: Boolean, onClick: () -> Unit) {
+private fun ToolButton(@androidx.annotation.DrawableRes icon: Int, label: String, enabled: Boolean, badge: String?, badgeOn: Boolean, onClick: () -> Unit) {
     val c = SudokuTheme.colors
     Column(
         Modifier.heightIn(min = 64.dp).clickable(enabled = enabled, role = Role.Button, onClick = onClick).padding(horizontal = 10.dp, vertical = 4.dp),
         horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center,
     ) {
         Box {
-            Text(glyph, fontSize = 30.sp, color = if (enabled) c.ink else c.muted.copy(alpha = 0.5f), modifier = Modifier.padding(horizontal = 8.dp))
+            Icon(
+                painterResource(icon), contentDescription = null, modifier = Modifier.padding(horizontal = 8.dp).size(30.dp),
+                tint = if (enabled) c.ink else c.muted.copy(alpha = 0.5f),
+            )
             if (badge != null) {
                 Surface(
                     shape = CircleShape, color = if (badgeOn) c.accent else c.line,

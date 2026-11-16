@@ -1,5 +1,13 @@
 package com.uk2solutions.sudoku.ui.settings
 
+import android.Manifest
+import android.content.pm.PackageManager
+import android.os.Build
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.content.ContextCompat
+import androidx.core.os.LocaleListCompat
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -43,7 +51,16 @@ import com.uk2solutions.sudoku.ui.theme.SudokuTheme
 fun SettingsScreen(vm: SettingsViewModel = hiltViewModel()) {
     val s by vm.settings.collectAsStateWithLifecycle()
     val c = SudokuTheme.colors
+    val ctx = LocalContext.current
     var themeDialog by remember { mutableStateOf(false) }
+    var langDialog by remember { mutableStateOf(false) }
+    var hourDialog by remember { mutableStateOf(false) }
+    var permDenied by remember { mutableStateOf(false) }
+    var langTag by remember { mutableStateOf(AppCompatDelegate.getApplicationLocales().toLanguageTags()) }
+    val permLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+        permDenied = !granted
+        if (granted) vm.update { it.copy(notifyEnabled = true) }
+    }
     val themeLabels = listOf(R.string.theme_system, R.string.theme_light, R.string.theme_dark)
 
     Column(
@@ -56,6 +73,21 @@ fun SettingsScreen(vm: SettingsViewModel = hiltViewModel()) {
             ChoiceRow(stringResource(R.string.set_theme), stringResource(themeLabels[s.themeMode.coerceIn(0, 2)])) { themeDialog = true }
             Toggle(R.string.set_sound, R.string.set_sound_desc, s.sound) { v -> vm.update { it.copy(sound = v) } }
             Toggle(R.string.set_vibration, R.string.set_vibration_desc, s.vibration) { v -> vm.update { it.copy(vibration = v) } }
+            ChoiceRow(stringResource(R.string.set_language), stringResource(langLabel(langTag))) { langDialog = true }
+        }
+        Card {
+            Toggle(R.string.set_notify, R.string.set_notify_desc, s.notifyEnabled) { v ->
+                if (!v) { vm.update { it.copy(notifyEnabled = false) }; permDenied = false }
+                else if (Build.VERSION.SDK_INT >= 33 &&
+                    ContextCompat.checkSelfPermission(ctx, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
+                ) permLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                else vm.update { it.copy(notifyEnabled = true) }
+            }
+            if (permDenied) Text(
+                stringResource(R.string.notify_permission_needed), color = c.error, fontSize = 13.sp,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
+            )
+            if (s.notifyEnabled) ChoiceRow(stringResource(R.string.set_notify_time), stringResource(R.string.hour_label, s.notifyHour)) { hourDialog = true }
         }
         Card {
             Toggle(R.string.set_mistake_limit, R.string.set_mistake_limit_desc, s.mistakeLimitEnabled) { v -> vm.update { it.copy(mistakeLimitEnabled = v) } }
@@ -70,6 +102,7 @@ fun SettingsScreen(vm: SettingsViewModel = hiltViewModel()) {
             Toggle(R.string.set_timer, R.string.set_timer_desc, s.showTimer) { v -> vm.update { it.copy(showTimer = v) } }
             Toggle(R.string.set_progress, R.string.set_progress_desc, s.showProgress) { v -> vm.update { it.copy(showProgress = v) } }
             Toggle(R.string.set_score, R.string.set_score_desc, s.showScore) { v -> vm.update { it.copy(showScore = v) } }
+            Toggle(R.string.set_score_anim, R.string.set_score_anim_desc, s.scoreAnimation) { v -> vm.update { it.copy(scoreAnimation = v) } }
             Toggle(R.string.set_complete_anim, R.string.set_complete_anim_desc, s.completeAnimation) { v -> vm.update { it.copy(completeAnimation = v) } }
             Toggle(R.string.set_remaining, R.string.set_remaining_desc, s.showRemaining) { v -> vm.update { it.copy(showRemaining = v) } }
         }
@@ -101,9 +134,61 @@ fun SettingsScreen(vm: SettingsViewModel = hiltViewModel()) {
                     }
                 }
             },
-            confirmButton = { TextButton(onClick = { themeDialog = false }) { Text(stringResource(R.string.game_exit)) } },
+            confirmButton = { TextButton(onClick = { themeDialog = false }) { Text(stringResource(R.string.action_close)) } },
         )
     }
+    if (langDialog) {
+        val tags = listOf("", "ko", "en")
+        AlertDialog(
+            onDismissRequest = { langDialog = false },
+            title = { Text(stringResource(R.string.lang_pick_title)) },
+            text = {
+                Column {
+                    tags.forEach { tag ->
+                        Row(
+                            Modifier.fillMaxWidth().heightIn(min = 48.dp).selectable(selected = langTag == tag, role = Role.RadioButton) {
+                                langDialog = false; langTag = tag
+                                AppCompatDelegate.setApplicationLocales(LocaleListCompat.forLanguageTags(tag)) // 화면이 새 언어로 다시 만들어진다
+                            },
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            RadioButton(selected = langTag == tag, onClick = null)
+                            Text(stringResource(langLabel(tag)), modifier = Modifier.padding(start = 12.dp))
+                        }
+                    }
+                }
+            },
+            confirmButton = { TextButton(onClick = { langDialog = false }) { Text(stringResource(R.string.action_close)) } },
+        )
+    }
+    if (hourDialog) {
+        AlertDialog(
+            onDismissRequest = { hourDialog = false },
+            title = { Text(stringResource(R.string.set_notify_time)) },
+            text = {
+                Column {
+                    listOf(9, 12, 18, 20, 22).forEach { h ->
+                        Row(
+                            Modifier.fillMaxWidth().heightIn(min = 48.dp).selectable(selected = s.notifyHour == h, role = Role.RadioButton) {
+                                vm.update { it.copy(notifyHour = h) }; hourDialog = false
+                            },
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            RadioButton(selected = s.notifyHour == h, onClick = null)
+                            Text(stringResource(R.string.hour_label, h), modifier = Modifier.padding(start = 12.dp))
+                        }
+                    }
+                }
+            },
+            confirmButton = { TextButton(onClick = { hourDialog = false }) { Text(stringResource(R.string.action_close)) } },
+        )
+    }
+}
+
+private fun langLabel(tag: String) = when {
+    tag.startsWith("ko") -> R.string.lang_ko
+    tag.startsWith("en") -> R.string.lang_en
+    else -> R.string.lang_system
 }
 
 @Composable

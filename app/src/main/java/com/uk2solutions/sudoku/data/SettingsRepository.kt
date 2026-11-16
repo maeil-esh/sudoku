@@ -33,6 +33,9 @@ data class AppSettings(
     val showScore: Boolean = true,
     val completeAnimation: Boolean = true,
     val showRemaining: Boolean = true,
+    val scoreAnimation: Boolean = true,
+    val notifyEnabled: Boolean = false,
+    val notifyHour: Int = 20,
     val hintsUsedToday: Int = 0,
 )
 
@@ -57,6 +60,9 @@ class SettingsRepository @Inject constructor(@ApplicationContext private val con
         val showScore = booleanPreferencesKey("showScore")
         val completeAnimation = booleanPreferencesKey("completeAnimation")
         val showRemaining = booleanPreferencesKey("showRemaining")
+        val scoreAnimation = booleanPreferencesKey("scoreAnimation")
+        val notifyEnabled = booleanPreferencesKey("notifyEnabled")
+        val notifyHour = intPreferencesKey("notifyHour")
         val hintsUsed = intPreferencesKey("hintsUsedToday")
         val hintsDate = stringPreferencesKey("hintsDate")
     }
@@ -72,6 +78,8 @@ class SettingsRepository @Inject constructor(@ApplicationContext private val con
             autoRemoveNotes = this[K.autoRemoveNotes] ?: d.autoRemoveNotes, autoNextNumber = this[K.autoNextNumber] ?: d.autoNextNumber,
             showProgress = this[K.showProgress] ?: d.showProgress, showScore = this[K.showScore] ?: d.showScore,
             completeAnimation = this[K.completeAnimation] ?: d.completeAnimation, showRemaining = this[K.showRemaining] ?: d.showRemaining,
+            scoreAnimation = this[K.scoreAnimation] ?: d.scoreAnimation, notifyEnabled = this[K.notifyEnabled] ?: d.notifyEnabled,
+            notifyHour = this[K.notifyHour] ?: d.notifyHour,
             hintsUsedToday = if (this[K.hintsDate] == LocalDate.now().toString()) this[K.hintsUsed] ?: 0 else 0,
         )
     }
@@ -83,6 +91,7 @@ class SettingsRepository @Inject constructor(@ApplicationContext private val con
         this[K.showErrors] = s.showErrors; this[K.autoRemoveNotes] = s.autoRemoveNotes; this[K.autoNextNumber] = s.autoNextNumber
         this[K.showProgress] = s.showProgress; this[K.showScore] = s.showScore
         this[K.completeAnimation] = s.completeAnimation; this[K.showRemaining] = s.showRemaining
+        this[K.scoreAnimation] = s.scoreAnimation; this[K.notifyEnabled] = s.notifyEnabled; this[K.notifyHour] = s.notifyHour
     }
 
     val settings: Flow<AppSettings> = context.dataStore.data.map { it.toSettings() }
