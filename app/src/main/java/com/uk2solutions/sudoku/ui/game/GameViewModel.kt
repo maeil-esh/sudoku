@@ -7,7 +7,12 @@ import com.uk2solutions.sudoku.data.AppSettings
 import com.uk2solutions.sudoku.data.GameEntity
 import com.uk2solutions.sudoku.data.GameRepository
 import com.uk2solutions.sudoku.data.SettingsRepository
+import com.uk2solutions.sudoku.domain.game.Completion
+import com.uk2solutions.sudoku.domain.game.Completions
 import com.uk2solutions.sudoku.domain.game.GameRules
+import com.uk2solutions.sudoku.domain.game.Hint
+import com.uk2solutions.sudoku.domain.game.HintPolicy
+import com.uk2solutions.sudoku.domain.game.Hints
 import com.uk2solutions.sudoku.domain.game.GameState
 import com.uk2solutions.sudoku.domain.game.InputResult
 import com.uk2solutions.sudoku.domain.model.Difficulty
@@ -38,14 +43,20 @@ data class GameUiState(
     val mistakeLimitReached: Boolean = false,
     val conflicts: Set<Int> = emptySet(),
     val settings: AppSettings = AppSettings(),
+    val hint: Hint? = null,
+    val hintsExhausted: Boolean = false,
+    val effect: Effect? = null,
 )
+
+/** 완성 연출. [id]가 바뀔 때마다 한 번 재생. */
+data class Effect(val id: Int, val cells: Set<Int>, val digit: Int?)
 
 @OptIn(FlowPreview::class)
 @HiltViewModel
 class GameViewModel @Inject constructor(
     private val handle: SavedStateHandle,
     private val repo: GameRepository,
-    settingsRepo: SettingsRepository,
+    private val settingsRepo: SettingsRepository,
 ) : ViewModel() {
     private val _ui = MutableStateFlow(GameUiState())
     val ui: StateFlow<GameUiState> = _ui.asStateFlow()
@@ -70,6 +81,7 @@ class GameViewModel @Inject constructor(
         // 프로세스 종료 후 복원돼도 새 게임을 또 만들지 않도록 gameId를 SavedStateHandle에 보관
         val id = when {
             gameId > 0 -> gameId
+            difficultyArg == "DAILY" -> repo.startOrGetDaily(java.time.LocalDate.now())
             difficultyArg != null -> repo.startNew(Difficulty.valueOf(difficultyArg))
             else -> repo.resumableId()
         }
@@ -115,7 +127,7 @@ class GameViewModel @Inject constructor(
         val s = u.state ?: return InputResult.NONE
         if (blocked(u)) return InputResult.NONE
         val (next, r) = GameRules.enter(s, u.selected, d, u.noteMode, u.settings.autoRemoveNotes)
-        if (r != InputResult.NONE) apply(next)
+        if (r != InputResult.NONE) apply(next, u.selected, s)
         return r
     }
 
@@ -137,16 +149,41 @@ class GameViewModel @Inject constructor(
 
     private fun blocked(u: GameUiState) = u.selected < 0 || u.paused || u.completed || u.mistakeLimitReached
 
-    private fun apply(next: GameState) {
+    private var effectId = 0
+
+    private fun apply(next: GameState, changed: Int = -1, prev: GameState? = null) {
         val done = GameRules.isComplete(next)
+        val c: Completion? = if (changed >= 0 && prev != null) Completions.between(prev, next, changed) else null
         _ui.update {
             it.copy(
-                state = next, conflicts = GameRules.conflicts(next.values), completed = done,
+                state = next, hint = null, hintsExhausted = false,
+                effect = c?.let { x -> Effect(++effectId, x.cells, x.digit) } ?: it.effect, conflicts = GameRules.conflicts(next.values), completed = done,
                 mistakeLimitReached = limitReached(next, it.settings),
             )
         }
         if (done) viewModelScope.launch { withContext(NonCancellable) { saveNow(); repo.complete(gameId) } }
         else saveRequests.tryEmit(Unit)
+    }
+
+    /** 1단계: 풀 수 있는 칸과 기법을 표시(하루 한도 소모). 2단계(다시 누름): 값을 채움. */
+    fun onHint() {
+        val u = _ui.value
+        val s = u.state ?: return
+        if (u.paused || u.completed || u.mistakeLimitReached) return
+        val h = u.hint
+        if (h != null && s.values[h.index] != s.solution[h.index]) {
+            val (next, _) = GameRules.enter(s, h.index, h.digit, false, u.settings.autoRemoveNotes)
+            apply(next.copy(hintsUsed = next.hintsUsed + 1), h.index, s)
+            _ui.update { it.copy(selected = h.index) }
+            return
+        }
+        viewModelScope.launch {
+            // 프리미엄 무제한은 M4(Entitlement)에서 연결
+            if (settingsRepo.consumeHint(HintPolicy.FREE_PER_DAY, unlimited = false)) {
+                val next = Hints.next(s, u.selected) ?: return@launch
+                _ui.update { it.copy(hint = next, selected = next.index, hintsExhausted = false) }
+            } else _ui.update { it.copy(hintsExhausted = true) }
+        }
     }
 
     fun continueWithoutLimit() {

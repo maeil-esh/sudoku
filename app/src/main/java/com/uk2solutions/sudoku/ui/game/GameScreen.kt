@@ -46,6 +46,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.uk2solutions.sudoku.R
 import com.uk2solutions.sudoku.domain.game.GameRules
 import com.uk2solutions.sudoku.domain.game.GameState
+import com.uk2solutions.sudoku.domain.game.HintPolicy
 import com.uk2solutions.sudoku.domain.game.InputResult
 import com.uk2solutions.sudoku.domain.model.Difficulty
 import com.uk2solutions.sudoku.ui.theme.SudokuTheme
@@ -82,6 +83,9 @@ fun GameScreen(onExit: () -> Unit, onNewGame: (Difficulty) -> Unit, vm: GameView
         Box(Modifier.fillMaxSize().background(c.background))
         return
     }
+    LaunchedEffect(ui.effect?.id) {
+        if (ui.effect != null && ui.settings.vibration) haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+    }
     fun buzz(r: InputResult) {
         if (!ui.settings.vibration) return
         when (r) {
@@ -96,14 +100,16 @@ fun GameScreen(onExit: () -> Unit, onNewGame: (Difficulty) -> Unit, vm: GameView
         InfoRow(state, ui.settings.mistakeLimitEnabled, ui.settings.mistakeLimit)
         Spacer(Modifier.height(10.dp))
         if (ui.paused) PausedCover(onContinue = vm::resume, onExit = { leave() })
-        else SudokuBoard(state, ui.selected, ui.conflicts, ui.settings, vm::onCell)
+        else SudokuBoard(state, ui.selected, ui.conflicts, ui.settings, vm::onCell, ui.effect, ui.hint?.index ?: -1)
         Spacer(Modifier.height(12.dp))
         Tools(
             canUndo = state.undo.isNotEmpty() && !ui.paused, noteMode = ui.noteMode,
             onUndo = vm::onUndo, onNote = vm::onToggleNote,
+            onHint = vm::onHint, hintsLeft = (HintPolicy.FREE_PER_DAY - ui.settings.hintsUsedToday).coerceAtLeast(0),
         )
-        Spacer(Modifier.height(10.dp))
-        NumberPad(state, enabled = !ui.paused, onDigit = { buzz(vm.onDigit(it)) }, onErase = { buzz(vm.onErase()) })
+        HintBanner(ui.hint, ui.hintsExhausted)
+        Spacer(Modifier.height(6.dp))
+        NumberPad(state, enabled = !ui.paused, effect = ui.effect, onDigit = { buzz(vm.onDigit(it)) }, onErase = { buzz(vm.onErase()) })
     }
 
     if (ui.mistakeLimitReached) {
@@ -171,13 +177,15 @@ private fun PausedCover(onContinue: () -> Unit, onExit: () -> Unit) {
 }
 
 @Composable
-private fun Tools(canUndo: Boolean, noteMode: Boolean, onUndo: () -> Unit, onNote: () -> Unit) {
+private fun Tools(canUndo: Boolean, noteMode: Boolean, onUndo: () -> Unit, onNote: () -> Unit, onHint: () -> Unit, hintsLeft: Int) {
     val c = SudokuTheme.colors
     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
         OutlinedButton(onClick = onUndo, enabled = canUndo, modifier = Modifier.weight(1f).heightIn(min = 48.dp), shape = RoundedCornerShape(12.dp)) {
             Text(stringResource(R.string.game_undo))
         }
-        // 힌트 버튼은 M3(힌트 기능)에서 이 줄에 추가
+        OutlinedButton(onClick = onHint, modifier = Modifier.weight(1f).heightIn(min = 48.dp), shape = RoundedCornerShape(12.dp)) {
+            Text(stringResource(R.string.game_hint, hintsLeft), fontSize = 13.sp)
+        }
         Button(
             onClick = onNote, modifier = Modifier.weight(1f).heightIn(min = 48.dp), shape = RoundedCornerShape(12.dp),
             colors = androidx.compose.material3.ButtonDefaults.buttonColors(
@@ -189,7 +197,25 @@ private fun Tools(canUndo: Boolean, noteMode: Boolean, onUndo: () -> Unit, onNot
 }
 
 @Composable
-private fun NumberPad(state: GameState, enabled: Boolean, onDigit: (Int) -> Unit, onErase: () -> Unit) {
+private fun HintBanner(hint: com.uk2solutions.sudoku.domain.game.Hint?, exhausted: Boolean) {
+    val c = SudokuTheme.colors
+    val text = when {
+        hint != null -> stringResource(
+            R.string.game_hint_msg, hint.index / 9 + 1, hint.index % 9 + 1,
+            stringResource(when (hint.technique) {
+                com.uk2solutions.sudoku.domain.game.HintTechnique.NAKED_SINGLE -> R.string.hint_naked_single
+                com.uk2solutions.sudoku.domain.game.HintTechnique.HIDDEN_SINGLE -> R.string.hint_hidden_single
+                com.uk2solutions.sudoku.domain.game.HintTechnique.DEDUCTION -> R.string.hint_deduction
+            }),
+        )
+        exhausted -> stringResource(R.string.game_hint_exhausted)
+        else -> return
+    }
+    Text(text, color = c.accent, fontSize = 13.sp, modifier = Modifier.fillMaxWidth().padding(top = 6.dp))
+}
+
+@Composable
+private fun NumberPad(state: GameState, enabled: Boolean, effect: Effect?, onDigit: (Int) -> Unit, onErase: () -> Unit) {
     val rows = listOf(listOf(1, 2, 3, 4, 5), listOf(6, 7, 8, 9, 0))
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         rows.forEach { row ->
@@ -199,7 +225,7 @@ private fun NumberPad(state: GameState, enabled: Boolean, onDigit: (Int) -> Unit
                         Text(stringResource(R.string.game_erase), fontSize = 16.sp, fontWeight = FontWeight.Medium)
                     } else {
                         val left = GameRules.remaining(state, d)
-                        PadKey(Modifier.weight(1f), enabled && left > 0, { onDigit(d) }) {
+                        PadKey(Modifier.weight(1f), enabled && left > 0, { onDigit(d) }, pulse = effect?.digit == d, pulseId = effect?.id) {
                             Text(d.toString(), fontSize = 24.sp, fontWeight = FontWeight.Medium)
                             Text(
                                 if (left > 0) stringResource(R.string.game_remaining, left) else stringResource(R.string.game_done),
@@ -214,11 +240,18 @@ private fun NumberPad(state: GameState, enabled: Boolean, onDigit: (Int) -> Unit
 }
 
 @Composable
-private fun PadKey(modifier: Modifier, enabled: Boolean, onClick: () -> Unit, content: @Composable () -> Unit) {
+private fun PadKey(
+    modifier: Modifier, enabled: Boolean, onClick: () -> Unit,
+    pulse: Boolean = false, pulseId: Int? = null, content: @Composable () -> Unit,
+) {
     val c = SudokuTheme.colors
+    val flash = androidx.compose.runtime.remember { androidx.compose.animation.core.Animatable(0f) }
+    LaunchedEffect(pulseId) {
+        if (pulse) { flash.snapTo(1f); flash.animateTo(0f, androidx.compose.animation.core.tween(900)) }
+    }
     Surface(
         onClick = onClick, enabled = enabled, modifier = modifier.height(56.dp),
-        shape = RoundedCornerShape(12.dp), color = c.surface, contentColor = if (enabled) c.accent else c.muted,
+        shape = RoundedCornerShape(12.dp), color = androidx.compose.ui.graphics.lerp(c.surface, c.cellSelected, flash.value), contentColor = if (enabled) c.accent else c.muted,
         border = BorderStroke(1.dp, c.line),
     ) {
         Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally) { content() }

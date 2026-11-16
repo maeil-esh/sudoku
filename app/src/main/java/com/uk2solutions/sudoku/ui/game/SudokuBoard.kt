@@ -1,6 +1,11 @@
 package com.uk2solutions.sudoku.ui.game
 
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
+import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -40,9 +45,15 @@ fun SudokuBoard(
     conflicts: Set<Int>,
     settings: AppSettings,
     onCell: (Int) -> Unit,
+    effect: Effect? = null,
+    hintCell: Int = -1,
     modifier: Modifier = Modifier,
 ) {
     val c = SudokuTheme.colors
+    val flash = remember { Animatable(0f) }
+    LaunchedEffect(effect?.id) {
+        if (effect != null && effect.cells.isNotEmpty()) { flash.snapTo(1f); flash.animateTo(0f, tween(900)) }
+    }
     Box(
         modifier
             .fillMaxWidth()
@@ -79,7 +90,9 @@ fun SudokuBoard(
                             isPeer -> c.cellPeer
                             else -> Color.Transparent
                         }
+                        val f = if (effect != null && i in effect.cells) flash.value else 0f
                         Cell(
+                            flash = f, hinted = i == hintCell,
                             index = i, value = state.values[i], notes = state.notes[i],
                             given = state.isGiven(i), error = isErr, selected = isSel, background = bg,
                             onClick = { onCell(i) }, modifier = Modifier.weight(1f).fillMaxHeight(),
@@ -93,7 +106,7 @@ fun SudokuBoard(
 
 @Composable
 private fun Cell(
-    index: Int, value: Int, notes: Int, given: Boolean, error: Boolean, selected: Boolean,
+    flash: Float, hinted: Boolean, index: Int, value: Int, notes: Int, given: Boolean, error: Boolean, selected: Boolean,
     background: Color, onClick: () -> Unit, modifier: Modifier,
 ) {
     val c = SudokuTheme.colors
@@ -109,7 +122,8 @@ private fun Cell(
     }
     Box(
         modifier
-            .background(background)
+            .background(androidx.compose.ui.graphics.lerp(background, c.accent.copy(alpha = 0.55f).compositeOver(c.surface), flash))
+            .then(if (hinted) Modifier.border(3.dp, c.accent) else Modifier)
             .clickable(onClick = onClick)
             .semantics { contentDescription = desc; role = Role.Button; this.selected = selected },
         contentAlignment = Alignment.Center,

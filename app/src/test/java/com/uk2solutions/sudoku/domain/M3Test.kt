@@ -57,3 +57,21 @@ class M3Test {
         assertEquals(0, Streak.current(setOf(t.minusDays(2)), t))
     }
 }
+
+class CompletionsTest {
+    @Test fun detectsLineAndDigitCompletion() {
+        val p = PuzzleGenerator().generate(Difficulty.EASY, 3L)
+        var s = GameRules.newState(p.givens, p.solution)
+        // 1행을 마지막 한 칸만 남기고 채운 뒤 마지막 칸 입력 → 행 완성
+        for (i in 0 until 9) if (s.values[i] == 0) s = GameRules.enter(s, i, s.solution[i], false, false).first
+        val s0 = GameRules.newState(p.givens, p.solution)
+        val empties = (0 until 9).filter { s0.values[it] == 0 }
+        var t = s0
+        for (i in empties.dropLast(1)) t = GameRules.enter(t, i, t.solution[i], false, false).first
+        val last = empties.last()
+        val after = GameRules.enter(t, last, t.solution[last], false, false).first
+        val c = Completions.between(t, after, last)!!
+        assertTrue((0 until 9).all { it in c.cells })
+        assertNull(Completions.between(t, t, last))
+    }
+}

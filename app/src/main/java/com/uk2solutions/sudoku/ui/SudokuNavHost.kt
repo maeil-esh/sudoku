@@ -71,6 +71,7 @@ fun SudokuNavHost() {
             composable(Tab.Home.route) {
                 HomeScreen(
                     onResume = { nav.navigate(GAME_ROUTE) },
+                    onDaily = { nav.navigate("$GAME_ROUTE?difficulty=DAILY") },
                     onNewGame = { nav.navigate("$GAME_ROUTE?difficulty=${it.name}") },
                 )
             }
@@ -85,7 +86,7 @@ fun SudokuNavHost() {
                     },
                 )
             }
-            composable(Tab.Stats.route) { Placeholder(R.string.stats_title) }
+            composable(Tab.Stats.route) { com.uk2solutions.sudoku.ui.stats.StatsScreen() }
             composable(Tab.Settings.route) { Placeholder(R.string.settings_title) }
         }
     }

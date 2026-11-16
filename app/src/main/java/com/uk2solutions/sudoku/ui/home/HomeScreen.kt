@@ -31,8 +31,9 @@ import com.uk2solutions.sudoku.ui.game.labelRes
 import com.uk2solutions.sudoku.ui.theme.SudokuTheme
 
 @Composable
-fun HomeScreen(onResume: () -> Unit, onNewGame: (Difficulty) -> Unit, vm: HomeViewModel = hiltViewModel()) {
+fun HomeScreen(onResume: () -> Unit, onDaily: () -> Unit, onNewGame: (Difficulty) -> Unit, vm: HomeViewModel = hiltViewModel()) {
     val resume by vm.resume.collectAsStateWithLifecycle()
+    val daily by vm.daily.collectAsStateWithLifecycle()
     val c = SudokuTheme.colors
     Column(
         Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(20.dp),
@@ -50,6 +51,25 @@ fun HomeScreen(onResume: () -> Unit, onNewGame: (Difficulty) -> Unit, vm: HomeVi
                     Button(onClick = onResume, shape = RoundedCornerShape(14.dp), modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) {
                         Text(stringResource(R.string.game_continue))
                     }
+                }
+            }
+        }
+        Surface(shape = RoundedCornerShape(20.dp), color = c.accentSoft, modifier = Modifier.fillMaxWidth()) {
+            Column(Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                    Text(stringResource(R.string.daily_title), fontWeight = FontWeight.SemiBold, fontSize = 18.sp, color = c.ink)
+                    Text(stringResource(R.string.daily_streak, daily.streak), color = c.accent, fontWeight = FontWeight.SemiBold)
+                }
+                Text(stringResource(R.string.daily_desc), color = c.muted, fontSize = 13.sp)
+                Button(
+                    onClick = onDaily, enabled = daily.status != DailyStatus.DONE,
+                    shape = RoundedCornerShape(14.dp), modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
+                ) {
+                    Text(when (daily.status) {
+                        DailyStatus.NOT_STARTED -> stringResource(R.string.daily_start)
+                        DailyStatus.IN_PROGRESS -> stringResource(R.string.daily_continue, daily.percent)
+                        DailyStatus.DONE -> stringResource(R.string.daily_done)
+                    })
                 }
             }
         }
