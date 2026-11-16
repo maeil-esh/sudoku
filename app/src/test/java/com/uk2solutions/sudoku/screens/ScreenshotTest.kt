@@ -257,4 +257,15 @@ class ScreenshotTest {
     @Test fun homeWithReceiveButton() = shoot("32_home_receive_challenge_button") {
         HomeContent(ResumeInfo(Difficulty.MEDIUM, 725_000, 47), DailyInfo(DailyStatus.NOT_STARTED, 0, 2), {}, {}, {})
     }
+
+    /** 글자 크기 200%(접근성 최대 수준)에서도 내용이 잘리거나 겹치지 않는지 확인용. */
+    @Test @Config(qualifiers = "ko-w390dp-h844dp-xxhdpi", fontScale = 2.0f) fun gameFontScale2() { val (ui, s) = gameUi(); shoot("33_game_fontscale_200") { Game(ui, s) } }
+
+    @Test @Config(qualifiers = "ko-w390dp-h1400dp-xxhdpi", fontScale = 2.0f) fun homeFontScale2() = shoot("34_home_fontscale_200") {
+        HomeContent(ResumeInfo(Difficulty.MEDIUM, 725_000, 47), DailyInfo(DailyStatus.IN_PROGRESS, 40, 6), {}, {}, {})
+    }
+
+    @Test @Config(qualifiers = "ko-w390dp-h1400dp-xxhdpi", fontScale = 2.0f) fun premiumFontScale2() = shoot("35_premium_fontscale_200") {
+        PremiumContent(false, false, "₩3,900", true, null, {}, {}, {}, {})
+    }
 }

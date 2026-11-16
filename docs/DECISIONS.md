@@ -55,3 +55,13 @@
   - 비교: 점수가 높은 쪽이 이기고, 같으면 시간이 짧은 쪽이 이긴다. 도전 게임은 일반 게임 자리를 쓰므로 홈의 "이어하기"로 이어진다.
   - DB v2: `game.opponent` 컬럼 추가(마이그레이션 1→2, 스키마 2.json).
   - 한계: 서버가 없어 상대 코드의 기록 조작을 막을 수 없다(친구끼리 용도). 눌러서 앱이 열리는 웹 링크는 도메인이 필요해 사용하지 않았다.
+
+## 2026-11-16 M5 (릴리스 준비)
+- **targetSdk/compileSdk 36**: 공식 문서(`google/play/requirements/target-sdk`) 확인 — 2026-08-31부터 신규 앱은 API 36 이상 필수(연장 기한 11-01 경과). AGP 8.7.3 → **8.13.2**(Gradle 8.14.3 호환), SDK 플랫폼 36·빌드 도구 36.0.0 설치.
+- **16KB 페이지 크기**: 릴리스에 포함된 네이티브 라이브러리(`libandroidx.graphics.path.so`, `libdatastore_shared_counter.so`)의 ELF `p_align`이 모두 0x4000 이상임을 확인(arm64-v8a·x86_64 포함).
+- **큰 화면**: targetSdk 36 앱은 대화면에서 방향 고정을 무시할 수 있어, 내용 폭을 560dp로 제한하고 가운데 정렬. (큰 화면 전용 레이아웃은 BACKLOG)
+- **앱 아이콘**(사용자 피드백 "스도쿠 디자인은 이래야지", Play 검색 결과에서 숫자 격자가 보이는 아이콘들을 참고): 추상 도형 → **숫자가 선명한 3×3 미니 보드**(5 3 8 / 9 4 1 / 2 7 6, 가운데 강조 칸, 같은 줄 연한 강조). 파란 배경 + 흰 판으로 흰 배경 아이콘이 많은 검색 결과에서 눈에 띄게 했다. 다른 앱의 아이콘을 복제하지 않고 직접 그린 벡터다(`ic_launcher_foreground`, 테마 아이콘용 `ic_launcher_monochrome`). 48px에서도 숫자가 읽힌다. Play용 512px PNG·SVG는 `docs/store/`.
+- **스플래시**: `core-splashscreen`(Android 12+ 시스템 스플래시 + 호환). 배경은 라이트=accent, 다크=어두운 배경.
+- **접근성**: `docs/ACCESSIBILITY.md` 참고. 대비 160/160 통과(다크 선택·같은 숫자 칸 배경 조정), 숫자 키 TalkBack 클릭 결함 수정, 글자 200% 대응. 숫자 키·보드 칸의 48dp 미달은 근거와 함께 기록.
+- **릴리스 서명**: `keystore.properties`가 있을 때만 서명(없으면 서명 없는 번들). 서명 파일·비밀번호는 저장소에 없다.
+- **문서 초안**: `PRIVACY_POLICY.md`, `DATA_SAFETY.md`, `STORE_LISTING.md`, `RELEASE.md`, `CONTRAST_REPORT.md`.

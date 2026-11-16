@@ -31,7 +31,9 @@
 - 빌드: `./gradlew assembleDebug`
 - 단위 테스트: `./gradlew test`
 - 린트: `./gradlew lint`
-- 릴리스 번들: `./gradlew bundleRelease` (서명은 사용자 로컬에서)
+- 릴리스 번들: `./gradlew bundleRelease` (서명은 사용자 로컬에서, `docs/RELEASE.md` 참고)
+- 화면 스크린샷(설치 불필요): `./gradlew testDebugUnitTest --tests '*ScreenshotTest'` → `docs/screens/`
+- 접근성 검사: `--tests '*ContrastTest'`, `--tests '*SemanticsTest'`
 
 ## 5. 완료 정의 (Definition of Done)
 - 해당 마일스톤의 수용 기준(SPEC.md §9) 전부 충족

@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
@@ -8,18 +10,35 @@ plugins {
 
 android {
     namespace = "com.uk2solutions.sudoku"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.uk2solutions.sudoku"
         minSdk = 26
-        targetSdk = 35
+        targetSdk = 36
         versionCode = 1
         versionName = "0.1.0"
     }
 
+    // 릴리스 서명: 저장소 루트의 keystore.properties(커밋 금지, .gitignore 등록)가 있을 때만 적용한다.
+    val keystoreProps = Properties().apply {
+        val f = rootProject.file("keystore.properties")
+        if (f.exists()) f.inputStream().use { load(it) }
+    }
+    signingConfigs {
+        if (keystoreProps.isNotEmpty()) {
+            create("release") {
+                storeFile = rootProject.file(keystoreProps.getProperty("storeFile"))
+                storePassword = keystoreProps.getProperty("storePassword")
+                keyAlias = keystoreProps.getProperty("keyAlias")
+                keyPassword = keystoreProps.getProperty("keyPassword")
+            }
+        }
+    }
+
     buildTypes {
         release {
+            signingConfig = signingConfigs.findByName("release")
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
@@ -60,6 +79,7 @@ dependencies {
     ksp("androidx.room:room-compiler:2.6.1")
     implementation("androidx.datastore:datastore-preferences:1.1.1")
     implementation("androidx.appcompat:appcompat:1.7.0")
+    implementation("androidx.core:core-splashscreen:1.0.1")
     implementation("androidx.work:work-runtime-ktx:2.9.1")
     implementation("com.android.billingclient:billing:9.1.0")
 
@@ -72,5 +92,5 @@ dependencies {
 
 // 스크린샷 테스트는 ui-test-manifest(debug 전용)가 필요하므로 릴리스 변형에서는 제외한다.
 tasks.withType<Test>().configureEach {
-    if (name.contains("Release")) exclude("**/screens/**")
+    if (name.contains("Release")) exclude("**/screens/**", "**/a11y/SemanticsTest*")
 }

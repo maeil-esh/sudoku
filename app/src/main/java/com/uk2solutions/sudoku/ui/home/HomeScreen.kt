@@ -112,9 +112,9 @@ fun HomeContent(
             }
         }
         Text(stringResource(R.string.home_new_game), fontWeight = FontWeight.SemiBold, fontSize = 18.sp, color = c.ink)
-        Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+        AdaptiveRow { item ->
             listOf(Difficulty.EASY, Difficulty.MEDIUM, Difficulty.HARD).forEach { d ->
-                Button(onClick = { onNewGame(d) }, shape = RoundedCornerShape(14.dp), modifier = Modifier.weight(1f).heightIn(min = 48.dp)) {
+                Button(onClick = { onNewGame(d) }, shape = RoundedCornerShape(14.dp), modifier = item.heightIn(min = 48.dp)) {
                     Text(stringResource(d.labelRes()))
                 }
             }
@@ -123,14 +123,14 @@ fun HomeContent(
             Text(stringResource(R.string.challenge_receive))
         }
         // 전문가·악마: 무료는 잠금 표시(탭하면 프리미엄 화면), 프리미엄은 기법 확장 전까지 "준비 중"
-        Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+        AdaptiveRow { item ->
             listOf(Difficulty.EXPERT, Difficulty.DEVIL).forEach { d ->
                 val locked = !Entitlement(premium).canPlay(d)
                 val lockDesc = stringResource(R.string.cd_locked)
                 val levelName = stringResource(d.labelRes())
                 OutlinedButton(
                     onClick = { if (locked) onPremium() }, enabled = locked, shape = RoundedCornerShape(14.dp),
-                    modifier = Modifier.weight(1f).heightIn(min = 56.dp).semantics { if (locked) contentDescription = "$levelName, $lockDesc" },
+                    modifier = item.heightIn(min = 56.dp).semantics { if (locked) contentDescription = "$levelName, $lockDesc" },
                 ) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Text(stringResource(d.labelRes()), fontWeight = FontWeight.SemiBold)
@@ -141,6 +141,18 @@ fun HomeContent(
                     }
                 }
             }
+        }
+    }
+}
+
+/** 글자 크기가 크면(접근성 설정) 버튼이 좁아져 글자가 쪼개지므로 세로로 쌓고, 보통은 가로로 나눠 채운다. */
+@Composable
+private fun AdaptiveRow(content: @Composable (item: Modifier) -> Unit) {
+    if (androidx.compose.ui.platform.LocalDensity.current.fontScale > 1.3f) {
+        androidx.compose.foundation.layout.Column(verticalArrangement = Arrangement.spacedBy(10.dp)) { content(Modifier.fillMaxWidth()) }
+    } else {
+        androidx.compose.foundation.layout.Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+            content(Modifier.weight(1f))
         }
     }
 }

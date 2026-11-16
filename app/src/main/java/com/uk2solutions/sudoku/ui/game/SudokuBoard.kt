@@ -176,7 +176,7 @@ private fun Cell(
         if (value != 0) {
             // 오류는 색 + 굵기로 함께 표현(색만으로 구분하지 않음)
             Text(
-                value.toString(), fontSize = 24.sp,
+                value.toString(), fontSize = capped(24f, 1.3f),
                 fontWeight = when { error -> FontWeight.ExtraBold; given -> FontWeight.SemiBold; else -> FontWeight.Medium },
                 color = when { error -> c.error; given -> c.ink; else -> c.accent },
             )
@@ -186,11 +186,18 @@ private fun Cell(
                     for (k in 0 until 3) {
                         val d = r * 3 + k + 1
                         Box(Modifier.weight(1f).fillMaxHeight(), contentAlignment = Alignment.Center) {
-                            if (notes and (1 shl (d - 1)) != 0) Text(d.toString(), fontSize = 10.sp, lineHeight = 10.sp, color = c.muted)
+                            if (notes and (1 shl (d - 1)) != 0) Text(d.toString(), fontSize = capped(10f, 1.0f), lineHeight = capped(10f, 1.0f), color = c.muted)
                         }
                     }
                 }
             }
         }
     }
+}
+
+/** 칸 안 글자는 시스템 글자 크기를 [maxScale]배까지만 따른다(칸 크기가 고정이라 더 키우면 잘린다). */
+@Composable
+private fun capped(base: Float, maxScale: Float): androidx.compose.ui.unit.TextUnit {
+    val d = androidx.compose.ui.platform.LocalDensity.current
+    return with(d) { (base * minOf(fontScale, maxScale)).dp.toSp() }
 }

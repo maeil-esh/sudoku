@@ -220,9 +220,13 @@ private fun InfoBlock(elapsed: Long, ui: GameUiState, state: GameState, score: I
     val (filled, total) = Scoring.progress(state)
     Column(Modifier.fillMaxWidth().padding(horizontal = 4.dp)) {
         Row(Modifier.fillMaxWidth().heightIn(min = 36.dp), verticalAlignment = Alignment.CenterVertically) {
-            Box(Modifier.weight(1f)) {
-                if (ui.settings.showProgress) Text(stringResource(R.string.game_progress_count, filled, total), color = c.muted, fontSize = 14.sp)
+            // 글자가 아주 크면(접근성) 가운데 정렬 대신 양 끝으로 벌려 진행 표시와 점수가 겹치지 않게 한다.
+            val bigFont = androidx.compose.ui.platform.LocalDensity.current.fontScale > 1.3f
+            val progress = @Composable {
+                if (ui.settings.showProgress) Text(stringResource(R.string.game_progress_count, filled, total), color = c.muted, fontSize = 14.sp, maxLines = 1, softWrap = false)
             }
+            if (bigFont) { progress(); androidx.compose.foundation.layout.Spacer(Modifier.weight(1f)) }
+            else Box(Modifier.weight(1f)) { progress() }
             if (ui.settings.showScore) {
                 val pop = remember { Animatable(1f) }
                 var prev by remember { mutableIntStateOf(score) }
@@ -235,7 +239,7 @@ private fun InfoBlock(elapsed: Long, ui: GameUiState, state: GameState, score: I
                     modifier = Modifier.graphicsLayer { scaleX = pop.value; scaleY = pop.value },
                 )
             }
-            Box(Modifier.weight(1f))
+            if (!bigFont) Box(Modifier.weight(1f))
         }
         Row(Modifier.fillMaxWidth().heightIn(min = 48.dp), verticalAlignment = Alignment.CenterVertically) {
             Text(
@@ -368,16 +372,19 @@ private fun DigitKey(
     val desc = stringResource(R.string.game_key_desc, digit, left)
     Surface(
         onClick = onClick, enabled = enabled,
-        modifier = modifier.height(64.dp).clearAndSetSemantics { contentDescription = desc; role = Role.Button },
+        modifier = modifier.height(64.dp).semantics(mergeDescendants = true) { contentDescription = desc; role = Role.Button },
         shape = RoundedCornerShape(10.dp), color = lerp(base, c.cellSame, flash.value),
         shadowElevation = if (selected) 4.dp else 0.dp,
     ) {
         Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally) {
+            // 읽기는 부모의 contentDescription("7, 남은 개수 4")으로 하고, 보이는 글자는 읽지 않게 해 중복을 막는다.
+            // (clearAndSetSemantics를 부모에 쓰면 "누르기" 동작까지 지워져 TalkBack으로 누를 수 없다.)
             Text(
                 digit.toString(), fontSize = 28.sp, fontWeight = FontWeight.Medium,
                 color = if (enabled) c.accent else c.muted.copy(alpha = 0.4f),
+                modifier = Modifier.clearAndSetSemantics {},
             )
-            if (showRemaining) Text(if (left > 0) left.toString() else "", fontSize = 13.sp, color = if (selected) c.ink else c.muted)
+            if (showRemaining) Text(if (left > 0) left.toString() else "", fontSize = 13.sp, color = if (selected) c.ink else c.muted, modifier = Modifier.clearAndSetSemantics {})
         }
     }
 }

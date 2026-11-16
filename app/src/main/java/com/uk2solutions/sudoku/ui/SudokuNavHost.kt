@@ -4,6 +4,8 @@ import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.ui.unit.dp
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Settings
@@ -71,7 +73,9 @@ fun SudokuNavHost(hasPendingChallenge: Boolean = false) {
             }
         },
     ) { padding ->
-        NavHost(nav, startDestination = Tab.Home.route, modifier = Modifier.padding(padding)) {
+        // 태블릿·폴더블(Android 16에서는 targetSdk 36 앱의 방향 고정이 대화면에서 무시됨)에서 내용이 늘어지지 않도록 폭을 제한한다.
+        Box(Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.TopCenter) {
+        NavHost(nav, startDestination = Tab.Home.route, modifier = Modifier.widthIn(max = 560.dp)) {
             composable(Tab.Home.route) {
                 HomeScreen(
                     onResume = { nav.navigate(GAME_ROUTE) },
@@ -94,6 +98,7 @@ fun SudokuNavHost(hasPendingChallenge: Boolean = false) {
             composable(Tab.Stats.route) { com.uk2solutions.sudoku.ui.stats.StatsScreen(onPremium = { nav.navigate(PREMIUM_ROUTE) }) }
             composable(Tab.Settings.route) { com.uk2solutions.sudoku.ui.settings.SettingsScreen(onPremium = { nav.navigate(PREMIUM_ROUTE) }) }
             composable(PREMIUM_ROUTE) { com.uk2solutions.sudoku.ui.premium.PremiumScreen(onBack = { nav.popBackStack() }) }
+        }
         }
     }
 }
