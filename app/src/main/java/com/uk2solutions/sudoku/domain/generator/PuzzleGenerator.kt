@@ -9,7 +9,7 @@ data class Puzzle(val difficulty: Difficulty, val givens: String, val solution: 
 
 /**
  * 온디바이스 퍼즐 생성기(SPEC §5.2). 같은 (difficulty, seed)는 항상 같은 퍼즐을 만든다.
- * 현재(M1)는 쉬움·보통만 지원한다. 그 이상은 M3에서 기법 확장 후 추가.
+ * 쉬움·보통·어려움 지원. 전문가·악마는 X-윙 등 기법 추가 후 지원.
  */
 class PuzzleGenerator(private val techniques: TechniqueSolver = TechniqueSolver()) {
 
@@ -17,7 +17,8 @@ class PuzzleGenerator(private val techniques: TechniqueSolver = TechniqueSolver(
         val cap = when (difficulty) {
             Difficulty.EASY -> 1
             Difficulty.MEDIUM -> 2
-            else -> throw UnsupportedOperationException("$difficulty 는 M3에서 지원")
+            Difficulty.HARD -> 3
+            else -> throw UnsupportedOperationException("$difficulty 는 아직 지원하지 않음")
         }
         var attempt = 0L
         while (true) {

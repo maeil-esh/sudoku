@@ -5,8 +5,8 @@ import com.uk2solutions.sudoku.domain.model.Units
 
 /**
  * 사람 기법 기반 난이도 평가기.
- * 등급 1: 단일 후보, 숨은 단일 / 등급 2: + 포인팅·박스-라인 축소, 노출 쌍.
- * (등급 3 이상은 M3에서 확장)
+ * 등급 1: 단일 후보, 숨은 단일 / 등급 2: + 포인팅·박스-라인 축소, 노출 쌍 /
+ * 등급 3: + 숨은 쌍·삼중, 노출 삼중. (등급 4 이상: X-윙 등은 후속 작업)
  */
 class TechniqueSolver {
     /**
@@ -54,8 +54,51 @@ class TechniqueSolver {
             if (maxLevel >= 2 && (pointingClaiming(cand) || nakedPair(cand))) {
                 level = maxOf(level, 2); continue
             }
+            if (maxLevel >= 3 && (hiddenSubset(cand, 2) || nakedTriple(cand) || hiddenSubset(cand, 3))) {
+                level = maxOf(level, 3); continue
+            }
             return null
         }
+    }
+
+    /** 숨은 쌍/삼중: 유닛에서 k개 숫자가 정확히 k개 칸에만 들어가면 그 칸들의 다른 후보를 제거. */
+    private fun hiddenSubset(cand: IntArray, k: Int): Boolean {
+        var changed = false
+        for (u in Units.all) {
+            val pos = IntArray(9)
+            for (d in 0 until 9) for (n in 0 until 9) if (cand[u[n]] and (1 shl d) != 0) pos[d] = pos[d] or (1 shl n)
+            val ds = (0 until 9).filter { pos[it] != 0 && Integer.bitCount(pos[it]) <= k }
+            fun test(combo: List<Int>) {
+                var union = 0; var mask = 0
+                for (d in combo) { union = union or pos[d]; mask = mask or (1 shl d) }
+                if (Integer.bitCount(union) != k) return
+                for (n in 0 until 9) if (union and (1 shl n) != 0 && cand[u[n]] and mask.inv() != 0) {
+                    cand[u[n]] = cand[u[n]] and mask; changed = true
+                }
+            }
+            if (k == 2) for (a in ds.indices) for (b in a + 1 until ds.size) test(listOf(ds[a], ds[b]))
+            else for (a in ds.indices) for (b in a + 1 until ds.size) for (c in b + 1 until ds.size) test(listOf(ds[a], ds[b], ds[c]))
+            if (changed) return true
+        }
+        return changed
+    }
+
+    /** 노출 삼중: 세 칸의 후보 합집합이 3개 숫자뿐이면 같은 유닛의 다른 칸에서 제거. */
+    private fun nakedTriple(cand: IntArray): Boolean {
+        var changed = false
+        for (u in Units.all) {
+            val cs = (0 until 9).filter { Integer.bitCount(cand[u[it]]) in 2..3 }
+            for (a in cs.indices) for (b in a + 1 until cs.size) for (c in b + 1 until cs.size) {
+                val m = cand[u[cs[a]]] or cand[u[cs[b]]] or cand[u[cs[c]]]
+                if (Integer.bitCount(m) != 3) continue
+                for (n in 0 until 9) {
+                    if (n == cs[a] || n == cs[b] || n == cs[c]) continue
+                    if (cand[u[n]] and m != 0) { cand[u[n]] = cand[u[n]] and m.inv(); changed = true }
+                }
+            }
+            if (changed) return true
+        }
+        return changed
     }
 
     /** 포인팅(박스→행/열)과 박스-라인 축소(행/열→박스). 제거가 있었으면 true. */

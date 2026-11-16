@@ -25,4 +25,18 @@ interface GameDao {
 
     @Query("UPDATE game SET status = 'ABANDONED', finishedAt = :at WHERE mode = :mode AND status = 'IN_PROGRESS'")
     suspend fun abandonInProgress(mode: String, at: Long)
+
+    @Query("SELECT * FROM game WHERE mode = 'DAILY' AND dailyDate = :date ORDER BY id DESC LIMIT 1")
+    fun observeDaily(date: String): Flow<GameEntity?>
+
+    @Query("SELECT id FROM game WHERE mode = 'DAILY' AND dailyDate = :date LIMIT 1")
+    suspend fun dailyId(date: String): Long?
+
+    @Query("SELECT dailyDate FROM game WHERE mode = 'DAILY' AND status = 'COMPLETED' AND dailyDate IS NOT NULL")
+    fun observeDailyCompleted(): Flow<List<String>>
+
+    @Query("SELECT difficulty, COUNT(*) AS cnt, MIN(elapsedMs) AS best, AVG(elapsedMs) AS avg FROM game WHERE status = 'COMPLETED' GROUP BY difficulty")
+    fun observeStats(): Flow<List<DifficultyStat>>
 }
+
+data class DifficultyStat(val difficulty: String, val cnt: Int, val best: Long, val avg: Double)

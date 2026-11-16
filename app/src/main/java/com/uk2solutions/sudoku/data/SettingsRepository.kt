@@ -20,6 +20,7 @@ data class AppSettings(
     val highlightSame: Boolean = true,
     val autoRemoveNotes: Boolean = true,
     val vibration: Boolean = true,
+    val hintsUsedToday: Int = 0,
 )
 
 private val Context.dataStore by preferencesDataStore(name = "settings")
@@ -33,6 +34,8 @@ class SettingsRepository @Inject constructor(@ApplicationContext private val con
         val highlightSame = booleanPreferencesKey("highlightSame")
         val autoRemoveNotes = booleanPreferencesKey("autoRemoveNotes")
         val vibration = booleanPreferencesKey("vibration")
+        val hintsUsed = intPreferencesKey("hintsUsedToday")
+        val hintsDate = androidx.datastore.preferences.core.stringPreferencesKey("hintsDate")
     }
 
     val settings: Flow<AppSettings> = context.dataStore.data.map { p: Preferences ->
@@ -43,7 +46,20 @@ class SettingsRepository @Inject constructor(@ApplicationContext private val con
             highlightSame = p[K.highlightSame] ?: true,
             autoRemoveNotes = p[K.autoRemoveNotes] ?: true,
             vibration = p[K.vibration] ?: true,
+            hintsUsedToday = if (p[K.hintsDate] == java.time.LocalDate.now().toString()) p[K.hintsUsed] ?: 0 else 0,
         )
+    }
+
+    /** 오늘 힌트 한도(로컬 날짜 기준 초기화) 안이면 1회 소모하고 true. [unlimited]면 소모 없이 true. */
+    suspend fun consumeHint(freePerDay: Int, unlimited: Boolean = false): Boolean {
+        if (unlimited) return true
+        var ok = false
+        context.dataStore.edit { p ->
+            val today = java.time.LocalDate.now().toString()
+            val used = if (p[K.hintsDate] == today) p[K.hintsUsed] ?: 0 else 0
+            if (used < freePerDay) { p[K.hintsDate] = today; p[K.hintsUsed] = used + 1; ok = true }
+        }
+        return ok
     }
 
     suspend fun update(block: (AppSettings) -> AppSettings) {

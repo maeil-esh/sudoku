@@ -1,0 +1,59 @@
+package com.uk2solutions.sudoku.domain
+
+import com.uk2solutions.sudoku.domain.game.*
+import com.uk2solutions.sudoku.domain.generator.DailyPuzzle
+import com.uk2solutions.sudoku.domain.generator.PuzzleGenerator
+import com.uk2solutions.sudoku.domain.model.Board
+import com.uk2solutions.sudoku.domain.model.Difficulty
+import com.uk2solutions.sudoku.domain.solver.Solver
+import com.uk2solutions.sudoku.domain.solver.TechniqueSolver
+import org.junit.Assert.*
+import org.junit.Test
+import java.time.LocalDate
+
+class M3Test {
+    @Test fun hardPuzzlesAreUniqueAndNeedLevel3() {
+        val gen = PuzzleGenerator(); val tech = TechniqueSolver()
+        val t0 = System.nanoTime()
+        for (seed in 1L..100L) {
+            val p = gen.generate(Difficulty.HARD, seed)
+            val g = Board.parse(p.givens)
+            assertEquals(1, Solver.countSolutions(g, 2))
+            assertEquals(3, tech.requiredLevel(g, 3))
+            assertNull("등급 2 이하로는 풀리면 안 됨", tech.requiredLevel(g, 2))
+            assertTrue(Board.clueCount(g) <= 30)
+        }
+        println("평균 생성 시간 HARD: ${(System.nanoTime() - t0) / 100 / 1_000_000.0} ms")
+    }
+
+    @Test fun dailyIsDeterministicPerDate() {
+        val d = LocalDate.of(2026, 11, 16)
+        assertEquals(DailyPuzzle.generate(d), DailyPuzzle.generate(d))
+        assertNotEquals(DailyPuzzle.generate(d).givens, DailyPuzzle.generate(d.plusDays(1)).givens)
+    }
+
+    @Test fun hintFindsFillableCell() {
+        val p = PuzzleGenerator().generate(Difficulty.EASY, 5L)
+        val s = GameRules.newState(p.givens, p.solution)
+        val h = Hints.next(s)!!
+        assertEquals(0, s.values[h.index]); assertEquals(s.solution[h.index], h.digit)
+        assertNotEquals(HintTechnique.DEDUCTION, h.technique) // 쉬움은 단일 기법으로 풀림
+    }
+
+    @Test fun hintTreatsWrongValueAsEmpty() {
+        val p = PuzzleGenerator().generate(Difficulty.EASY, 5L)
+        var s = GameRules.newState(p.givens, p.solution)
+        val i = s.values.indexOfFirst { it == 0 }
+        s = GameRules.enter(s, i, (1..9).first { it != s.solution[i] }, false, true).first
+        val h = Hints.next(s, preferred = i)!!
+        assertEquals(s.solution[h.index], h.digit)
+    }
+
+    @Test fun streakCounting() {
+        val t = LocalDate.of(2026, 11, 16)
+        assertEquals(0, Streak.current(emptySet(), t))
+        assertEquals(3, Streak.current(setOf(t, t.minusDays(1), t.minusDays(2), t.minusDays(4)), t))
+        assertEquals(2, Streak.current(setOf(t.minusDays(1), t.minusDays(2)), t)) // 오늘 미완료여도 유지
+        assertEquals(0, Streak.current(setOf(t.minusDays(2)), t))
+    }
+}

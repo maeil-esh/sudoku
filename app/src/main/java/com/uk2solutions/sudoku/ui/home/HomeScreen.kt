@@ -55,7 +55,7 @@ fun HomeScreen(onResume: () -> Unit, onNewGame: (Difficulty) -> Unit, vm: HomeVi
         }
         Text(stringResource(R.string.home_new_game), fontWeight = FontWeight.SemiBold, fontSize = 18.sp, color = c.ink)
         Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-            listOf(Difficulty.EASY, Difficulty.MEDIUM).forEach { d ->
+            listOf(Difficulty.EASY, Difficulty.MEDIUM, Difficulty.HARD).forEach { d ->
                 Button(onClick = { onNewGame(d) }, shape = RoundedCornerShape(14.dp), modifier = Modifier.weight(1f).heightIn(min = 48.dp)) {
                     Text(stringResource(d.labelRes()))
                 }
@@ -63,7 +63,7 @@ fun HomeScreen(onResume: () -> Unit, onNewGame: (Difficulty) -> Unit, vm: HomeVi
         }
         // 어려움~악마는 M3(기법 평가)·M4(잠금 UI)에서 활성화
         Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-            listOf(Difficulty.HARD, Difficulty.EXPERT, Difficulty.DEVIL).forEach { d ->
+            listOf(Difficulty.EXPERT, Difficulty.DEVIL).forEach { d ->
                 OutlinedButton(onClick = {}, enabled = false, shape = RoundedCornerShape(14.dp), modifier = Modifier.weight(1f).heightIn(min = 48.dp)) {
                     Text("${stringResource(d.labelRes())}\n${stringResource(R.string.home_coming_soon)}", fontSize = 12.sp)
                 }

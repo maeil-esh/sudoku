@@ -3,6 +3,7 @@ package com.uk2solutions.sudoku.data
 import com.uk2solutions.sudoku.domain.game.GameCodec
 import com.uk2solutions.sudoku.domain.game.GameRules
 import com.uk2solutions.sudoku.domain.game.GameState
+import com.uk2solutions.sudoku.domain.generator.DailyPuzzle
 import com.uk2solutions.sudoku.domain.generator.PuzzleGenerator
 import com.uk2solutions.sudoku.domain.model.Board
 import com.uk2solutions.sudoku.domain.model.Difficulty
@@ -33,6 +34,23 @@ class GameRepository @Inject constructor(private val dao: GameDao) {
                 mode = GameEntity.MODE_NORMAL, difficulty = difficulty.name,
                 givens = puzzle.givens, solution = puzzle.solution,
                 cellValues = puzzle.givens, notes = blankNotes, startedAt = now,
+            ),
+        )
+    }
+
+    fun observeDaily(date: String) = dao.observeDaily(date)
+    fun observeDailyCompleted() = dao.observeDailyCompleted()
+    fun observeStats() = dao.observeStats()
+
+    /** 오늘의 도전: 같은 날짜의 게임이 있으면 그것을, 없으면 날짜 시드로 만든다(모든 사용자 동일 퍼즐). */
+    suspend fun startOrGetDaily(date: java.time.LocalDate): Long {
+        dao.dailyId(date.toString())?.let { return it }
+        val puzzle = withContext(Dispatchers.Default) { DailyPuzzle.generate(date, generator) }
+        val blank = GameCodec.encodeInts(IntArray(Board.SIZE))
+        return dao.insert(
+            GameEntity(
+                mode = "DAILY", difficulty = puzzle.difficulty.name, givens = puzzle.givens, solution = puzzle.solution,
+                cellValues = puzzle.givens, notes = blank, dailyDate = date.toString(), startedAt = System.currentTimeMillis(),
             ),
         )
     }

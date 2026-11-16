@@ -8,3 +8,4 @@ local.properties
 *.csv
 keystore.properties
 service-account*.json
+dist/
