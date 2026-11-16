@@ -135,6 +135,12 @@ class ScreenshotTest {
         HomeContent(ResumeInfo(Difficulty.MEDIUM, 725_000, 47), DailyInfo(DailyStatus.DONE, 100, 7), {}, {}, {})
     }
 
+    @Test @Config(qualifiers = "ja-w390dp-h844dp-xxhdpi") fun gameJapanese() { val (ui, s) = gameUi(); shoot("12_game_japanese") { Game(ui, s) } }
+
+    @Test @Config(qualifiers = "de-w390dp-h844dp-xxhdpi") fun homeGerman() = shoot("13_home_german") {
+        HomeContent(ResumeInfo(Difficulty.HARD, 1_203_000, 22), DailyInfo(DailyStatus.NOT_STARTED, 0, 6), {}, {}, {})
+    }
+
     @Test fun stats() = shoot("09_stats") {
         StatsContent(
             StatsUi(

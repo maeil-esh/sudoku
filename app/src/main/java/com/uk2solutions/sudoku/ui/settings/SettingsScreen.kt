@@ -155,12 +155,12 @@ fun SettingsScreen(vm: SettingsViewModel = hiltViewModel()) {
         )
     }
     if (langDialog) {
-        val tags = listOf("", "ko", "en")
+        val tags = LANGUAGE_TAGS
         AlertDialog(
             onDismissRequest = { langDialog = false },
             title = { Text(stringResource(R.string.lang_pick_title)) },
             text = {
-                Column {
+                Column(Modifier.verticalScroll(rememberScrollState())) {
                     tags.forEach { tag ->
                         Row(
                             Modifier.fillMaxWidth().heightIn(min = 48.dp).selectable(selected = langTag == tag, role = Role.RadioButton) {
@@ -202,9 +202,18 @@ fun SettingsScreen(vm: SettingsViewModel = hiltViewModel()) {
     }
 }
 
+/** 앱이 지원하는 언어. 빈 문자열은 시스템 설정을 따른다. */
+val LANGUAGE_TAGS = listOf("", "ko", "en", "ja", "es", "pt-BR", "ru", "de", "fr")
+
 fun langLabel(tag: String) = when {
     tag.startsWith("ko") -> R.string.lang_ko
     tag.startsWith("en") -> R.string.lang_en
+    tag.startsWith("ja") -> R.string.lang_ja
+    tag.startsWith("es") -> R.string.lang_es
+    tag.startsWith("pt") -> R.string.lang_pt
+    tag.startsWith("ru") -> R.string.lang_ru
+    tag.startsWith("de") -> R.string.lang_de
+    tag.startsWith("fr") -> R.string.lang_fr
     else -> R.string.lang_system
 }
 

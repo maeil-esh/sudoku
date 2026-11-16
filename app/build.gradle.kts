@@ -68,3 +68,8 @@ dependencies {
     testImplementation("androidx.compose.ui:ui-test-junit4")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
 }
+
+// 스크린샷 테스트는 ui-test-manifest(debug 전용)가 필요하므로 릴리스 변형에서는 제외한다.
+tasks.withType<Test>().configureEach {
+    if (name.contains("Release")) exclude("**/screens/**")
+}

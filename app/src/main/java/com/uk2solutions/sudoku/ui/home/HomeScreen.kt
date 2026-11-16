@@ -62,8 +62,8 @@ fun HomeContent(resume: ResumeInfo?, daily: DailyInfo, onResume: () -> Unit, onD
         Surface(shape = RoundedCornerShape(20.dp), color = c.accentSoft, modifier = Modifier.fillMaxWidth()) {
             Column(Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                    Text(stringResource(R.string.daily_title), fontWeight = FontWeight.SemiBold, fontSize = 18.sp, color = c.ink)
-                    Text(stringResource(R.string.daily_streak, daily.streak), color = c.accent, fontWeight = FontWeight.SemiBold)
+                    Text(stringResource(R.string.daily_title), fontWeight = FontWeight.SemiBold, fontSize = 18.sp, color = c.ink, modifier = Modifier.weight(1f).padding(end = 8.dp))
+                    Text(stringResource(R.string.daily_streak, daily.streak), color = c.accent, fontWeight = FontWeight.SemiBold, maxLines = 1, softWrap = false)
                 }
                 Text(stringResource(R.string.daily_desc), color = c.muted, fontSize = 13.sp)
                 Button(
