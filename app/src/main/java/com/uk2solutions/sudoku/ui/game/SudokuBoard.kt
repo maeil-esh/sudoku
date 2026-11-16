@@ -3,9 +3,6 @@ package com.uk2solutions.sudoku.ui.game
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.remember
-import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -17,11 +14,15 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.compositeOver
+import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
@@ -37,11 +38,15 @@ import com.uk2solutions.sudoku.domain.game.GameState
 import com.uk2solutions.sudoku.domain.model.Board
 import com.uk2solutions.sudoku.ui.theme.SudokuTheme
 
-/** SPEC §6.1: 박스 경계 2dp(ink), 칸 경계 1dp(line), 바깥 2dp(ink). */
+/**
+ * SPEC §6.1: 박스 경계 2dp(ink), 칸 경계 1dp(line), 바깥 2dp(ink).
+ * [sameDigit]: 강조할 숫자(선택 칸의 값, 숫자 우선 모드에서는 고른 숫자). 0이면 없음.
+ */
 @Composable
 fun SudokuBoard(
     state: GameState,
     selected: Int,
+    sameDigit: Int,
     conflicts: Set<Int>,
     settings: AppSettings,
     onCell: (Int) -> Unit,
@@ -72,28 +77,26 @@ fun SudokuBoard(
             }
             .border(2.dp, c.ink),
     ) {
-        val selValue = if (selected >= 0) state.values[selected] else 0
         Column(Modifier.fillMaxSize()) {
             for (r in 0 until 9) {
                 Row(Modifier.weight(1f).fillMaxWidth()) {
                     for (col in 0 until 9) {
                         val i = r * 9 + col
                         val isSel = i == selected
-                        val isPeer = selected >= 0 && !isSel &&
+                        val isPeer = settings.highlightArea && selected >= 0 && !isSel &&
                             (Board.row(i) == Board.row(selected) || Board.col(i) == Board.col(selected) || Board.box(i) == Board.box(selected))
                         val isErr = settings.showErrors && i in conflicts
-                        val isSame = settings.highlightSame && selValue != 0 && state.values[i] == selValue
+                        val isSame = settings.highlightSame && sameDigit != 0 && state.values[i] == sameDigit
                         val bg = when {
-                            isSel -> c.cellSelected
                             isErr -> c.errorBg
                             isSame -> c.cellSame
+                            isSel -> c.cellSelected
                             isPeer -> c.cellPeer
                             else -> Color.Transparent
                         }
                         val f = if (effect != null && i in effect.cells) flash.value else 0f
                         Cell(
-                            flash = f, hinted = i == hintCell,
-                            index = i, value = state.values[i], notes = state.notes[i],
+                            flash = f, hinted = i == hintCell, index = i, value = state.values[i], notes = state.notes[i],
                             given = state.isGiven(i), error = isErr, selected = isSel, background = bg,
                             onClick = { onCell(i) }, modifier = Modifier.weight(1f).fillMaxHeight(),
                         )
@@ -120,10 +123,11 @@ private fun Cell(
         notes != 0 -> stringResource(R.string.cell_desc_notes, row, col, noteList)
         else -> stringResource(R.string.cell_desc_empty, row, col)
     }
+    val bg = lerp(background, c.accent.copy(alpha = 0.55f).compositeOver(c.surface), flash)
     Box(
         modifier
-            .background(androidx.compose.ui.graphics.lerp(background, c.accent.copy(alpha = 0.55f).compositeOver(c.surface), flash))
-            .then(if (hinted) Modifier.border(3.dp, c.accent) else Modifier)
+            .background(bg)
+            .then(if (selected || hinted) Modifier.border(if (hinted) 3.dp else 2.dp, c.accent) else Modifier)
             .clickable(onClick = onClick)
             .semantics { contentDescription = desc; role = Role.Button; this.selected = selected },
         contentAlignment = Alignment.Center,
@@ -131,7 +135,7 @@ private fun Cell(
         if (value != 0) {
             // 오류는 색 + 굵기로 함께 표현(색만으로 구분하지 않음)
             Text(
-                value.toString(), fontSize = 22.sp,
+                value.toString(), fontSize = 24.sp,
                 fontWeight = when { error -> FontWeight.ExtraBold; given -> FontWeight.SemiBold; else -> FontWeight.Medium },
                 color = when { error -> c.error; given -> c.ink; else -> c.accent },
             )

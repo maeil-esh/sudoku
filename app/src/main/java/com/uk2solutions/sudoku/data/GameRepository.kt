@@ -55,7 +55,7 @@ class GameRepository @Inject constructor(private val dao: GameDao) {
         )
     }
 
-    suspend fun load(id: Long): Loaded? = dao.get(id)?.let { Loaded(it.status, Difficulty.valueOf(it.difficulty), it.toState()) }
+    suspend fun load(id: Long): Loaded? = dao.get(id)?.let { Loaded(it.status, Difficulty.valueOf(it.difficulty), it.toState(), it.mode == "DAILY") }
 
     suspend fun save(id: Long, s: GameState) = dao.updateProgress(
         id, Board.format(s.values), GameCodec.encodeInts(s.notes),
@@ -64,7 +64,7 @@ class GameRepository @Inject constructor(private val dao: GameDao) {
 
     suspend fun complete(id: Long) = dao.markCompleted(id, System.currentTimeMillis())
 
-    class Loaded(val status: String, val difficulty: Difficulty, val state: GameState)
+    class Loaded(val status: String, val difficulty: Difficulty, val state: GameState, val daily: Boolean)
 
     companion object {
         fun GameEntity.toState(): GameState = GameRules.newState(givens, solution).copy(

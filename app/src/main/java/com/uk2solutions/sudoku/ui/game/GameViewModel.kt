@@ -36,6 +36,8 @@ data class GameUiState(
     val missing: Boolean = false,
     val state: GameState? = null,
     val difficulty: Difficulty = Difficulty.EASY,
+    val daily: Boolean = false,
+    val selectedDigit: Int = 0,
     val selected: Int = -1,
     val noteMode: Boolean = false,
     val paused: Boolean = false,
@@ -96,7 +98,7 @@ class GameViewModel @Inject constructor(
         limitDismissed = false
         _ui.update { cur ->
             cur.copy(
-                loading = false, state = loaded.state, difficulty = loaded.difficulty,
+                loading = false, state = loaded.state, difficulty = loaded.difficulty, daily = loaded.daily,
                 conflicts = GameRules.conflicts(loaded.state.values),
                 mistakeLimitReached = limitReached(loaded.state, cur.settings),
             )
@@ -118,14 +120,32 @@ class GameViewModel @Inject constructor(
     private fun limitReached(s: GameState, st: AppSettings) =
         st.mistakeLimitEnabled && !limitDismissed && s.mistakes >= st.mistakeLimit && !GameRules.isComplete(s)
 
-    fun onCell(i: Int) = _ui.update { it.copy(selected = if (it.selected == i) -1 else i) }
+    /** 숫자 우선 모드에서 숫자를 고른 상태라면 칸을 누르는 즉시 입력한다. */
+    fun onCell(i: Int): InputResult {
+        val u = _ui.value
+        val s = u.state ?: return InputResult.NONE
+        if (u.paused || u.completed || u.mistakeLimitReached) return InputResult.NONE
+        if (u.settings.numberFirst && u.selectedDigit > 0) {
+            _ui.update { it.copy(selected = i) }
+            val (next, r) = GameRules.enter(s, i, u.selectedDigit, u.noteMode, u.settings.autoRemoveNotes)
+            if (r != InputResult.NONE) apply(next, i, s)
+            return r
+        }
+        _ui.update { it.copy(selected = if (it.selected == i) -1 else i) }
+        return InputResult.NONE
+    }
 
     fun onToggleNote() = _ui.update { it.copy(noteMode = !it.noteMode) }
 
     fun onDigit(d: Int): InputResult {
         val u = _ui.value
         val s = u.state ?: return InputResult.NONE
-        if (blocked(u)) return InputResult.NONE
+        if (u.paused || u.completed || u.mistakeLimitReached) return InputResult.NONE
+        if (u.settings.numberFirst) {
+            _ui.update { it.copy(selectedDigit = if (it.selectedDigit == d) 0 else d) }
+            return InputResult.NONE
+        }
+        if (u.selected < 0) return InputResult.NONE
         val (next, r) = GameRules.enter(s, u.selected, d, u.noteMode, u.settings.autoRemoveNotes)
         if (r != InputResult.NONE) apply(next, u.selected, s)
         return r
@@ -153,9 +173,11 @@ class GameViewModel @Inject constructor(
 
     private fun apply(next: GameState, changed: Int = -1, prev: GameState? = null) {
         val done = GameRules.isComplete(next)
-        val c: Completion? = if (changed >= 0 && prev != null) Completions.between(prev, next, changed) else null
+        val c: Completion? =
+            if (changed >= 0 && prev != null && _ui.value.settings.completeAnimation) Completions.between(prev, next, changed) else null
         _ui.update {
             it.copy(
+                selectedDigit = nextDigit(it, next),
                 state = next, hint = null, hintsExhausted = false,
                 effect = c?.let { x -> Effect(++effectId, x.cells, x.digit) } ?: it.effect, conflicts = GameRules.conflicts(next.values), completed = done,
                 mistakeLimitReached = limitReached(next, it.settings),
@@ -184,6 +206,17 @@ class GameViewModel @Inject constructor(
                 _ui.update { it.copy(hint = next, selected = next.index, hintsExhausted = false) }
             } else _ui.update { it.copy(hintsExhausted = true) }
         }
+    }
+
+    /** 숫자 우선 모드: 고른 숫자를 다 놓았으면(남은 0) 남은 개수가 있는 다음 숫자로 자동 이동. */
+    private fun nextDigit(u: GameUiState, s: GameState): Int {
+        val cur = u.selectedDigit
+        if (cur == 0 || !u.settings.numberFirst || !u.settings.autoNextNumber || GameRules.remaining(s, cur) > 0) return cur
+        for (k in 1..9) {
+            val d = (cur - 1 + k) % 9 + 1
+            if (GameRules.remaining(s, d) > 0) return d
+        }
+        return 0
     }
 
     fun continueWithoutLimit() {

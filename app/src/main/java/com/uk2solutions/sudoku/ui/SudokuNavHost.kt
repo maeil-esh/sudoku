@@ -87,14 +87,8 @@ fun SudokuNavHost() {
                 )
             }
             composable(Tab.Stats.route) { com.uk2solutions.sudoku.ui.stats.StatsScreen() }
-            composable(Tab.Settings.route) { Placeholder(R.string.settings_title) }
+            composable(Tab.Settings.route) { com.uk2solutions.sudoku.ui.settings.SettingsScreen() }
         }
     }
 }
 
-@Composable
-private fun Placeholder(@StringRes title: Int) {
-    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        Text("${stringResource(title)} · ${stringResource(R.string.placeholder_coming)}")
-    }
-}

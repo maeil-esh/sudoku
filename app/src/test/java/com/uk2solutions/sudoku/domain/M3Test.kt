@@ -75,3 +75,30 @@ class CompletionsTest {
         assertNull(Completions.between(t, t, last))
     }
 }
+
+class ScoringTest {
+    @Test fun scoreIsDerivedAndNotFarmable() {
+        val p = PuzzleGenerator().generate(Difficulty.EASY, 9L)
+        var s = GameRules.newState(p.givens, p.solution)
+        assertEquals(0, Scoring.score(s, Difficulty.EASY))
+        val i = s.values.indexOfFirst { it == 0 }
+        s = GameRules.enter(s, i, s.solution[i], false, false).first
+        val one = Scoring.score(s, Difficulty.EASY)
+        assertTrue(one >= 10)
+        s = GameRules.erase(s, i).first
+        assertEquals(0, Scoring.score(s, Difficulty.EASY))      // 지우면 점수도 사라짐
+        s = GameRules.enter(s, i, s.solution[i], false, false).first
+        assertEquals(one, Scoring.score(s, Difficulty.EASY))     // 다시 넣어도 불어나지 않음
+        assertEquals(one * 2, Scoring.score(s, Difficulty.MEDIUM))
+        val wrongI = s.values.indexOfFirst { it == 0 }
+        s = GameRules.enter(s, wrongI, (1..9).first { it != s.solution[wrongI] }, false, false).first
+        assertTrue(Scoring.score(s, Difficulty.EASY) >= 0)
+    }
+
+    @Test fun progressCountsFilledEmptyCells() {
+        val p = PuzzleGenerator().generate(Difficulty.EASY, 9L)
+        val s = GameRules.newState(p.givens, p.solution)
+        val (f, t) = Scoring.progress(s)
+        assertEquals(0, f); assertEquals(81 - Board.clueCount(Board.parse(p.givens)), t)
+    }
+}

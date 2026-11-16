@@ -1,8 +1,13 @@
 package com.uk2solutions.sudoku.ui.game
 
+import android.view.SoundEffectConstants
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -14,7 +19,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.AlertDialog
@@ -29,12 +38,25 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -46,8 +68,11 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.uk2solutions.sudoku.R
 import com.uk2solutions.sudoku.domain.game.GameRules
 import com.uk2solutions.sudoku.domain.game.GameState
+import com.uk2solutions.sudoku.domain.game.Hint
 import com.uk2solutions.sudoku.domain.game.HintPolicy
+import com.uk2solutions.sudoku.domain.game.HintTechnique
 import com.uk2solutions.sudoku.domain.game.InputResult
+import com.uk2solutions.sudoku.domain.game.Scoring
 import com.uk2solutions.sudoku.domain.model.Difficulty
 import com.uk2solutions.sudoku.ui.theme.SudokuTheme
 import kotlinx.coroutines.launch
@@ -71,6 +96,7 @@ fun GameScreen(onExit: () -> Unit, onNewGame: (Difficulty) -> Unit, vm: GameView
     val ui by vm.ui.collectAsStateWithLifecycle()
     val scope = rememberCoroutineScope()
     val haptic = LocalHapticFeedback.current
+    val view = LocalView.current
     val c = SudokuTheme.colors
 
     LifecycleEventEffect(Lifecycle.Event.ON_STOP) { vm.onStop() }
@@ -86,30 +112,44 @@ fun GameScreen(onExit: () -> Unit, onNewGame: (Difficulty) -> Unit, vm: GameView
     LaunchedEffect(ui.effect?.id) {
         if (ui.effect != null && ui.settings.vibration) haptic.performHapticFeedback(HapticFeedbackType.LongPress)
     }
-    fun buzz(r: InputResult) {
-        if (!ui.settings.vibration) return
-        when (r) {
-            InputResult.FILLED, InputResult.NOTE_TOGGLED, InputResult.ERASED -> haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-            InputResult.MISTAKE -> haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-            InputResult.NONE -> Unit
+    fun feedback(r: InputResult) {
+        if (r == InputResult.NONE) return
+        if (ui.settings.vibration) {
+            haptic.performHapticFeedback(if (r == InputResult.MISTAKE) HapticFeedbackType.LongPress else HapticFeedbackType.TextHandleMove)
         }
+        if (ui.settings.sound) view.playSoundEffect(SoundEffectConstants.CLICK)
     }
 
-    Column(Modifier.fillMaxSize().background(c.background).padding(horizontal = 15.dp)) {
-        TopBar(ui.difficulty, vm, onBack = { leave() }, onPause = vm::pause)
-        InfoRow(state, ui.settings.mistakeLimitEnabled, ui.settings.mistakeLimit)
-        Spacer(Modifier.height(10.dp))
+    val padDigit = if (ui.settings.numberFirst) ui.selectedDigit else if (ui.selected >= 0) state.values[ui.selected] else 0
+    val score = remember(state.values, state.mistakes, state.hintsUsed, ui.difficulty) { Scoring.score(state, ui.difficulty) }
+
+    Column(Modifier.fillMaxSize().background(c.background).verticalScroll(rememberScrollState()).padding(horizontal = 12.dp)) {
+        Row(Modifier.fillMaxWidth().heightIn(min = 56.dp), verticalAlignment = Alignment.CenterVertically) {
+            IconButton(onClick = { leave() }) {
+                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.game_back), tint = c.ink)
+            }
+            Text(
+                stringResource(if (ui.daily) R.string.daily_title else R.string.app_name),
+                color = c.ink, fontWeight = FontWeight.SemiBold, fontSize = 20.sp,
+            )
+        }
+        InfoBlock(vm, ui, state, score, onPause = vm::pause)
+        Spacer(Modifier.height(8.dp))
         if (ui.paused) PausedCover(onContinue = vm::resume, onExit = { leave() })
-        else SudokuBoard(state, ui.selected, ui.conflicts, ui.settings, vm::onCell, ui.effect, ui.hint?.index ?: -1)
-        Spacer(Modifier.height(12.dp))
-        Tools(
-            canUndo = state.undo.isNotEmpty() && !ui.paused, noteMode = ui.noteMode,
-            onUndo = vm::onUndo, onNote = vm::onToggleNote,
-            onHint = vm::onHint, hintsLeft = (HintPolicy.FREE_PER_DAY - ui.settings.hintsUsedToday).coerceAtLeast(0),
+        else SudokuBoard(
+            state, ui.selected, padDigit, ui.conflicts, ui.settings,
+            onCell = { feedback(vm.onCell(it)) }, effect = ui.effect, hintCell = ui.hint?.index ?: -1,
         )
         HintBanner(ui.hint, ui.hintsExhausted)
-        Spacer(Modifier.height(6.dp))
-        NumberPad(state, enabled = !ui.paused, effect = ui.effect, onDigit = { buzz(vm.onDigit(it)) }, onErase = { buzz(vm.onErase()) })
+        Spacer(Modifier.height(14.dp))
+        ToolRow(
+            canUndo = state.undo.isNotEmpty() && !ui.paused, noteMode = ui.noteMode,
+            hintsLeft = (HintPolicy.FREE_PER_DAY - ui.settings.hintsUsedToday).coerceAtLeast(0),
+            onUndo = vm::onUndo, onErase = { feedback(vm.onErase()) }, onNote = vm::onToggleNote, onHint = vm::onHint,
+        )
+        Spacer(Modifier.height(14.dp))
+        DigitRow(state, padDigit, ui.settings.showRemaining, enabled = !ui.paused, effect = ui.effect, onDigit = { feedback(vm.onDigit(it)) })
+        Spacer(Modifier.height(16.dp))
     }
 
     if (ui.mistakeLimitReached) {
@@ -126,38 +166,76 @@ fun GameScreen(onExit: () -> Unit, onNewGame: (Difficulty) -> Unit, vm: GameView
         AlertDialog(
             onDismissRequest = {},
             title = { Text(stringResource(R.string.game_complete_title)) },
-            text = { Text(stringResource(R.string.game_complete_desc, formatTime(elapsed), state.mistakes)) },
+            text = { Text(stringResource(R.string.game_complete_desc, formatTime(elapsed), state.mistakes, score)) },
             confirmButton = { TextButton(onClick = { onNewGame(ui.difficulty) }) { Text(stringResource(R.string.game_complete_new)) } },
             dismissButton = { TextButton(onClick = onExit) { Text(stringResource(R.string.game_complete_home)) } },
         )
     }
 }
 
+/** 보드 위 정보: [진행 n/m] [점수] / [실수 x/3] [난이도] [타이머 ⏸]. 각 항목은 설정으로 끌 수 있다. */
 @Composable
-private fun TopBar(difficulty: Difficulty, vm: GameViewModel, onBack: () -> Unit, onPause: () -> Unit) {
+private fun InfoBlock(vm: GameViewModel, ui: GameUiState, state: GameState, score: Int, onPause: () -> Unit) {
     val c = SudokuTheme.colors
     val elapsed by vm.elapsedMs.collectAsState()
-    Row(Modifier.fillMaxWidth().heightIn(min = 56.dp), verticalAlignment = Alignment.CenterVertically) {
-        IconButton(onClick = onBack, modifier = Modifier.heightIn(min = 48.dp)) {
-            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.game_back), tint = c.ink)
+    val (filled, total) = Scoring.progress(state)
+    Column(Modifier.fillMaxWidth().padding(horizontal = 4.dp)) {
+        Row(Modifier.fillMaxWidth().heightIn(min = 36.dp), verticalAlignment = Alignment.CenterVertically) {
+            Box(Modifier.weight(1f)) {
+                if (ui.settings.showProgress) Text(stringResource(R.string.game_progress_count, filled, total), color = c.muted, fontSize = 14.sp)
+            }
+            if (ui.settings.showScore) Text(stringResource(R.string.game_score, score), color = c.accent, fontWeight = FontWeight.Bold, fontSize = 20.sp)
+            Box(Modifier.weight(1f))
         }
-        Text(stringResource(difficulty.labelRes()), color = c.ink, fontWeight = FontWeight.SemiBold, fontSize = 17.sp, modifier = Modifier.weight(1f))
-        Text(formatTime(elapsed), color = c.ink, fontSize = 17.sp)
-        TextButton(onClick = onPause, modifier = Modifier.heightIn(min = 48.dp)) { Text(stringResource(R.string.game_pause)) }
+        Row(Modifier.fillMaxWidth().heightIn(min = 48.dp), verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                if (ui.settings.mistakeLimitEnabled) stringResource(R.string.game_mistakes, state.mistakes, ui.settings.mistakeLimit)
+                else stringResource(R.string.game_mistakes_unlimited, state.mistakes),
+                color = c.muted, fontSize = 14.sp, modifier = Modifier.weight(1f),
+            )
+            Text(stringResource(ui.difficulty.labelRes()), color = c.muted, fontSize = 15.sp, textAlign = TextAlign.Center)
+            Row(Modifier.weight(1f), horizontalArrangement = Arrangement.End, verticalAlignment = Alignment.CenterVertically) {
+                if (ui.settings.showTimer) Text(formatTime(elapsed), color = c.muted, fontSize = 15.sp)
+                PauseButton(onPause)
+            }
+        }
     }
 }
 
 @Composable
-private fun InfoRow(state: GameState, limitEnabled: Boolean, limit: Int) {
+private fun PauseButton(onClick: () -> Unit) {
     val c = SudokuTheme.colors
-    Row(Modifier.fillMaxWidth().padding(horizontal = 4.dp), horizontalArrangement = Arrangement.SpaceBetween) {
-        Text(
-            if (limitEnabled) stringResource(R.string.game_mistakes, state.mistakes, limit)
-            else stringResource(R.string.game_mistakes_unlimited, state.mistakes),
-            color = c.muted, fontSize = 14.sp,
-        )
-        Text(stringResource(R.string.game_progress, GameRules.progressPercent(state.values)), color = c.muted, fontSize = 14.sp)
+    val desc = stringResource(R.string.game_pause)
+    Box(
+        Modifier.size(48.dp).clickable(onClick = onClick).semantics { contentDescription = desc; role = Role.Button },
+        contentAlignment = Alignment.Center,
+    ) {
+        Canvas(Modifier.size(26.dp)) {
+            val w = 2.dp.toPx()
+            drawCircle(c.muted, radius = size.minDimension / 2 - w / 2, style = Stroke(w))
+            val bar = Stroke(2.5.dp.toPx(), cap = StrokeCap.Round)
+            drawLine(c.muted, Offset(size.width * 0.4f, size.height * 0.33f), Offset(size.width * 0.4f, size.height * 0.67f), bar.width, StrokeCap.Round)
+            drawLine(c.muted, Offset(size.width * 0.6f, size.height * 0.33f), Offset(size.width * 0.6f, size.height * 0.67f), bar.width, StrokeCap.Round)
+        }
     }
+}
+
+@Composable
+private fun HintBanner(hint: Hint?, exhausted: Boolean) {
+    val c = SudokuTheme.colors
+    val text = when {
+        hint != null -> stringResource(
+            R.string.game_hint_msg, hint.index / 9 + 1, hint.index % 9 + 1,
+            stringResource(when (hint.technique) {
+                HintTechnique.NAKED_SINGLE -> R.string.hint_naked_single
+                HintTechnique.HIDDEN_SINGLE -> R.string.hint_hidden_single
+                HintTechnique.DEDUCTION -> R.string.hint_deduction
+            }),
+        )
+        exhausted -> stringResource(R.string.game_hint_exhausted)
+        else -> return
+    }
+    Text(text, color = c.accent, fontSize = 13.sp, modifier = Modifier.fillMaxWidth().padding(top = 6.dp, start = 4.dp))
 }
 
 @Composable
@@ -177,83 +255,76 @@ private fun PausedCover(onContinue: () -> Unit, onExit: () -> Unit) {
 }
 
 @Composable
-private fun Tools(canUndo: Boolean, noteMode: Boolean, onUndo: () -> Unit, onNote: () -> Unit, onHint: () -> Unit, hintsLeft: Int) {
-    val c = SudokuTheme.colors
-    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-        OutlinedButton(onClick = onUndo, enabled = canUndo, modifier = Modifier.weight(1f).heightIn(min = 48.dp), shape = RoundedCornerShape(12.dp)) {
-            Text(stringResource(R.string.game_undo))
-        }
-        OutlinedButton(onClick = onHint, modifier = Modifier.weight(1f).heightIn(min = 48.dp), shape = RoundedCornerShape(12.dp)) {
-            Text(stringResource(R.string.game_hint, hintsLeft), fontSize = 13.sp)
-        }
-        Button(
-            onClick = onNote, modifier = Modifier.weight(1f).heightIn(min = 48.dp), shape = RoundedCornerShape(12.dp),
-            colors = androidx.compose.material3.ButtonDefaults.buttonColors(
-                containerColor = if (noteMode) c.accent else c.accentSoft,
-                contentColor = if (noteMode) androidx.compose.ui.graphics.Color.White else c.accent,
-            ),
-        ) { Text(stringResource(if (noteMode) R.string.game_notes_on else R.string.game_notes_off)) }
+private fun ToolRow(
+    canUndo: Boolean, noteMode: Boolean, hintsLeft: Int,
+    onUndo: () -> Unit, onErase: () -> Unit, onNote: () -> Unit, onHint: () -> Unit,
+) {
+    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
+        ToolButton("↶", stringResource(R.string.game_undo), canUndo, null, false, onUndo)
+        ToolButton("⌫", stringResource(R.string.game_erase), true, null, false, onErase)
+        ToolButton("✎", stringResource(R.string.game_notes), true, stringResource(if (noteMode) R.string.badge_on else R.string.badge_off), noteMode, onNote)
+        ToolButton("💡", stringResource(R.string.game_hint), true, hintsLeft.toString(), hintsLeft > 0, onHint)
     }
 }
 
 @Composable
-private fun HintBanner(hint: com.uk2solutions.sudoku.domain.game.Hint?, exhausted: Boolean) {
+private fun ToolButton(glyph: String, label: String, enabled: Boolean, badge: String?, badgeOn: Boolean, onClick: () -> Unit) {
     val c = SudokuTheme.colors
-    val text = when {
-        hint != null -> stringResource(
-            R.string.game_hint_msg, hint.index / 9 + 1, hint.index % 9 + 1,
-            stringResource(when (hint.technique) {
-                com.uk2solutions.sudoku.domain.game.HintTechnique.NAKED_SINGLE -> R.string.hint_naked_single
-                com.uk2solutions.sudoku.domain.game.HintTechnique.HIDDEN_SINGLE -> R.string.hint_hidden_single
-                com.uk2solutions.sudoku.domain.game.HintTechnique.DEDUCTION -> R.string.hint_deduction
-            }),
-        )
-        exhausted -> stringResource(R.string.game_hint_exhausted)
-        else -> return
-    }
-    Text(text, color = c.accent, fontSize = 13.sp, modifier = Modifier.fillMaxWidth().padding(top = 6.dp))
-}
-
-@Composable
-private fun NumberPad(state: GameState, enabled: Boolean, effect: Effect?, onDigit: (Int) -> Unit, onErase: () -> Unit) {
-    val rows = listOf(listOf(1, 2, 3, 4, 5), listOf(6, 7, 8, 9, 0))
-    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        rows.forEach { row ->
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                row.forEach { d ->
-                    if (d == 0) PadKey(Modifier.weight(1f), enabled, onErase) {
-                        Text(stringResource(R.string.game_erase), fontSize = 16.sp, fontWeight = FontWeight.Medium)
-                    } else {
-                        val left = GameRules.remaining(state, d)
-                        PadKey(Modifier.weight(1f), enabled && left > 0, { onDigit(d) }, pulse = effect?.digit == d, pulseId = effect?.id) {
-                            Text(d.toString(), fontSize = 24.sp, fontWeight = FontWeight.Medium)
-                            Text(
-                                if (left > 0) stringResource(R.string.game_remaining, left) else stringResource(R.string.game_done),
-                                fontSize = 11.sp, color = SudokuTheme.colors.muted,
-                            )
-                        }
-                    }
+    Column(
+        Modifier.heightIn(min = 64.dp).clickable(enabled = enabled, role = Role.Button, onClick = onClick).padding(horizontal = 10.dp, vertical = 4.dp),
+        horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center,
+    ) {
+        Box {
+            Text(glyph, fontSize = 30.sp, color = if (enabled) c.ink else c.muted.copy(alpha = 0.5f), modifier = Modifier.padding(horizontal = 8.dp))
+            if (badge != null) {
+                Surface(
+                    shape = CircleShape, color = if (badgeOn) c.accent else c.line,
+                    modifier = Modifier.align(Alignment.TopEnd),
+                ) {
+                    Text(badge, fontSize = 10.sp, fontWeight = FontWeight.Bold, color = if (badgeOn) c.onAccent else c.muted, modifier = Modifier.padding(horizontal = 5.dp, vertical = 1.dp))
                 }
             }
         }
+        Text(label, fontSize = 12.sp, color = c.ink)
+    }
+}
+
+/** 한 줄 숫자 패드. 선택된 숫자는 흰 카드로 올라오고, 아래에 남은 개수를 표시한다. */
+@Composable
+private fun DigitRow(state: GameState, selectedDigit: Int, showRemaining: Boolean, enabled: Boolean, effect: Effect?, onDigit: (Int) -> Unit) {
+    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+        for (d in 1..9) {
+            val left = GameRules.remaining(state, d)
+            DigitKey(
+                d, left, selected = d == selectedDigit, showRemaining = showRemaining, enabled = enabled && left > 0,
+                pulse = effect?.digit == d, pulseId = effect?.id, onClick = { onDigit(d) }, modifier = Modifier.weight(1f),
+            )
+        }
     }
 }
 
 @Composable
-private fun PadKey(
-    modifier: Modifier, enabled: Boolean, onClick: () -> Unit,
-    pulse: Boolean = false, pulseId: Int? = null, content: @Composable () -> Unit,
+private fun DigitKey(
+    digit: Int, left: Int, selected: Boolean, showRemaining: Boolean, enabled: Boolean,
+    pulse: Boolean, pulseId: Int?, onClick: () -> Unit, modifier: Modifier,
 ) {
     val c = SudokuTheme.colors
-    val flash = androidx.compose.runtime.remember { androidx.compose.animation.core.Animatable(0f) }
-    LaunchedEffect(pulseId) {
-        if (pulse) { flash.snapTo(1f); flash.animateTo(0f, androidx.compose.animation.core.tween(900)) }
-    }
+    val flash = remember { Animatable(0f) }
+    LaunchedEffect(pulseId) { if (pulse) { flash.snapTo(1f); flash.animateTo(0f, tween(900)) } }
+    val base = if (selected) c.surface else c.accentSoft
+    val desc = stringResource(R.string.game_key_desc, digit, left)
     Surface(
-        onClick = onClick, enabled = enabled, modifier = modifier.height(56.dp),
-        shape = RoundedCornerShape(12.dp), color = androidx.compose.ui.graphics.lerp(c.surface, c.cellSelected, flash.value), contentColor = if (enabled) c.accent else c.muted,
-        border = BorderStroke(1.dp, c.line),
+        onClick = onClick, enabled = enabled,
+        modifier = modifier.height(64.dp).clearAndSetSemantics { contentDescription = desc; role = Role.Button },
+        shape = RoundedCornerShape(10.dp), color = lerp(base, c.cellSame, flash.value),
+        shadowElevation = if (selected) 4.dp else 0.dp,
     ) {
-        Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally) { content() }
+        Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally) {
+            Text(
+                digit.toString(), fontSize = 28.sp, fontWeight = FontWeight.Medium,
+                color = if (left > 0) c.accent else c.muted.copy(alpha = 0.4f),
+            )
+            if (showRemaining) Text(if (left > 0) left.toString() else "", fontSize = 13.sp, color = if (selected) c.ink else c.muted)
+        }
     }
 }
