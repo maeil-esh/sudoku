@@ -20,6 +20,7 @@ data class SudokuColors(
     val accentSoft: Color = Color(0xFFE4E9FB),
     val cellPeer: Color = Color(0xFFECEFF9),
     val cellSelected: Color = Color(0xFFCFD8F8),
+    val cellSame: Color = Color(0xFFDCE3FB),
     val error: Color = Color(0xFFB3261E),
     val errorBg: Color = Color(0xFFFBE3E0),
 )

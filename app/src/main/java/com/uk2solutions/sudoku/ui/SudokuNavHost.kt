@@ -20,12 +20,19 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.navigation.NavType
+import androidx.navigation.navArgument
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.uk2solutions.sudoku.R
+import com.uk2solutions.sudoku.ui.game.GameScreen
+import com.uk2solutions.sudoku.ui.home.HomeScreen
+import com.uk2solutions.sudoku.domain.model.Difficulty
 import com.uk2solutions.sudoku.ui.theme.SudokuTheme
+
+private const val GAME_ROUTE = "game"
 
 enum class Tab(val route: String, @StringRes val label: Int, val icon: ImageVector) {
     Home("home", R.string.tab_home, Icons.Filled.Home),
@@ -38,10 +45,11 @@ fun SudokuNavHost() {
     val nav = rememberNavController()
     val entry by nav.currentBackStackEntryAsState()
     val current = entry?.destination?.route
+    val inGame = current?.startsWith(GAME_ROUTE) == true
     Scaffold(
         containerColor = SudokuTheme.colors.background,
         bottomBar = {
-            NavigationBar(containerColor = SudokuTheme.colors.surface) {
+            if (!inGame) NavigationBar(containerColor = SudokuTheme.colors.surface) {
                 Tab.entries.forEach { tab ->
                     NavigationBarItem(
                         selected = current == tab.route,
@@ -60,7 +68,23 @@ fun SudokuNavHost() {
         },
     ) { padding ->
         NavHost(nav, startDestination = Tab.Home.route, modifier = Modifier.padding(padding)) {
-            composable(Tab.Home.route) { Placeholder(R.string.home_title) }
+            composable(Tab.Home.route) {
+                HomeScreen(
+                    onResume = { nav.navigate(GAME_ROUTE) },
+                    onNewGame = { nav.navigate("$GAME_ROUTE?difficulty=${it.name}") },
+                )
+            }
+            composable(
+                "$GAME_ROUTE?difficulty={difficulty}",
+                arguments = listOf(navArgument("difficulty") { type = NavType.StringType; nullable = true; defaultValue = null }),
+            ) {
+                GameScreen(
+                    onExit = { nav.popBackStack(Tab.Home.route, inclusive = false) },
+                    onNewGame = { d: Difficulty ->
+                        nav.navigate("$GAME_ROUTE?difficulty=${d.name}") { popUpTo(Tab.Home.route) }
+                    },
+                )
+            }
             composable(Tab.Stats.route) { Placeholder(R.string.stats_title) }
             composable(Tab.Settings.route) { Placeholder(R.string.settings_title) }
         }
