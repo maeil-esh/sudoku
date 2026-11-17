@@ -60,5 +60,5 @@ Privacy-friendly: no account, no servers, everything stays on your device.
 ## 홍보 이미지 (Play 스크린샷 슬롯, 1080×1920)
 - `docs/store/promo-ko/01~07.png`, `docs/store/promo-en/01~07.png` — 앱 실제 화면 + 한 줄 후킹 문구. 순서가 곧 업로드 순서(1번이 목록에서 가장 먼저 보임).
 - 재생성: `./gradlew testDebugUnitTest --tests '*ScreenshotTest'` 후 `python3 docs/store/tools/make_promo.py` (영어 원본은 `EnglishScreenshotTest`가 `docs/store/src-en`에 저장).
-- 영어 7번(프리미엄) 화면에 "₩3,900" 가격이 보임 → 영어권 스토어에는 가격이 없는 다른 컷으로 교체 권장.
-- 일본어·스페인어 등 추가 언어는 `SLIDES`에 문구만 넣고 해당 언어 원본 화면을 뽑으면 된다.
+- 영어·일본어·스페인어·포르투갈어 7번(프리미엄) 화면에 "₩3,900" 가격이 보임 → 해당 스토어에는 가격이 없는 다른 컷으로 교체 권장.
+- 현재 한/영/일/스/포(브라질) 5개 언어 완료. 추가 언어는 `TEXT`에 문구를 넣고 `XxxScreenshotTest`(로케일만 다른 하위 클래스)를 추가하면 된다.

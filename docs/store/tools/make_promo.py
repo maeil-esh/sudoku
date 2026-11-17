@@ -8,15 +8,31 @@ KO_FONT = "/usr/share/fonts/truetype/wqy/wqy-zenhei.ttc"
 EN_BOLD = "/usr/share/fonts/opentype/inter/Inter-Bold.otf"
 EN_REG = "/usr/share/fonts/opentype/inter/Inter-Medium.otf"
 
-SLIDES = [  # (화면 파일, ko 제목, ko 부제, en 제목, en 부제)
-    ("57_home_expert_open_devil_locked", "쉬움부터 악마까지", "5단계 난이도, 오프라인으로 언제든", "From Easy to Devil", "5 levels, fully offline"),
-    ("37_hint_naked_step2_eliminated_digits", "막히면 힌트가 이유까지", "정답이 아니라 푸는 방법을 알려줘요", "Hints that teach", "See why, not just the answer"),
-    ("49_lesson_xwing_demo2", "눈으로 배우는 X-윙", "패턴이 보이면 어려운 퍼즐도 풀려요", "Learn X-Wing by sight", "Spot the pattern, solve the hard ones"),
-    ("53_training_rank_premium_hook", "나도 초고수가 될 수 있다", "기본부터 18가지 기법까지 단계별 트레이닝", "Become a grandmaster", "18 techniques, step by step"),
-    ("30_complete_send_challenge", "내가 푼 퍼즐로 친구와 대결", "서버 없이 코드 하나로 도전장 보내기", "Challenge your friends", "Send a puzzle with one code"),
-    ("20_game_green_theme", "점수 · 이펙트 · 테마", "한 줄 완성할 때마다 짜릿하게", "Score, effects, themes", "Every line feels rewarding"),
-    ("15_premium", "한 번 결제로 평생 프리미엄", "구독 없음 · 광고 없음", "Pay once, keep forever", "No subscription · No ads"),
-]
+SHOTS = ["57_home_expert_open_devil_locked", "37_hint_naked_step2_eliminated_digits", "49_lesson_xwing_demo2",
+         "53_training_rank_premium_hook", "30_complete_send_challenge", "20_game_green_theme", "15_premium"]
+TEXT = {  # 언어 -> [(제목, 부제)] x 7 (SHOTS 순서)
+    "ko": [("쉬움부터 악마까지", "5단계 난이도, 오프라인으로 언제든"), ("막히면 힌트가 이유까지", "정답이 아니라 푸는 방법을 알려줘요"),
+           ("눈으로 배우는 X-윙", "패턴이 보이면 어려운 퍼즐도 풀려요"), ("나도 초고수가 될 수 있다", "기본부터 18가지 기법까지 단계별 트레이닝"),
+           ("내가 푼 퍼즐로 친구와 대결", "서버 없이 코드 하나로 도전장 보내기"), ("점수 · 이펙트 · 테마", "한 줄 완성할 때마다 짜릿하게"),
+           ("한 번 결제로 평생 프리미엄", "구독 없음 · 광고 없음")],
+    "en": [("From Easy to Devil", "5 levels, fully offline"), ("Hints that teach", "See why, not just the answer"),
+           ("Learn X-Wing by sight", "Spot the pattern, solve the hard ones"), ("Become a grandmaster", "18 techniques, step by step"),
+           ("Challenge your friends", "Send a puzzle with one code"), ("Score, effects, themes", "Every line feels rewarding"),
+           ("Pay once, keep forever", "No subscription · No ads")],
+    "ja": [("やさしいから悪魔級まで", "5段階の難易度、オフラインで遊べる"), ("詰まったらヒントが理由まで", "答えだけでなく解き方を教えます"),
+           ("目で学ぶ X-ウィング", "パターンが見えれば難問も解ける"), ("あなたも超上級者になれる", "基礎から18のテクニックまで段階トレーニング"),
+           ("解いた問題で友達と対戦", "サーバー不要、コード1つで挑戦状を送れる"), ("スコア・演出・テーマ", "ラインが揃うたびにワクワク"),
+           ("一度の購入でずっとプレミアム", "サブスクなし・広告なし")],
+    "es": [("De Fácil a Diabólico", "5 niveles, sin conexión"), ("Pistas que enseñan", "Entiende el porqué, no solo la respuesta"),
+           ("Aprende el X-Wing a la vista", "Ve el patrón y resuelve los difíciles"), ("Hazte gran maestro", "18 técnicas, paso a paso"),
+           ("Reta a tus amigos", "Envía un sudoku con un solo código"), ("Puntos, efectos y temas", "Cada línea completada se siente genial"),
+           ("Paga una vez, tuyo para siempre", "Sin suscripción · Sin anuncios")],
+    "pt": [("Do Fácil ao Diabólico", "5 níveis, totalmente offline"), ("Dicas que ensinam", "Veja o porquê, não só a resposta"),
+           ("Aprenda o X-Wing na prática", "Veja o padrão e resolva os difíceis"), ("Vire um grão-mestre", "18 técnicas, passo a passo"),
+           ("Desafie seus amigos", "Envie um sudoku com um único código"), ("Pontos, efeitos e temas", "Cada linha completa é uma delícia"),
+           ("Pague uma vez, use para sempre", "Sem assinatura · Sem anúncios")],
+}
+CJK = ("ko", "ja")
 
 def gradient():
     top, bot = (52, 84, 214), (28, 40, 140)
@@ -37,8 +53,8 @@ def text_c(d, y, s, font, fill, ko):
     d.text(((W - w) / 2, y), s, font=font, fill=fill, stroke_width=sw, stroke_fill=fill)
 
 def make(lang, idx, shot, head, sub):
-    ko = lang == "ko"
-    src = os.path.join(ROOT, "screens" if ko else "store/src-en", shot + ".png")
+    ko = lang in CJK
+    src = os.path.join(ROOT, "screens" if lang == "ko" else f"store/src-{lang}", shot + ".png")
     img = BG.copy()
     d = ImageDraw.Draw(img)
     size = 84 if ko else 80
@@ -72,7 +88,7 @@ def make(lang, idx, shot, head, sub):
     os.makedirs(out, exist_ok=True)
     img.save(os.path.join(out, f"{idx:02d}.png"), optimize=True)
 
-for lang in ("ko", "en"):
-    for i, (shot, kh, ks, eh, es) in enumerate(SLIDES, 1):
-        make(lang, i, shot, kh if lang == "ko" else eh, ks if lang == "ko" else es)
+for lang, rows in TEXT.items():
+    for i, (shot, (head, sub)) in enumerate(zip(SHOTS, rows), 1):
+        make(lang, i, shot, head, sub)
 print("done")
