@@ -87,5 +87,17 @@ class SemanticsTest {
         assertAllLabeled("도전 결과") { CompleteCard(1000, 0, 100, ChallengeResult(10, 1, 0, 90), {}, {}, {}) }
     }
 
+    @Test fun trainingHub() {
+        assertAllLabeled("트레이닝 목록") { com.uk2solutions.sudoku.ui.training.TrainingContent(mapOf("rules" to 3, "naked_single" to 1), false, {}, {}) }
+    }
+
+    @Test fun lessonQuiz() {
+        val l = com.uk2solutions.sudoku.domain.training.Lessons.byId("naked_single")!!
+        val quiz = (1..3).mapNotNull { com.uk2solutions.sudoku.domain.training.TrainingExamples.find(l, it) }
+        val ui = com.uk2solutions.sudoku.ui.training.LessonUi(lesson = l, loading = false, phase = com.uk2solutions.sudoku.ui.training.LessonPhase.QUIZ, quiz = quiz)
+        val n = assertAllLabeled("레슨 문제") { com.uk2solutions.sudoku.ui.training.LessonBody(ui, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}) }
+        assertTrue("칸 81개 + 숫자 9개 + 뒤로", n >= 81 + 9)
+    }
+
     @Test fun challengeReceive() { assertAllLabeled("도전장 받기") { ReceiveCard("", false, {}, {}) } }
 }

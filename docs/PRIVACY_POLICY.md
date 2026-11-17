@@ -8,7 +8,7 @@
 
 ## 2. 기기에만 저장되는 정보
 - 진행 중인 게임, 완료 기록(시간·실수·점수), 오늘의 도전 기록과 연속 일수
-- 설정(테마, 언어, 소리, 진동, 알림 등), 하루 힌트 사용 횟수
+- 설정(테마, 언어, 소리, 진동, 알림 등), 하루 힌트 사용 횟수, 트레이닝 레슨별 최고 점수
 - 프리미엄 구매 여부와 마지막 확인 시각(캐시)
 
 이 정보는 앱을 삭제하거나 기기의 "저장소 지우기"를 하면 삭제됩니다. 운영자는 이 정보에 접근할 수 없습니다.
@@ -44,7 +44,7 @@
 
 **Summary.** The Sudoku app has no accounts, no servers of its own, no ads, and no analytics or crash-reporting tools. Game progress and settings stay on your device. The operator does not collect or receive your personal information.
 
-**Stored only on your device:** games in progress, completed-game records (time, mistakes, score), daily-challenge history and streak, settings (theme, language, sound, vibration, notifications), the daily hint counter, and a cached flag showing whether Premium is unlocked. Uninstalling the app or clearing its storage deletes this data.
+**Stored only on your device:** games in progress, completed-game records (time, mistakes, score), daily-challenge history and streak, settings (theme, language, sound, vibration, notifications), the daily hint counter, best scores of training lessons, and a cached flag showing whether Premium is unlocked. Uninstalling the app or clearing its storage deletes this data.
 
 **Payments.** Premium is sold through Google Play Billing. Google processes payment details; they are not shared with the operator. The app only stores whether Premium is unlocked.
 

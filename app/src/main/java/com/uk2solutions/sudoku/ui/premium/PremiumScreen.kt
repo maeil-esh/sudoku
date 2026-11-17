@@ -79,7 +79,7 @@ fun PremiumContent(
         Surface(shape = RoundedCornerShape(20.dp), color = c.accentSoft, modifier = Modifier.fillMaxWidth()) {
             Column(Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 Text(stringResource(R.string.premium_tagline), fontWeight = FontWeight.SemiBold, fontSize = 17.sp, color = c.ink)
-                listOf(R.string.premium_benefit_levels, R.string.premium_benefit_hints, R.string.premium_benefit_stats, R.string.premium_benefit_themes).forEach {
+                listOf(R.string.premium_benefit_levels, R.string.premium_benefit_hints, R.string.premium_benefit_training, R.string.premium_benefit_stats, R.string.premium_benefit_themes).forEach {
                     Row { Text("✓  ", color = c.accent, fontWeight = FontWeight.Bold); Text(stringResource(it), color = c.ink) }
                 }
             }

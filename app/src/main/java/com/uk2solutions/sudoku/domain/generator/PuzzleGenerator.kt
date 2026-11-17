@@ -31,6 +31,22 @@ class PuzzleGenerator(private val techniques: TechniqueSolver = TechniqueSolver(
         }
     }
 
+    /** 기법 등급 제약 없이 유일해만 보장하는 퍼즐(단서 수 [clues] 이하까지 대칭 제거). 트레이닝 예제 탐색용. */
+    fun generateUnique(seed: Long, clues: Int = 25): Puzzle {
+        val rnd = SeededRandom(seed * 7_000_003L + 11)
+        val solution = Solver.randomFilledGrid(rnd)
+        val grid = solution.copyOf()
+        var n = 81
+        for (i in IntArray(41) { it }.also { rnd.shuffle(it) }) {
+            if (n <= clues) break
+            val j = 80 - i
+            val a = grid[i]; val b = grid[j]
+            grid[i] = 0; grid[j] = 0
+            if (Solver.countSolutions(grid, 2) == 1) n -= if (i == j) 1 else 2 else { grid[i] = a; grid[j] = b }
+        }
+        return Puzzle(Difficulty.DEVIL, Board.format(grid), Board.format(solution))
+    }
+
     private fun tryGenerate(difficulty: Difficulty, levels: IntRange, rnd: SeededRandom): Puzzle? {
         val cap = levels.last
         val solution = Solver.randomFilledGrid(rnd)

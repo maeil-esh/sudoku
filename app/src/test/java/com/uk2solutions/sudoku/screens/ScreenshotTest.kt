@@ -288,4 +288,44 @@ class ScreenshotTest {
     @Test fun hintNaked3() { val (ui, s) = hintUi(Difficulty.EASY, false, 2); shoot("38_hint_naked_step3_answer") { Game(ui, s) } }
     @Test fun hintHidden1() { val (ui, s) = hintUi(Difficulty.MEDIUM, true, 0); shoot("39_hint_hidden_step1") { Game(ui, s) } }
     @Test fun hintHidden2Dark() { val (ui, s) = hintUi(Difficulty.MEDIUM, true, 1); shoot("40_hint_hidden_step2_blockers_dark", dark = true) { Game(ui, s) } }
+
+    // ---------------------------------------------------------------- 트레이닝
+    private fun lessonUi(id: String, phase: com.uk2solutions.sudoku.ui.training.LessonPhase, demoStep: Int = 0, qIndex: Int = 0, answered: Boolean = false, picked: Set<Int> = emptySet(), correct: Boolean = false): com.uk2solutions.sudoku.ui.training.LessonUi {
+        val l = com.uk2solutions.sudoku.domain.training.Lessons.byId(id)!!
+        val demo = com.uk2solutions.sudoku.domain.training.TrainingExamples.find(l, 0)
+        val quiz = (1..3).mapNotNull { com.uk2solutions.sudoku.domain.training.TrainingExamples.find(l, it) }
+        val ex = quiz.getOrNull(qIndex)
+        // 정답 칸을 골랐다고 가정(correct=true) 또는 일부만 고른 상태(correct=false)
+        val pk = if (picked.isNotEmpty()) picked else if (answered && ex != null) (if (correct) ex.expectedCells else ex.expectedCells.take(1).toSet()) else emptySet()
+        return com.uk2solutions.sudoku.ui.training.LessonUi(
+            lesson = l, loading = false, phase = phase, demo = demo, demoStep = demoStep, quiz = quiz, qIndex = qIndex,
+            picked = pk, answered = answered, correct = correct, chosenDigit = 0, score = 2, nextLessonId = "x",
+        )
+    }
+
+    @Composable private fun Lesson(ui: com.uk2solutions.sudoku.ui.training.LessonUi) =
+        com.uk2solutions.sudoku.ui.training.LessonBody(ui, {}, {}, {}, {}, {}, {}, {}, {}, {}, {})
+
+    @Test fun trainingHub() = shoot("41_training_hub") {
+        com.uk2solutions.sudoku.ui.training.TrainingContent(
+            mapOf("rules" to 3, "naked_single" to 3, "hidden_single" to 2, "pointing" to 1), premium = false, onOpen = {}, onPremium = {},
+        )
+    }
+
+    @Test fun trainingHubPremium() = shoot("42_training_hub_premium_dark", dark = true) {
+        com.uk2solutions.sudoku.ui.training.TrainingContent(
+            mapOf("rules" to 3, "naked_single" to 3, "hidden_single" to 3, "pointing" to 3, "claiming" to 2, "naked_pair" to 3, "hidden_pair" to 1), premium = true, onOpen = {}, onPremium = {},
+        )
+    }
+
+    @Test fun lessonIntro() { val ui = lessonUi("hidden_single", com.uk2solutions.sudoku.ui.training.LessonPhase.INTRO); shoot("43_lesson_intro") { Lesson(ui) } }
+    @Test fun lessonNakedSingleDemo0() { val ui = lessonUi("naked_single", com.uk2solutions.sudoku.ui.training.LessonPhase.DEMO, 0); shoot("44_lesson_naked_single_demo1") { Lesson(ui) } }
+    @Test fun lessonNakedSingleQuiz() { val ui = lessonUi("naked_single", com.uk2solutions.sudoku.ui.training.LessonPhase.QUIZ); shoot("45_lesson_naked_single_quiz") { Lesson(ui) } }
+    @Test fun lessonHiddenSingleDemo1() { val ui = lessonUi("hidden_single", com.uk2solutions.sudoku.ui.training.LessonPhase.DEMO, 1); shoot("46_lesson_hidden_single_demo2") { Lesson(ui) } }
+    @Test fun lessonPointingDemo0() { val ui = lessonUi("pointing", com.uk2solutions.sudoku.ui.training.LessonPhase.DEMO, 0); shoot("47_lesson_pointing_demo1_pattern") { Lesson(ui) } }
+    @Test fun lessonPointingDemo1() { val ui = lessonUi("pointing", com.uk2solutions.sudoku.ui.training.LessonPhase.DEMO, 1); shoot("48_lesson_pointing_demo2_remove") { Lesson(ui) } }
+    @Test fun lessonXWingDemo1() { val ui = lessonUi("x_wing", com.uk2solutions.sudoku.ui.training.LessonPhase.DEMO, 1); shoot("49_lesson_xwing_demo2") { Lesson(ui) } }
+    @Test fun lessonYWingQuiz() { val ui = lessonUi("y_wing", com.uk2solutions.sudoku.ui.training.LessonPhase.QUIZ); shoot("50_lesson_ywing_quiz") { Lesson(ui) } }
+    @Test fun lessonNakedPairWrong() { val ui = lessonUi("naked_pair", com.uk2solutions.sudoku.ui.training.LessonPhase.QUIZ, answered = true, correct = false); shoot("51_lesson_naked_pair_wrong_feedback", dark = true) { Lesson(ui) } }
+    @Test fun lessonResult() { val ui = lessonUi("naked_pair", com.uk2solutions.sudoku.ui.training.LessonPhase.RESULT); shoot("52_lesson_result") { Lesson(ui) } }
 }

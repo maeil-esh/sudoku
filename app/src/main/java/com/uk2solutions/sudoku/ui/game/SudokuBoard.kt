@@ -49,6 +49,9 @@ import com.uk2solutions.sudoku.domain.game.GameState
 import com.uk2solutions.sudoku.domain.model.Board
 import com.uk2solutions.sudoku.ui.theme.SudokuTheme
 
+/** 트레이닝에서 후보(메모) 숫자를 강조하는 색: 패턴을 이루는 후보 / 지울 후보. */
+enum class NoteTone { PATTERN, REMOVE }
+
 /**
  * SPEC §6.1: 박스 경계 2dp(ink), 칸 경계 1dp(line), 바깥 2dp(ink).
  * [sameDigit]: 강조할 숫자(선택 칸의 값, 숫자 우선 모드에서는 고른 숫자). 0이면 없음.
@@ -68,6 +71,8 @@ fun SudokuBoard(
     spotlight: Set<Int>? = null,
     emphasis: Set<Int> = emptySet(),
     previewDigit: Int = 0,
+    noteTones: Map<Int, Map<Int, NoteTone>> = emptyMap(),
+    picked: Set<Int> = emptySet(),
     modifier: Modifier = Modifier,
 ) {
     val c = SudokuTheme.colors
@@ -118,6 +123,7 @@ fun SudokuBoard(
                         Cell(
                             flash = f, hinted = i == hintCell, index = i, value = state.values[i], notes = state.notes[i],
                             given = state.isGiven(i), error = isErr, selected = isSel, background = bg,
+                            tones = noteTones[i], picked = i in picked,
                             dim = spotlight != null && !inSpot, preview = if (spotlight != null && i == hintCell) previewDigit else 0,
                             onClick = { onCell(i) }, modifier = Modifier.weight(1f).fillMaxHeight(),
                         )
@@ -158,7 +164,7 @@ private fun ScoreFloat(gain: ScoreGain, cell: Dp) {
 
 @Composable
 private fun Cell(
-    dim: Boolean, preview: Int, flash: Float, hinted: Boolean, index: Int, value: Int, notes: Int, given: Boolean, error: Boolean, selected: Boolean,
+    tones: Map<Int, NoteTone>?, picked: Boolean, dim: Boolean, preview: Int, flash: Float, hinted: Boolean, index: Int, value: Int, notes: Int, given: Boolean, error: Boolean, selected: Boolean,
     background: Color, onClick: () -> Unit, modifier: Modifier,
 ) {
     val c = SudokuTheme.colors
@@ -172,11 +178,11 @@ private fun Cell(
         notes != 0 -> stringResource(R.string.cell_desc_notes, row, col, noteList)
         else -> stringResource(R.string.cell_desc_empty, row, col)
     }
-    val bg = lerp(background, c.accent.copy(alpha = 0.55f).compositeOver(c.surface), flash)
+    val bg = lerp(if (picked) c.cellSelected else background, c.accent.copy(alpha = 0.55f).compositeOver(c.surface), flash)
     Box(
         modifier
             .background(bg)
-            .then(if (selected || hinted) Modifier.border(if (hinted) 3.dp else 2.dp, c.accent) else Modifier)
+            .then(if (selected || hinted || picked) Modifier.border(if (hinted || picked) 3.dp else 2.dp, c.accent) else Modifier)
             .then(if (dim) Modifier.drawWithContent { drawContent(); drawRect(Color.Black.copy(alpha = 0.55f)) } else Modifier)
             .clickable(onClick = onClick)
             .semantics { contentDescription = desc; role = Role.Button; this.selected = selected },
@@ -198,7 +204,14 @@ private fun Cell(
                     for (k in 0 until 3) {
                         val d = r * 3 + k + 1
                         Box(Modifier.weight(1f).fillMaxHeight(), contentAlignment = Alignment.Center) {
-                            if (notes and (1 shl (d - 1)) != 0) Text(d.toString(), fontSize = capped(10f, 1.0f), lineHeight = capped(10f, 1.0f), color = c.muted)
+                            if (notes and (1 shl (d - 1)) != 0) {
+                                val tone = tones?.get(d)
+                                Text(
+                                    d.toString(), fontSize = capped(10f, 1.0f), lineHeight = capped(10f, 1.0f),
+                                    fontWeight = if (tone != null) FontWeight.ExtraBold else FontWeight.Normal,
+                                    color = when (tone) { NoteTone.PATTERN -> c.accent; NoteTone.REMOVE -> c.error; null -> c.muted },
+                                )
+                            }
                         }
                     }
                 }

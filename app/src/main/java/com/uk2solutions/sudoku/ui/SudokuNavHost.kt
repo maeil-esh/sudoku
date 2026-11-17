@@ -36,9 +36,11 @@ import com.uk2solutions.sudoku.ui.theme.SudokuTheme
 
 private const val GAME_ROUTE = "game"
 private const val PREMIUM_ROUTE = "premium"
+private const val LESSON_ROUTE = "lesson"
 
-enum class Tab(val route: String, @StringRes val label: Int, val icon: ImageVector) {
+enum class Tab(val route: String, @StringRes val label: Int, val icon: ImageVector?, @androidx.annotation.DrawableRes val iconRes: Int = 0) {
     Home("home", R.string.tab_home, Icons.Filled.Home),
+    Training("training", R.string.tab_training, null, R.drawable.ic_bulb),
     Stats("stats", R.string.tab_stats, Icons.Filled.Star),
     Settings("settings", R.string.tab_settings, Icons.Filled.Settings),
 }
@@ -51,7 +53,7 @@ fun SudokuNavHost(hasPendingChallenge: Boolean = false) {
     }
     val entry by nav.currentBackStackEntryAsState()
     val current = entry?.destination?.route
-    val inGame = current?.startsWith(GAME_ROUTE) == true || current == PREMIUM_ROUTE
+    val inGame = current?.startsWith(GAME_ROUTE) == true || current == PREMIUM_ROUTE || current?.startsWith(LESSON_ROUTE) == true
     Scaffold(
         containerColor = SudokuTheme.colors.background,
         bottomBar = {
@@ -66,7 +68,7 @@ fun SudokuNavHost(hasPendingChallenge: Boolean = false) {
                                 restoreState = true
                             }
                         },
-                        icon = { Icon(tab.icon, contentDescription = null) },
+                        icon = { if (tab.icon != null) Icon(tab.icon, contentDescription = null) else Icon(androidx.compose.ui.res.painterResource(tab.iconRes), contentDescription = null) },
                         label = { Text(stringResource(tab.label)) },
                     )
                 }
@@ -93,6 +95,16 @@ fun SudokuNavHost(hasPendingChallenge: Boolean = false) {
                     onNewGame = { d: Difficulty ->
                         nav.navigate("$GAME_ROUTE?difficulty=${d.name}") { popUpTo(Tab.Home.route) }
                     },
+                )
+            }
+            composable(Tab.Training.route) {
+                com.uk2solutions.sudoku.ui.training.TrainingHubScreen(onOpen = { nav.navigate("$LESSON_ROUTE/$it") }, onPremium = { nav.navigate(PREMIUM_ROUTE) })
+            }
+            composable("$LESSON_ROUTE/{id}", arguments = listOf(navArgument("id") { type = NavType.StringType })) {
+                com.uk2solutions.sudoku.ui.training.LessonScreen(
+                    onBack = { nav.popBackStack(Tab.Training.route, inclusive = false) },
+                    onOpen = { id -> nav.navigate("$LESSON_ROUTE/$id") { popUpTo(Tab.Training.route) } },
+                    onPremium = { nav.navigate(PREMIUM_ROUTE) },
                 )
             }
             composable(Tab.Stats.route) { com.uk2solutions.sudoku.ui.stats.StatsScreen(onPremium = { nav.navigate(PREMIUM_ROUTE) }) }

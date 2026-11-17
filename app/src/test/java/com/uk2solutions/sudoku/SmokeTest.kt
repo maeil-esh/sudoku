@@ -5,5 +5,5 @@ import org.junit.Assert.assertEquals
 import org.junit.Test
 
 class SmokeTest {
-    @Test fun threeTabs() = assertEquals(3, Tab.entries.size)
+    @Test fun fourTabs() = assertEquals(4, Tab.entries.size)
 }
