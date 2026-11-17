@@ -121,7 +121,7 @@
     <string name="cd_score_gain">คะแนน %1$d</string>
     <string name="premium_title">พรีเมียม</string>
     <string name="premium_tagline">ซื้อครั้งเดียว ใช้ได้ตลอดไป</string>
-    <string name="premium_benefit_levels">ระดับผู้เชี่ยวชาญและนรก</string>
+    <string name="premium_benefit_levels">ระดับนรก</string>
     <string name="premium_benefit_hints">คำใบ้ไม่จำกัด</string>
     <string name="premium_benefit_stats">สถิติแบบละเอียด</string>
     <string name="premium_benefit_themes">ธีมสีเพิ่มเติม 3 แบบ</string>

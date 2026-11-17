@@ -122,23 +122,25 @@ fun HomeContent(
         OutlinedButton(onClick = onReceiveChallenge, shape = RoundedCornerShape(14.dp), modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) {
             Text(stringResource(R.string.challenge_receive))
         }
-        // 전문가·악마: 무료는 잠금 표시(탭하면 프리미엄 화면), 프리미엄은 기법 확장 전까지 "준비 중"
+        // 전문가: 누구나 플레이(막히면 힌트→트레이닝으로 배운다). 악마: 프리미엄은 시작, 무료는 잠금(탭하면 프리미엄 화면).
         AdaptiveRow { item ->
             listOf(Difficulty.EXPERT, Difficulty.DEVIL).forEach { d ->
                 val locked = !Entitlement(premium).canPlay(d)
                 val lockDesc = stringResource(R.string.cd_locked)
                 val levelName = stringResource(d.labelRes())
-                OutlinedButton(
-                    onClick = { if (locked) onPremium() }, enabled = locked, shape = RoundedCornerShape(14.dp),
-                    modifier = item.heightIn(min = 56.dp).semantics { if (locked) contentDescription = "$levelName, $lockDesc" },
+                if (locked) OutlinedButton(
+                    onClick = onPremium, shape = RoundedCornerShape(14.dp),
+                    modifier = item.heightIn(min = 56.dp).semantics { contentDescription = "$levelName, $lockDesc" },
                 ) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(stringResource(d.labelRes()), fontWeight = FontWeight.SemiBold)
-                        if (locked) Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(levelName, fontWeight = FontWeight.SemiBold)
+                        Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(painterResource(R.drawable.ic_lock), contentDescription = null, modifier = Modifier.size(14.dp))
                             Text(" " + stringResource(R.string.premium_title), fontSize = 12.sp)
-                        } else Text(stringResource(R.string.home_coming_soon), fontSize = 12.sp)
+                        }
                     }
+                } else Button(onClick = { onNewGame(d) }, shape = RoundedCornerShape(14.dp), modifier = item.heightIn(min = 56.dp)) {
+                    Text(levelName, fontWeight = FontWeight.SemiBold)
                 }
             }
         }

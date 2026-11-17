@@ -91,6 +91,7 @@ fun SudokuNavHost(hasPendingChallenge: Boolean = false) {
                 arguments = listOf(navArgument("difficulty") { type = NavType.StringType; nullable = true; defaultValue = null }),
             ) {
                 GameScreen(
+                    onLearn = { id -> nav.navigate("$LESSON_ROUTE/$id") },
                     onExit = { nav.popBackStack(Tab.Home.route, inclusive = false) },
                     onNewGame = { d: Difficulty ->
                         nav.navigate("$GAME_ROUTE?difficulty=${d.name}") { popUpTo(Tab.Home.route) }

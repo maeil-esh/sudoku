@@ -92,4 +92,24 @@
     <string name="tr_swordfish_s1">Number %1$d: its candidates in three lines all fall inside the same three crossing lines (marked).</string>
     <string name="tr_swordfish_s2">The three lines share the number %1$d across the three crossing lines, so it can be removed from the other cells of those crossing lines (red).</string>
     <string name="tr_swordfish_ask">Tap every cell where %1$d can be removed because of the Swordfish.</string>
+    <string name="rank_rookie">Rookie</string>
+    <string name="rank_apprentice">Apprentice</string>
+    <string name="rank_solver">Solver</string>
+    <string name="rank_expert">Expert</string>
+    <string name="rank_grandmaster">Grandmaster</string>
+    <string name="rank_title">My skill level</string>
+    <string name="rank_to_next">%1$d more lessons to reach %2$s</string>
+    <string name="rank_max">You\'ve mastered every skill. Grandmaster!</string>
+    <string name="rank_premium_hint">The next skills are in Premium</string>
+    <string name="rank_premium_cta">Become a grandmaster with Premium</string>
+    <string name="training_teaser_tag">Preview</string>
+    <string name="training_paywall_title">This is where experts are made</string>
+    <string name="training_paywall_body">Premium unlocks the full lesson — the removal step and practice questions — plus %1$d advanced skills, up to Swordfish.</string>
+    <string name="training_paywall_cta">See Premium</string>
+    <string name="training_paywall_later">Maybe later</string>
+    <string name="hint_learn_body">This spot uses the technique: %1$s</string>
+    <string name="hint_learn_cta">Learn it</string>
+    <string name="hint_learn_beyond">This spot needs advanced reasoning beyond the lessons</string>
+    <string name="game_generating">Creating your puzzle…</string>
+    <string name="hint_intro_technique">No single number is forced here — a technique is needed. Tap "Learn it" to see which one.</string>
 </resources>

@@ -121,7 +121,7 @@
     <string name="cd_score_gain">점수 %1$d</string>
     <string name="premium_title">프리미엄</string>
     <string name="premium_tagline">한 번 구매로 계속 사용</string>
-    <string name="premium_benefit_levels">전문가·악마 난이도</string>
+    <string name="premium_benefit_levels">악마 난이도</string>
     <string name="premium_benefit_hints">힌트 무제한</string>
     <string name="premium_benefit_stats">상세 통계</string>
     <string name="premium_benefit_themes">추가 컬러 테마 3종</string>

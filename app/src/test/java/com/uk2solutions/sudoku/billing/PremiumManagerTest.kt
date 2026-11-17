@@ -93,7 +93,7 @@ class PremiumManagerTest {
 
     @Test fun entitlementControlsLocks() {
         val free = Entitlement(false); val pro = Entitlement(true)
-        assertTrue(free.canPlay(Difficulty.HARD)); assertFalse(free.canPlay(Difficulty.EXPERT)); assertFalse(free.canPlay(Difficulty.DEVIL))
+        assertTrue(free.canPlay(Difficulty.HARD)); assertTrue("전문가는 누구나", free.canPlay(Difficulty.EXPERT)); assertFalse(free.canPlay(Difficulty.DEVIL))
         assertTrue(pro.canPlay(Difficulty.DEVIL))
         assertEquals(3, free.hintsPerDay); assertNull(pro.hintsPerDay)
         assertFalse(free.detailedStats); assertTrue(pro.detailedStats)

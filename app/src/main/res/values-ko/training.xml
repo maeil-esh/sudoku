@@ -91,4 +91,24 @@
     <string name="tr_swordfish_s1">숫자 %1$d — 세 줄의 후보가 모두 같은 세 교차 줄 안에 있습니다(표시된 칸).</string>
     <string name="tr_swordfish_s2">숫자 %1$d — 세 줄이 이 숫자를 세 교차 줄에 나눠 가지므로, 그 교차 줄의 다른 칸에서는 지울 수 있습니다(빨간 후보).</string>
     <string name="tr_swordfish_ask">스워드피시 때문에 숫자 %1$d 후보를 지울 수 있는 칸을 모두 누르세요.</string>
+    <string name="rank_rookie">새내기</string>
+    <string name="rank_apprentice">견습</string>
+    <string name="rank_solver">중수</string>
+    <string name="rank_expert">고수</string>
+    <string name="rank_grandmaster">초고수</string>
+    <string name="rank_title">나의 실력</string>
+    <string name="rank_to_next">%2$s까지 레슨 %1$d개 남았어요</string>
+    <string name="rank_max">모든 기술을 마스터했어요. 초고수 인증!</string>
+    <string name="rank_premium_hint">다음 기술은 프리미엄에서 열려요</string>
+    <string name="rank_premium_cta">프리미엄으로 초고수 되기</string>
+    <string name="training_teaser_tag">맛보기</string>
+    <string name="training_paywall_title">여기서부터 고수가 갈려요</string>
+    <string name="training_paywall_body">프리미엄에서는 후보를 지우는 단계와 연습 문제까지, 스워드피시를 포함한 고급 기술 %1$d개를 모두 배울 수 있어요.</string>
+    <string name="training_paywall_cta">프리미엄 보기</string>
+    <string name="training_paywall_later">나중에</string>
+    <string name="hint_learn_body">이 자리에 쓰는 기술: %1$s</string>
+    <string name="hint_learn_cta">배우기</string>
+    <string name="hint_learn_beyond">이 자리는 레슨에 없는 고급 추론이 필요해요</string>
+    <string name="game_generating">퍼즐을 만드는 중…</string>
+    <string name="hint_intro_technique">바로 정해지는 칸이 없는 자리입니다. 기술이 필요해요 — "배우기"를 눌러 어떤 기술인지 확인해 보세요.</string>
 </resources>

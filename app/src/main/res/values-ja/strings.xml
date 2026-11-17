@@ -121,7 +121,7 @@
     <string name="cd_score_gain">スコア %1$d</string>
     <string name="premium_title">プレミアム</string>
     <string name="premium_tagline">1回の購入でずっと使えます</string>
-    <string name="premium_benefit_levels">エキスパート・デビルの難易度</string>
+    <string name="premium_benefit_levels">デビル難易度</string>
     <string name="premium_benefit_hints">ヒント無制限</string>
     <string name="premium_benefit_stats">詳細な統計</string>
     <string name="premium_benefit_themes">追加カラーテーマ3種</string>

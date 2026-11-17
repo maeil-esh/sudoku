@@ -111,6 +111,7 @@ fun GameBody(
     onHint: () -> Unit, onPause: () -> Unit, onResume: () -> Unit, onDigit: (Int) -> Unit,
     onCancelWrong: () -> Unit = {},
     onHintNext: () -> Unit = {}, onHintApply: () -> Unit = {}, onHintClose: () -> Unit = {},
+    onLearn: (String) -> Unit = {},
 ) {
     val c = SudokuTheme.colors
     val padDigit = if (ui.settings.numberFirst) ui.selectedDigit else if (ui.selected >= 0) state.values[ui.selected] else 0
@@ -146,7 +147,7 @@ fun GameBody(
         val plan = ui.hintPlan
         if (plan != null && !ui.paused) {
             Spacer(Modifier.height(12.dp))
-            HintCard(plan, ui.hintStep, onNext = onHintNext, onApply = onHintApply, onClose = onHintClose)
+            HintCard(plan, ui.hintStep, onNext = onHintNext, onApply = onHintApply, onClose = onHintClose, onLearn = onLearn)
         } else {
             if (wrong.isNotEmpty() && !ui.paused) WrongBanner(ui.blockedNudge, onCancelWrong)
             else HintBanner(ui.hint, ui.hintsExhausted)
@@ -165,7 +166,7 @@ fun GameBody(
 }
 
 @Composable
-fun GameScreen(onExit: () -> Unit, onNewGame: (Difficulty) -> Unit, vm: GameViewModel = hiltViewModel()) {
+fun GameScreen(onExit: () -> Unit, onNewGame: (Difficulty) -> Unit, onLearn: (String) -> Unit = {}, vm: GameViewModel = hiltViewModel()) {
     val ui by vm.ui.collectAsStateWithLifecycle()
     val scope = rememberCoroutineScope()
     val haptic = LocalHapticFeedback.current
@@ -179,7 +180,10 @@ fun GameScreen(onExit: () -> Unit, onNewGame: (Difficulty) -> Unit, vm: GameView
 
     val state = ui.state
     if (ui.loading || state == null) {
-        Box(Modifier.fillMaxSize().background(c.background))
+        Column(Modifier.fillMaxSize().background(c.background), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
+            androidx.compose.material3.CircularProgressIndicator(color = c.accent)
+            Text(stringResource(R.string.game_generating), color = c.muted, modifier = Modifier.padding(top = 16.dp))
+        }
         return
     }
     LaunchedEffect(ui.blockedNudge) {
@@ -202,7 +206,7 @@ fun GameScreen(onExit: () -> Unit, onNewGame: (Difficulty) -> Unit, vm: GameView
         ui, state, elapsedNow, onBack = { leave() }, onCell = { feedback(vm.onCell(it)) }, onUndo = vm::onUndo,
         onErase = { feedback(vm.onErase()) }, onNote = vm::onToggleNote, onHint = vm::onHint, onPause = vm::pause,
         onResume = vm::resume, onDigit = { feedback(vm.onDigit(it)) }, onCancelWrong = { feedback(vm.onCancelWrong()) },
-        onHintNext = vm::onHintNext, onHintApply = { feedback(InputResult.FILLED); vm.onHintApply() }, onHintClose = vm::onHintClose,
+        onHintNext = vm::onHintNext, onHintApply = { feedback(InputResult.FILLED); vm.onHintApply() }, onHintClose = vm::onHintClose, onLearn = onLearn,
     )
 
     if (ui.mistakeLimitReached) {
@@ -414,7 +418,7 @@ private fun WrongBanner(nudge: Int, onCancel: () -> Unit) {
 
 /** 힌트 설명 카드: 제목(기법 이름), 단계별 설명, 단계 점, 다음/채우기 버튼. 보드는 관련 칸만 밝게 남는다. */
 @Composable
-private fun HintCard(plan: com.uk2solutions.sudoku.domain.game.HintPlan, step: Int, onNext: () -> Unit, onApply: () -> Unit, onClose: () -> Unit) {
+private fun HintCard(plan: com.uk2solutions.sudoku.domain.game.HintPlan, step: Int, onNext: () -> Unit, onApply: () -> Unit, onClose: () -> Unit, onLearn: (String) -> Unit) {
     val c = SudokuTheme.colors
     val st = plan.steps[step.coerceIn(0, plan.steps.lastIndex)]
     val last = step >= plan.steps.lastIndex
@@ -432,7 +436,7 @@ private fun HintCard(plan: com.uk2solutions.sudoku.domain.game.HintPlan, step: I
         com.uk2solutions.sudoku.domain.game.StepType.INTRO -> when (plan.hint.technique) {
             HintTechnique.NAKED_SINGLE -> stringResource(R.string.hint_intro_naked)
             HintTechnique.HIDDEN_SINGLE -> stringResource(R.string.hint_intro_hidden, unitName, plan.hint.digit)
-            HintTechnique.DEDUCTION -> stringResource(R.string.hint_intro_deduction)
+            HintTechnique.DEDUCTION -> stringResource(if (plan.hint.learn != null) R.string.hint_intro_technique else R.string.hint_intro_deduction)
         }
         com.uk2solutions.sudoku.domain.game.StepType.ELIMINATION -> when (plan.hint.technique) {
             HintTechnique.HIDDEN_SINGLE -> stringResource(R.string.hint_elim_hidden, unitName, plan.hint.digit)
@@ -449,6 +453,7 @@ private fun HintCard(plan: com.uk2solutions.sudoku.domain.game.HintPlan, step: I
                 }
             }
             Text(text, color = c.muted, fontSize = 15.sp, lineHeight = 22.sp, modifier = Modifier.heightIn(min = 66.dp))
+            if (plan.hint.technique == HintTechnique.DEDUCTION) LearnRow(plan.hint.learn, onLearn)
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
                 plan.steps.indices.forEach { i ->
                     Surface(
@@ -461,6 +466,24 @@ private fun HintCard(plan: com.uk2solutions.sudoku.domain.game.HintPlan, step: I
                 onClick = if (last) onApply else onNext, shape = RoundedCornerShape(16.dp),
                 modifier = Modifier.fillMaxWidth().heightIn(min = 52.dp),
             ) { Text(stringResource(if (last) R.string.hint_fill else R.string.hint_next), fontWeight = FontWeight.Bold, fontSize = 17.sp) }
+        }
+    }
+}
+
+/** 추론이 필요한 자리: 어떤 기술인지 알려 주고 트레이닝 레슨으로 이어 준다(잠긴 레슨은 맛보기→프리미엄). */
+@Composable
+private fun LearnRow(learn: com.uk2solutions.sudoku.domain.technique.Technique?, onLearn: (String) -> Unit) {
+    val c = SudokuTheme.colors
+    val lesson = learn?.let { t -> com.uk2solutions.sudoku.domain.training.Lessons.all.firstOrNull { it.technique == t && !it.rules } }
+    Surface(shape = RoundedCornerShape(14.dp), color = c.accentSoft, modifier = Modifier.fillMaxWidth()) {
+        Row(Modifier.padding(start = 12.dp, top = 4.dp, bottom = 4.dp, end = 4.dp), verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                if (lesson != null) stringResource(R.string.hint_learn_body, com.uk2solutions.sudoku.ui.training.lessonTitle(lesson)) else stringResource(R.string.hint_learn_beyond),
+                color = c.ink, fontSize = 13.sp, fontWeight = FontWeight.Medium, modifier = Modifier.weight(1f),
+            )
+            if (lesson != null) TextButton(onClick = { onLearn(lesson.id) }, modifier = Modifier.heightIn(min = 48.dp)) {
+                Text(stringResource(R.string.hint_learn_cta), color = c.accent, fontWeight = FontWeight.Bold)
+            }
         }
     }
 }

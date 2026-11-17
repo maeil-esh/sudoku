@@ -13,7 +13,7 @@
 
 ■ 이런 점이 좋아요
 • 트레이닝: 규칙부터 X-윙·Y-윙·스워드피시까지 12개 레슨 — 패턴을 보드에 표시하며 배우고, 연습 문제로 확인해요
-• 쉬움부터 어려움까지, 난이도마다 푸는 방법이 달라요 — 쉬움은 "후보가 하나뿐인 칸"만 찾으면 끝까지 풀려요
+• 쉬움부터 전문가까지 5단계 난이도 중 전문가까지 무료! 난이도마다 필요한 기술이 달라요 — 쉬움은 "후보가 하나뿐인 칸"만 찾으면 끝까지 풀려요
 • 오늘의 도전: 하루 한 판, 모든 사용자가 같은 퍼즐. 연속 일수 기록과 알림(선택)
 • 도전장: 푼 결과를 친구에게 보내고, 친구가 같은 퍼즐을 풀어 점수·시간을 비교해요(서버·가입 필요 없음)
 • 틀린 숫자는 바로 알려 줘요. 지우고 다시 도전해 보세요
@@ -23,7 +23,7 @@
 • 기록: 난이도별 완료 수·최고·평균, 연속 일수
 
 ■ 프리미엄 (한 번 결제로 영구)
-• 전문가·악마 난이도, 힌트 무제한, 트레이닝 전체 레슨, 상세 통계, 추가 컬러 테마 3종
+• 악마 난이도, 중급·고수 레슨 6개(숨은 쌍부터 X-윙·Y-윙·스워드피시까지), 힌트 무제한, 상세 통계, 추가 컬러 테마 3종
 
 개인정보 걱정 없이: 계정도 서버도 없고, 모든 기록은 내 기기에만 저장돼요.
 
@@ -37,7 +37,7 @@ Enjoy Sudoku the clean way — no ads, no internet needed, no account.
 
 ■ Highlights
 • Training: 12 lessons from the rules to X-Wing, Y-Wing and Swordfish — learn with the pattern shown on the board, then check with practice questions
-• Easy to Hard levels that actually teach different techniques — Easy only needs "cells with a single candidate"
+• Five levels, Easy to Expert, with Expert free to play — each level needs different techniques; Easy only needs "cells with a single candidate"
 • Daily Challenge: one puzzle a day, the same for everyone, with streaks and an optional reminder
 • Challenges: send your result to a friend; they solve the same puzzle and compare score and time — no server or sign-up
 • Wrong numbers are flagged instantly; clear them and try again
@@ -47,7 +47,7 @@ Enjoy Sudoku the clean way — no ads, no internet needed, no account.
 • Statistics: solved count, best and average time per level, streaks
 
 ■ Premium (one-time purchase)
-• Expert and Devil levels, unlimited hints, all training lessons, detailed statistics and 3 extra color themes
+• Devil level, 6 intermediate and expert lessons (hidden pairs up to X-Wing, Y-Wing and Swordfish), unlimited hints, detailed statistics and 3 extra color themes
 
 Privacy-friendly: no account, no servers, everything stays on your device.
 

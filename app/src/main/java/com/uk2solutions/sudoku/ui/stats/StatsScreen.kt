@@ -64,9 +64,7 @@ fun StatsContent(ui: StatsUi, onPremium: () -> Unit = {}) {
                 TableRow(stringResource(R.string.stats_col_level), stringResource(R.string.stats_col_done), stringResource(R.string.stats_col_best), stringResource(R.string.stats_col_avg), header = true)
                 Difficulty.entries.forEach { d ->
                     val st = ui.byDifficulty[d.name]
-                    val supported = d in listOf(Difficulty.EASY, Difficulty.MEDIUM, Difficulty.HARD)
-                    if (!supported) TableRow(stringResource(d.labelRes()), stringResource(R.string.stats_locked), "", "", muted = true)
-                    else TableRow(
+                    TableRow(
                         stringResource(d.labelRes()), (st?.cnt ?: 0).toString(),
                         st?.let { formatTime(it.best) } ?: none, st?.let { formatTime(it.avg.toLong()) } ?: none,
                     )

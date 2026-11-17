@@ -121,7 +121,7 @@
     <string name="cd_score_gain">得分 %1$d</string>
     <string name="premium_title">高级版</string>
     <string name="premium_tagline">一次购买，永久使用</string>
-    <string name="premium_benefit_levels">专家、魔鬼难度</string>
+    <string name="premium_benefit_levels">魔鬼难度</string>
     <string name="premium_benefit_hints">无限提示</string>
     <string name="premium_benefit_stats">详细统计</string>
     <string name="premium_benefit_themes">3 种额外配色主题</string>

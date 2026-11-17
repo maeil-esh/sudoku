@@ -22,7 +22,8 @@ data class Entitlement(val premium: Boolean) {
     fun canUsePalette(palette: Int): Boolean = premium || palette == DEFAULT_PALETTE
 
     companion object {
-        val FREE_DIFFICULTIES = setOf(Difficulty.EASY, Difficulty.MEDIUM, Difficulty.HARD)
+        /** 전문가까지 무료: 막히면 힌트·트레이닝으로 배우도록 유도한다(악마와 고급 레슨은 프리미엄). */
+        val FREE_DIFFICULTIES = setOf(Difficulty.EASY, Difficulty.MEDIUM, Difficulty.HARD, Difficulty.EXPERT)
         const val DEFAULT_PALETTE = 0
         const val PALETTE_COUNT = 4
     }

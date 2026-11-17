@@ -23,7 +23,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
-enum class LessonPhase { INTRO, DEMO, QUIZ, RESULT }
+enum class LessonPhase { INTRO, DEMO, QUIZ, PAYWALL, RESULT }
 
 const val QUIZ_COUNT = 3
 
@@ -58,6 +58,15 @@ class LessonViewModel @Inject constructor(
     val premium: StateFlow<Boolean> = premiumManager.isPremium.stateIn(viewModelScope, SharingStarted.Eagerly, false)
 
     init {
+        // 프리미엄 상태를 따라 잠금을 갱신한다. 맛보기 도중 구매하면 막힌 지점부터 이어서 배운다.
+        viewModelScope.launch {
+            this@LessonViewModel.premium.collect { p ->
+                _ui.update {
+                    val locked = lesson?.premium == true && !p
+                    if (!locked && it.phase == LessonPhase.PAYWALL) it.copy(locked = false, phase = LessonPhase.DEMO, demoStep = 1) else it.copy(locked = locked)
+                }
+            }
+        }
         viewModelScope.launch {
             val l = lesson
             if (l == null) { _ui.update { it.copy(loading = false, failed = true) }; return@launch }
@@ -71,7 +80,11 @@ class LessonViewModel @Inject constructor(
 
     fun start() = _ui.update { it.copy(phase = LessonPhase.DEMO, demoStep = 0) }
 
-    fun demoNext() = _ui.update { if (it.demoStep < 1) it.copy(demoStep = it.demoStep + 1) else it.copy(phase = LessonPhase.QUIZ, qIndex = 0, picked = emptySet(), answered = false, score = 0) }
+    fun demoNext() = _ui.update {
+        if (it.locked && it.demoStep == 0) it.copy(phase = LessonPhase.PAYWALL)      // 맛보기는 패턴 보기까지 무료
+        else if (it.demoStep < 1) it.copy(demoStep = it.demoStep + 1) else it.copy(phase = LessonPhase.QUIZ, qIndex = 0, picked = emptySet(), answered = false, score = 0) }
+
+    fun paywallLater() = _ui.update { it.copy(phase = LessonPhase.DEMO, demoStep = 0) }
 
     fun demoBack() = _ui.update { if (it.demoStep > 0) it.copy(demoStep = it.demoStep - 1) else it.copy(phase = LessonPhase.INTRO) }
 

@@ -328,4 +328,43 @@ class ScreenshotTest {
     @Test fun lessonYWingQuiz() { val ui = lessonUi("y_wing", com.uk2solutions.sudoku.ui.training.LessonPhase.QUIZ); shoot("50_lesson_ywing_quiz") { Lesson(ui) } }
     @Test fun lessonNakedPairWrong() { val ui = lessonUi("naked_pair", com.uk2solutions.sudoku.ui.training.LessonPhase.QUIZ, answered = true, correct = false); shoot("51_lesson_naked_pair_wrong_feedback", dark = true) { Lesson(ui) } }
     @Test fun lessonResult() { val ui = lessonUi("naked_pair", com.uk2solutions.sudoku.ui.training.LessonPhase.RESULT); shoot("52_lesson_result") { Lesson(ui) } }
+
+    // ---------------------------------------------------------------- 후킹 장치
+    @Test fun hubRankHook() = shoot("53_training_rank_premium_hook") {
+        com.uk2solutions.sudoku.ui.training.TrainingContent(
+            mapOf("rules" to 3, "naked_single" to 3, "hidden_single" to 3, "pointing" to 2, "claiming" to 3, "naked_pair" to 2), premium = false, onOpen = {}, onPremium = {},
+        )
+    }
+
+    @Test fun lessonTeaserPattern() {
+        val ui = lessonUi("x_wing", com.uk2solutions.sudoku.ui.training.LessonPhase.DEMO, 0).copy(locked = true)
+        shoot("54_lesson_teaser_xwing_free_preview") { Lesson(ui) }
+    }
+
+    @Test fun lessonPaywall() {
+        val ui = lessonUi("x_wing", com.uk2solutions.sudoku.ui.training.LessonPhase.PAYWALL).copy(locked = true)
+        shoot("55_lesson_paywall") { Lesson(ui) }
+    }
+
+    @Test fun hintLearnOnExpert() {
+        var seed = 1L
+        while (true) {
+            val p = PuzzleGenerator().generate(Difficulty.EXPERT, seed++)
+            var s = GameRules.newState(p.givens, p.solution)
+            var h = com.uk2solutions.sudoku.domain.game.Hints.next(s)
+            while (h != null && h.technique != com.uk2solutions.sudoku.domain.game.HintTechnique.DEDUCTION) {
+                s = GameRules.enter(s, h.index, h.digit, false, true).first
+                h = com.uk2solutions.sudoku.domain.game.Hints.next(s)
+            }
+            if (h?.learn == null) continue
+            val plan = com.uk2solutions.sudoku.domain.game.Hints.plan(s, h)
+            val ui = GameUiState(loading = false, state = s, difficulty = Difficulty.EXPERT, selected = h.index, hint = h, hintPlan = plan, hintStep = 0)
+            shoot("56_hint_learn_technique_expert") { Game(ui, s) }
+            return
+        }
+    }
+
+    @Test fun homeWithExpert() = shoot("57_home_expert_open_devil_locked") {
+        HomeContent(ResumeInfo(Difficulty.EXPERT, 1_203_000, 22), DailyInfo(DailyStatus.NOT_STARTED, 0, 3), {}, {}, {})
+    }
 }

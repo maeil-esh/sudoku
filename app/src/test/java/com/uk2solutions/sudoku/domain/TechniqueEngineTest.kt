@@ -96,3 +96,46 @@ class QuizGraderTest {
         assertEquals(levels.sorted(), levels)
     }
 }
+
+class SkillRankTest {
+    private fun scores(vararg ids: String, score: Int = 3) = ids.associateWith { score }
+
+    @Test fun ranksRiseWithMasteredLessons() {
+        val r = com.uk2solutions.sudoku.domain.training.SkillRanks
+        assertEquals(com.uk2solutions.sudoku.domain.training.Rank.ROOKIE, r.of(emptyMap()).rank)
+        assertEquals(com.uk2solutions.sudoku.domain.training.Rank.APPRENTICE, r.of(scores("rules", "naked_single")).rank)
+        assertEquals("별 1개는 마스터가 아님", com.uk2solutions.sudoku.domain.training.Rank.ROOKIE, r.of(scores("rules", "naked_single", score = 1)).rank)
+        val free = scores("rules", "naked_single", "hidden_single", "pointing", "claiming", "naked_pair")
+        val info = r.of(free)
+        assertEquals(com.uk2solutions.sudoku.domain.training.Rank.SOLVER, info.rank)
+        assertTrue("무료 레슨을 다 하면 다음 단계는 프리미엄이 필요", info.nextNeedsPremium)
+        assertEquals(3, info.toNext)
+        val all = com.uk2solutions.sudoku.domain.training.Lessons.all.associate { it.id to 3 }
+        val top = r.of(all)
+        assertEquals(com.uk2solutions.sudoku.domain.training.Rank.GRANDMASTER, top.rank); assertNull(top.next); assertEquals(1f, top.progress, 0f)
+    }
+
+    @Test fun earlyRanksDoNotNeedPremium() {
+        val info = com.uk2solutions.sudoku.domain.training.SkillRanks.of(scores("rules"))
+        assertFalse(info.nextNeedsPremium)
+    }
+
+    @Test fun hintOnExpertPuzzleNamesTheNeededTechnique() {
+        val gen = PuzzleGenerator()
+        var withLearn = 0
+        for (seed in 1L..10L) {
+            val p = gen.generate(com.uk2solutions.sudoku.domain.model.Difficulty.EXPERT, seed)
+            var s = com.uk2solutions.sudoku.domain.game.GameRules.newState(p.givens, p.solution)
+            // 사람 기법으로 단일을 모두 채워 단일 힌트가 없는 상태까지 진행
+            while (true) {
+                val h = com.uk2solutions.sudoku.domain.game.Hints.next(s) ?: break
+                if (h.technique == com.uk2solutions.sudoku.domain.game.HintTechnique.DEDUCTION) {
+                    if (h.learn != null) { withLearn++; assertTrue(h.learn!!.level >= 2) }
+                    break
+                }
+                s = com.uk2solutions.sudoku.domain.game.GameRules.enter(s, h.index, h.digit, false, false).first
+            }
+        }
+        assertTrue("전문가 퍼즐에서 힌트가 필요한 기술을 알려 줘야 함", withLearn > 0)
+    }
+}

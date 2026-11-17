@@ -121,7 +121,7 @@
     <string name="cd_score_gain">分數 %1$d</string>
     <string name="premium_title">進階版</string>
     <string name="premium_tagline">一次購買，永久使用</string>
-    <string name="premium_benefit_levels">專家、魔王難度</string>
+    <string name="premium_benefit_levels">魔王難度</string>
     <string name="premium_benefit_hints">無限提示</string>
     <string name="premium_benefit_stats">詳細統計</string>
     <string name="premium_benefit_themes">3 種額外配色主題</string>

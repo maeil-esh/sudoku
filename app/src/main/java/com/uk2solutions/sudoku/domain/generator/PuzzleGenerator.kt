@@ -4,12 +4,14 @@ import com.uk2solutions.sudoku.domain.model.Board
 import com.uk2solutions.sudoku.domain.model.Difficulty
 import com.uk2solutions.sudoku.domain.solver.Solver
 import com.uk2solutions.sudoku.domain.solver.TechniqueSolver
+import com.uk2solutions.sudoku.domain.technique.Finders
+import com.uk2solutions.sudoku.domain.technique.HumanSolver
 
 data class Puzzle(val difficulty: Difficulty, val givens: String, val solution: String)
 
 /**
  * 온디바이스 퍼즐 생성기(SPEC §5.2). 같은 (difficulty, seed)는 항상 같은 퍼즐을 만든다.
- * 쉬움·보통·어려움 지원. 전문가·악마는 X-윙 등 기법 추가 후 지원.
+ * 쉬움·보통·어려움은 TechniqueSolver 등급으로, 전문가·악마는 HumanSolver(기법 엔진)로 판정한다.
  */
 class PuzzleGenerator(private val techniques: TechniqueSolver = TechniqueSolver()) {
 
@@ -18,16 +20,33 @@ class PuzzleGenerator(private val techniques: TechniqueSolver = TechniqueSolver(
         Difficulty.EASY -> 0..0
         Difficulty.MEDIUM -> 1..1
         Difficulty.HARD -> 2..3
-        else -> throw UnsupportedOperationException("$d 는 아직 지원하지 않음")
+        else -> 0..0 // 전문가·악마는 사람 기법 엔진으로 판정한다(generateAdvanced)
     }
 
     fun generate(difficulty: Difficulty, seed: Long): Puzzle {
+        if (difficulty == Difficulty.EXPERT || difficulty == Difficulty.DEVIL) return generateAdvanced(difficulty, seed)
         val levels = levelRange(difficulty)
         var attempt = 0L
         while (true) {
             val rnd = SeededRandom(seed * 1_000_003L + attempt++)
             val p = tryGenerate(difficulty, levels, rnd)
             if (p != null) return p
+        }
+    }
+
+    /**
+     * 전문가: 사람 기법만으로 풀리지만 등급 4(X-윙·Y-윙·스워드피시)가 반드시 필요한 퍼즐.
+     * 악마: 11개 사람 기법으로도 막히는(추측·고급 추론이 필요한) 유일해 퍼즐(SPEC §5.2). 같은 (난이도, 시드)는 같은 퍼즐.
+     */
+    private fun generateAdvanced(d: Difficulty, seed: Long): Puzzle {
+        val range = d.clueRange
+        var attempt = 0L
+        while (true) {
+            val clues = range.first + ((seed + attempt) % (range.last - range.first + 1)).toInt()
+            val p = generateUnique(seed * 1_000_003L + attempt++, clues)
+            val level = HumanSolver.solveLevel(Board.parse(p.givens), Finders.ORDER)
+            val ok = if (d == Difficulty.EXPERT) level == 4 else level == null
+            if (ok && Board.clueCount(Board.parse(p.givens)) <= range.last + 1) return Puzzle(d, p.givens, p.solution)
         }
     }
 

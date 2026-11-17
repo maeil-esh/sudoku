@@ -2,7 +2,9 @@ package com.uk2solutions.sudoku.ui.training
 
 import androidx.annotation.StringRes
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.ui.draw.blur
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -50,6 +52,9 @@ import com.uk2solutions.sudoku.domain.training.Example
 import com.uk2solutions.sudoku.domain.training.Lesson
 import com.uk2solutions.sudoku.domain.training.LessonGroup
 import com.uk2solutions.sudoku.domain.training.Lessons
+import com.uk2solutions.sudoku.domain.training.Rank
+import com.uk2solutions.sudoku.domain.training.RankInfo
+import com.uk2solutions.sudoku.domain.training.SkillRanks
 import com.uk2solutions.sudoku.domain.training.QuizKind
 import com.uk2solutions.sudoku.ui.game.NoteTone
 import com.uk2solutions.sudoku.ui.game.SudokuBoard
@@ -116,6 +121,7 @@ fun TrainingContent(scores: Map<String, Int>, premium: Boolean, onOpen: (String)
     Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Text(stringResource(R.string.training_title), fontSize = 28.sp, fontWeight = FontWeight.Bold, color = c.ink)
         Text(stringResource(R.string.training_subtitle), color = c.muted, fontSize = 14.sp)
+        RankCard(SkillRanks.of(scores), ent.premium, onPremium)
         if (next != null) Surface(shape = RoundedCornerShape(20.dp), color = c.accentSoft, modifier = Modifier.fillMaxWidth()) {
             Column(Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text(stringResource(R.string.training_continue), color = c.accent, fontWeight = FontWeight.SemiBold, fontSize = 13.sp)
@@ -129,7 +135,7 @@ fun TrainingContent(scores: Map<String, Int>, premium: Boolean, onOpen: (String)
             Text(stringResource(groupName(g)), fontWeight = FontWeight.SemiBold, fontSize = 16.sp, color = c.muted, modifier = Modifier.padding(top = 6.dp))
             Lessons.all.filter { it.group == g }.forEach { l ->
                 val locked = l.premium && !ent.premium
-                LessonRow(Lessons.all.indexOf(l) + 1, l, scores[l.id], locked) { if (locked) onPremium() else onOpen(l.id) }
+                LessonRow(Lessons.all.indexOf(l) + 1, l, scores[l.id], locked) { onOpen(l.id) }
             }
         }
     }
@@ -150,7 +156,10 @@ private fun LessonRow(n: Int, l: Lesson, best: Int?, locked: Boolean, onClick: (
                 Box(contentAlignment = Alignment.Center) { Text(n.toString(), color = c.accent, fontWeight = FontWeight.Bold) }
             }
             Text(title, fontSize = 16.sp, fontWeight = FontWeight.Medium, color = c.ink, modifier = Modifier.weight(1f).padding(horizontal = 12.dp))
-            if (locked) Icon(painterResource(R.drawable.ic_lock), contentDescription = null, tint = c.muted, modifier = Modifier.size(18.dp))
+            if (locked) Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(stringResource(R.string.training_teaser_tag), color = c.accent, fontSize = 12.sp, fontWeight = FontWeight.SemiBold)
+                Icon(painterResource(R.drawable.ic_lock), contentDescription = null, tint = c.muted, modifier = Modifier.padding(start = 6.dp).size(18.dp))
+            }
             else if (best != null) Row {
                 repeat(3) { i -> Icon(Icons.Filled.Star, contentDescription = null, tint = if (i < best) c.accent else c.line, modifier = Modifier.size(18.dp)) }
             }
@@ -163,12 +172,10 @@ private fun LessonRow(n: Int, l: Lesson, best: Int?, locked: Boolean, onClick: (
 @Composable
 fun LessonScreen(onBack: () -> Unit, onOpen: (String) -> Unit, onPremium: () -> Unit, vm: LessonViewModel = hiltViewModel()) {
     val ui by vm.ui.collectAsStateWithLifecycle()
-    val premium by vm.premium.collectAsStateWithLifecycle()
-    val locked = ui.lesson?.let { it.premium && !premium } == true
     LessonBody(
-        ui.copy(locked = locked), onBack = onBack, onStart = vm::start, onDemoNext = vm::demoNext, onDemoBack = vm::demoBack,
+        ui, onBack = onBack, onStart = vm::start, onDemoNext = vm::demoNext, onDemoBack = vm::demoBack,
         onPickDigit = vm::pickDigit, onTapCell = vm::tapCell, onCheck = vm::check, onNextQuestion = vm::nextQuestion,
-        onRetry = vm::retry, onNextLesson = { ui.nextLessonId?.let(onOpen) }, onPremium = onPremium,
+        onRetry = vm::retry, onNextLesson = { ui.nextLessonId?.let(onOpen) }, onPremium = onPremium, onPaywallLater = vm::paywallLater,
     )
 }
 
@@ -177,11 +184,11 @@ fun LessonScreen(onBack: () -> Unit, onOpen: (String) -> Unit, onPremium: () -> 
 fun LessonBody(
     ui: LessonUi, onBack: () -> Unit, onStart: () -> Unit, onDemoNext: () -> Unit, onDemoBack: () -> Unit,
     onPickDigit: (Int) -> Unit, onTapCell: (Int) -> Unit, onCheck: () -> Unit, onNextQuestion: () -> Unit,
-    onRetry: () -> Unit, onNextLesson: () -> Unit, onPremium: () -> Unit = {},
+    onRetry: () -> Unit, onNextLesson: () -> Unit, onPremium: () -> Unit = {}, onPaywallLater: () -> Unit = {},
 ) {
     val c = SudokuTheme.colors
     val lesson = ui.lesson
-    Column(Modifier.fillMaxSize().background().verticalScroll(rememberScrollState()).padding(horizontal = 16.dp)) {
+    Column(Modifier.fillMaxSize().background(c.background).verticalScroll(rememberScrollState()).padding(horizontal = 16.dp)) {
         Row(Modifier.fillMaxWidth().heightIn(min = 56.dp), verticalAlignment = Alignment.CenterVertically) {
             IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.game_back), tint = c.ink) }
             Text(lesson?.let { lessonTitle(it) } ?: "", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = c.ink)
@@ -190,13 +197,19 @@ fun LessonBody(
             ui.loading -> Column(Modifier.fillMaxWidth().padding(top = 80.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(16.dp)) {
                 CircularProgressIndicator(color = c.accent); Text(stringResource(R.string.training_loading), color = c.muted)
             }
-            ui.locked -> Column(Modifier.fillMaxWidth().padding(top = 60.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                Icon(painterResource(R.drawable.ic_lock), contentDescription = stringResource(R.string.cd_locked), tint = c.accent, modifier = Modifier.size(40.dp))
-                Button(onClick = onPremium, shape = RoundedCornerShape(14.dp), modifier = Modifier.heightIn(min = 48.dp)) { Text(stringResource(R.string.premium_title)) }
-            }
             ui.failed || lesson == null -> Text(stringResource(R.string.training_failed), color = c.error, modifier = Modifier.padding(top = 40.dp))
             ui.phase == LessonPhase.INTRO -> IntroCard(lesson, onStart)
             ui.phase == LessonPhase.DEMO -> DemoPhase(ui, lesson, onDemoNext, onDemoBack)
+            ui.phase == LessonPhase.PAYWALL -> {
+                // 결과 장면을 흐리게 보여 궁금증을 남기되 내용은 가린다(blur는 Android 12+, 그 이전은 반투명 막으로 가림).
+                ui.demo?.let { ex ->
+                    Box(Modifier.fillMaxWidth().padding(bottom = 12.dp)) {
+                        Box(Modifier.blur(10.dp)) { LessonBoard(ex, lesson, reveal = true, picked = emptySet(), onCell = {}) }
+                        Box(Modifier.matchParentSize().background(c.background.copy(alpha = 0.7f)))
+                    }
+                }
+                PaywallCard(onPremium, onPaywallLater)
+            }
             ui.phase == LessonPhase.QUIZ -> QuizPhase(ui, lesson, onPickDigit, onTapCell, onCheck, onNextQuestion)
             else -> ResultCard(ui, onRetry, onNextLesson, onBack)
         }
@@ -204,7 +217,6 @@ fun LessonBody(
     }
 }
 
-private fun Modifier.background(): Modifier = this.then(Modifier)
 
 @Composable
 private fun IntroCard(lesson: Lesson, onStart: () -> Unit) {
@@ -333,6 +345,69 @@ private fun ResultCard(ui: LessonUi, onRetry: () -> Unit, onNextLesson: () -> Un
             if (ui.nextLessonId != null) Button(onClick = onNextLesson, shape = RoundedCornerShape(16.dp), modifier = Modifier.fillMaxWidth().heightIn(min = 52.dp)) { Text(stringResource(R.string.training_next_lesson), fontWeight = FontWeight.Bold) }
             OutlinedButton(onClick = onRetry, shape = RoundedCornerShape(16.dp), modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) { Text(stringResource(R.string.training_retry)) }
             OutlinedButton(onClick = onList, shape = RoundedCornerShape(16.dp), modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) { Text(stringResource(R.string.training_all_lessons)) }
+        }
+    }
+}
+
+/** 실력 카드: 현재 단계, 다음 단계까지의 진행, 프리미엄이 필요한 구간이면 부드러운 안내. */
+@Composable
+private fun RankCard(info: RankInfo, premium: Boolean, onPremium: () -> Unit) {
+    val c = SudokuTheme.colors
+    Surface(shape = RoundedCornerShape(20.dp), color = c.surface, border = BorderStroke(1.dp, c.line), modifier = Modifier.fillMaxWidth()) {
+        Column(Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Column(Modifier.weight(1f)) {
+                    Text(stringResource(R.string.rank_title), color = c.muted, fontSize = 13.sp)
+                    Text(rankName(info.rank), fontSize = 24.sp, fontWeight = FontWeight.Bold, color = c.accent)
+                }
+                Row(horizontalArrangement = Arrangement.spacedBy(3.dp)) {
+                    Rank.entries.forEach { r ->
+                        Icon(Icons.Filled.Star, contentDescription = null, tint = if (r.ordinal <= info.rank.ordinal) c.accent else c.line, modifier = Modifier.size(20.dp))
+                    }
+                }
+            }
+            androidx.compose.material3.LinearProgressIndicator(
+                progress = { maxOf(info.progress, 0.06f) }, modifier = Modifier.fillMaxWidth().height(8.dp),  // 막 시작해도 조금은 차 있게
+                color = c.accent, trackColor = c.line, strokeCap = androidx.compose.ui.graphics.StrokeCap.Round,
+                gapSize = 0.dp, drawStopIndicator = {},
+            )
+            if (info.next != null) Text(stringResource(R.string.rank_to_next, info.toNext, rankName(info.next)), color = c.ink, fontSize = 14.sp)
+            else Text(stringResource(R.string.rank_max), color = c.ink, fontSize = 14.sp)
+            if (info.nextNeedsPremium && !premium) {
+                Text(stringResource(R.string.rank_premium_hint), color = c.muted, fontSize = 13.sp)
+                Button(onClick = onPremium, shape = RoundedCornerShape(14.dp), modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) {
+                    Text(stringResource(R.string.rank_premium_cta), fontWeight = FontWeight.Bold)
+                }
+            }
+        }
+    }
+}
+
+@StringRes private fun rankNameRes(r: Rank) = when (r) {
+    Rank.ROOKIE -> R.string.rank_rookie
+    Rank.APPRENTICE -> R.string.rank_apprentice
+    Rank.SOLVER -> R.string.rank_solver
+    Rank.EXPERT -> R.string.rank_expert
+    Rank.GRANDMASTER -> R.string.rank_grandmaster
+}
+
+@Composable fun rankName(r: Rank) = stringResource(rankNameRes(r))
+
+/** 맛보기(패턴 보기) 뒤에 나오는 프리미엄 안내. 지금까지 본 내용은 그대로 남는다. */
+@Composable
+private fun PaywallCard(onPremium: () -> Unit, onLater: () -> Unit) {
+    val c = SudokuTheme.colors
+    Surface(shape = RoundedCornerShape(24.dp), color = c.surface, border = BorderStroke(1.dp, c.line), modifier = Modifier.fillMaxWidth().padding(top = 8.dp)) {
+        Column(Modifier.padding(22.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(14.dp)) {
+            Icon(painterResource(R.drawable.ic_lock), contentDescription = stringResource(R.string.cd_locked), tint = c.accent, modifier = Modifier.size(36.dp))
+            Text(stringResource(R.string.training_paywall_title), fontSize = 22.sp, fontWeight = FontWeight.Bold, color = c.ink)
+            Text(stringResource(R.string.training_paywall_body, Lessons.all.count { it.premium }), color = c.muted, fontSize = 15.sp, lineHeight = 22.sp)
+            Button(onClick = onPremium, shape = RoundedCornerShape(16.dp), modifier = Modifier.fillMaxWidth().heightIn(min = 52.dp)) {
+                Text(stringResource(R.string.training_paywall_cta), fontWeight = FontWeight.Bold)
+            }
+            OutlinedButton(onClick = onLater, shape = RoundedCornerShape(16.dp), modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) {
+                Text(stringResource(R.string.training_paywall_later))
+            }
         }
     }
 }

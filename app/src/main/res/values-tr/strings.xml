@@ -121,7 +121,7 @@
     <string name="cd_score_gain">Puan %1$d</string>
     <string name="premium_title">Premium</string>
     <string name="premium_tagline">Bir kez satın al, sonsuza dek senin</string>
-    <string name="premium_benefit_levels">Uzman ve Şeytani seviyeler</string>
+    <string name="premium_benefit_levels">Şeytani seviye</string>
     <string name="premium_benefit_hints">Sınırsız ipucu</string>
     <string name="premium_benefit_stats">Ayrıntılı istatistikler</string>
     <string name="premium_benefit_themes">3 ek renk teması</string>

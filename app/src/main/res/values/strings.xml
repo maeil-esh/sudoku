@@ -127,7 +127,7 @@
     <string name="lang_fr" translatable="false">Français</string>
     <string name="premium_title">Premium</string>
     <string name="premium_tagline">One purchase, yours forever</string>
-    <string name="premium_benefit_levels">Expert and Devil levels</string>
+    <string name="premium_benefit_levels">Devil level</string>
     <string name="premium_benefit_hints">Unlimited hints</string>
     <string name="premium_benefit_stats">Detailed statistics</string>
     <string name="premium_benefit_themes">3 extra color themes</string>

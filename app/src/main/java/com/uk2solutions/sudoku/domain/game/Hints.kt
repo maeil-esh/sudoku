@@ -9,7 +9,11 @@ enum class HintTechnique { NAKED_SINGLE, HIDDEN_SINGLE, DEDUCTION }
 enum class UnitKind { ROW, COL, BOX }
 
 /** [unit]: 숨은 단일일 때 그 숫자가 들어갈 곳이 하나뿐인 행/열/박스. */
-data class Hint(val index: Int, val digit: Int, val technique: HintTechnique, val unit: UnitKind? = null)
+data class Hint(
+    val index: Int, val digit: Int, val technique: HintTechnique, val unit: UnitKind? = null,
+    /** 추론 힌트일 때, 이 자리를 풀려면 필요한 기법(트레이닝 레슨으로 연결). 레슨에 없는 고급 추론이면 null. */
+    val learn: com.uk2solutions.sudoku.domain.technique.Technique? = null,
+)
 
 enum class StepType { INTRO, ELIMINATION, ANSWER }
 
@@ -55,7 +59,14 @@ object Hints {
             }
         }
         val i = if (preferred >= 0 && v[preferred] == 0) preferred else v.indexOfFirst { it == 0 }
-        return Hint(i, s.solution[i], HintTechnique.DEDUCTION)
+        // 단일 기법이 없는 상태: 다음에 필요한 기법이 무엇인지 알려 줄 수 있으면 레슨으로 연결한다.
+        val g = com.uk2solutions.sudoku.domain.technique.CandGrid.from(v)
+        val learn = g?.let { grid ->
+            com.uk2solutions.sudoku.domain.technique.Finders.ORDER.filter { it.level >= 2 }.firstOrNull { t ->
+                com.uk2solutions.sudoku.domain.technique.Finders.find(grid, t) != null
+            }
+        }
+        return Hint(i, s.solution[i], HintTechnique.DEDUCTION, learn = learn)
     }
 
     private fun unitCells(kind: UnitKind, index: Int): Set<Int> = when (kind) {

@@ -148,3 +148,30 @@ class HintPlanTest {
         assertTrue(plan.steps.isNotEmpty()); assertEquals(s.solution[h.index], h.digit)
     }
 }
+
+
+class AdvancedGenerationTest {
+    @Test fun expertNeedsLevel4AndDevilStumpsHumanTechniques() {
+        val gen = PuzzleGenerator()
+        val tExpert = LongArray(1); val tDevil = LongArray(1)
+        for (seed in 1L..12L) {
+            var t0 = System.nanoTime()
+            val e = gen.generate(Difficulty.EXPERT, seed)
+            tExpert[0] += System.nanoTime() - t0
+            val eg = Board.parse(e.givens)
+            assertEquals("전문가 유일해", 1, Solver.countSolutions(eg, 2))
+            assertEquals("전문가는 등급 4 필요", 4, com.uk2solutions.sudoku.domain.technique.HumanSolver.solveLevel(eg, com.uk2solutions.sudoku.domain.technique.Finders.ORDER))
+            assertTrue("전문가 단서 수", Board.clueCount(eg) <= 28)
+            assertEquals("결정성", e, gen.generate(Difficulty.EXPERT, seed))
+
+            t0 = System.nanoTime()
+            val d = gen.generate(Difficulty.DEVIL, seed)
+            tDevil[0] += System.nanoTime() - t0
+            val dg = Board.parse(d.givens)
+            assertEquals("악마 유일해", 1, Solver.countSolutions(dg, 2))
+            assertNull("악마는 사람 기법만으로 풀리면 안 됨", com.uk2solutions.sudoku.domain.technique.HumanSolver.solveLevel(dg, com.uk2solutions.sudoku.domain.technique.Finders.ORDER))
+            assertTrue("악마 단서 수", Board.clueCount(dg) <= 26)
+        }
+        println("평균 생성 시간 EXPERT: ${tExpert[0] / 12 / 1_000_000.0} ms, DEVIL: ${tDevil[0] / 12 / 1_000_000.0} ms")
+    }
+}

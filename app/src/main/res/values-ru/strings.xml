@@ -121,7 +121,7 @@
     <string name="cd_score_gain">Очки %1$d</string>
     <string name="premium_title">Премиум</string>
     <string name="premium_tagline">Одна покупка — и навсегда</string>
-    <string name="premium_benefit_levels">Уровни «Эксперт» и «Дьявольски»</string>
+    <string name="premium_benefit_levels">Уровень «Дьявольски»</string>
     <string name="premium_benefit_hints">Неограниченные подсказки</string>
     <string name="premium_benefit_stats">Подробная статистика</string>
     <string name="premium_benefit_themes">3 дополнительные цветовые темы</string>
