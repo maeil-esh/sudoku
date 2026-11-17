@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">ซูโดกุ</string>
+    <string name="app_name">sudoku7979</string>
     <string name="tab_home">หน้าหลัก</string>
     <string name="tab_stats">สถิติ</string>
     <string name="tab_settings">ตั้งค่า</string>
