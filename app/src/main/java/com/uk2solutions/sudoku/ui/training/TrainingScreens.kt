@@ -76,6 +76,12 @@ private fun txt(id: String) = when (id) {
     "hidden_triple" -> Txt(R.string.tr_hidden_triple_title, R.string.tr_hidden_triple_intro, R.string.tr_hidden_triple_s1, R.string.tr_hidden_triple_s2, R.string.tr_hidden_triple_ask)
     "x_wing" -> Txt(R.string.tr_x_wing_title, R.string.tr_x_wing_intro, R.string.tr_x_wing_s1, R.string.tr_x_wing_s2, R.string.tr_x_wing_ask)
     "y_wing" -> Txt(R.string.tr_y_wing_title, R.string.tr_y_wing_intro, R.string.tr_y_wing_s1, R.string.tr_y_wing_s2, R.string.tr_y_wing_ask)
+    "skyscraper" -> Txt(R.string.tr_skyscraper_title, R.string.tr_skyscraper_intro, R.string.tr_skyscraper_s1, R.string.tr_skyscraper_s2, R.string.tr_skyscraper_ask)
+    "two_string_kite" -> Txt(R.string.tr_two_string_kite_title, R.string.tr_two_string_kite_intro, R.string.tr_two_string_kite_s1, R.string.tr_two_string_kite_s2, R.string.tr_two_string_kite_ask)
+    "xyz_wing" -> Txt(R.string.tr_xyz_wing_title, R.string.tr_xyz_wing_intro, R.string.tr_xyz_wing_s1, R.string.tr_xyz_wing_s2, R.string.tr_xyz_wing_ask)
+    "unique_rectangle" -> Txt(R.string.tr_unique_rectangle_title, R.string.tr_unique_rectangle_intro, R.string.tr_unique_rectangle_s1, R.string.tr_unique_rectangle_s2, R.string.tr_unique_rectangle_ask)
+    "simple_coloring" -> Txt(R.string.tr_simple_coloring_title, R.string.tr_simple_coloring_intro, R.string.tr_simple_coloring_s1, R.string.tr_simple_coloring_s2, R.string.tr_simple_coloring_ask)
+    "xy_chain" -> Txt(R.string.tr_xy_chain_title, R.string.tr_xy_chain_intro, R.string.tr_xy_chain_s1, R.string.tr_xy_chain_s2, R.string.tr_xy_chain_ask)
     else -> Txt(R.string.tr_swordfish_title, R.string.tr_swordfish_intro, R.string.tr_swordfish_s1, R.string.tr_swordfish_s2, R.string.tr_swordfish_ask)
 }
 
@@ -84,6 +90,7 @@ private fun txt(id: String) = when (id) {
     LessonGroup.BEGINNER -> R.string.training_group_beginner
     LessonGroup.INTERMEDIATE -> R.string.training_group_intermediate
     LessonGroup.EXPERT -> R.string.training_group_expert
+    LessonGroup.MASTER -> R.string.training_group_master
 }
 
 @Composable fun lessonTitle(lesson: Lesson) = stringResource(txt(lesson.id).title)
@@ -97,9 +104,9 @@ private fun lessonText(slot: Slot, lesson: Lesson, ex: Example): String {
     val res = when (slot) { Slot.S1 -> t.s1; Slot.S2 -> t.s2; Slot.ASK -> t.ask }
     val dg = ex.deduction.digits
     return when (lesson.technique) {
-        Technique.NAKED_PAIR, Technique.NAKED_TRIPLE, Technique.HIDDEN_PAIR, Technique.HIDDEN_TRIPLE ->
+        Technique.NAKED_PAIR, Technique.NAKED_TRIPLE, Technique.HIDDEN_PAIR, Technique.HIDDEN_TRIPLE, Technique.UNIQUE_RECTANGLE ->
             if (slot == Slot.ASK) stringResource(res, ex.quizDigit) else stringResource(res, dg.joinToString(", "))
-        Technique.Y_WING -> if (slot == Slot.ASK) stringResource(res, ex.quizDigit) else stringResource(res, dg[0], dg[1], dg[2])
+        Technique.Y_WING, Technique.XYZ_WING -> if (slot == Slot.ASK) stringResource(res, ex.quizDigit) else stringResource(res, dg[0], dg[1], dg[2])
         else -> stringResource(res, ex.quizDigit)
     }
 }
@@ -245,7 +252,7 @@ private fun viewOf(ex: Example, lesson: Lesson, reveal: Boolean): View {
         QuizKind.PICK_CELL -> View(d.houses, emptySet(), if (reveal) d.place!!.first else -1, if (reveal) ex.quizDigit else 0, emptyMap())
         QuizKind.PICK_ELIMINATIONS -> {
             val tones = HashMap<Int, MutableMap<Int, NoteTone>>()
-            for (cell in d.pattern) for (dg in d.digits) if (ex.grid.has(cell, dg)) tones.getOrPut(cell) { HashMap() }[dg] = NoteTone.PATTERN
+            for (cell in d.pattern) for (dg in d.digits) if (ex.grid.has(cell, dg)) tones.getOrPut(cell) { HashMap() }[dg] = if (cell in d.secondary) NoteTone.PATTERN2 else NoteTone.PATTERN
             if (reveal) for ((cell, dg) in d.eliminations) tones.getOrPut(cell) { HashMap() }[dg] = NoteTone.REMOVE
             View(d.houses + d.pattern, d.pattern, -1, 0, tones)
         }
@@ -388,6 +395,7 @@ private fun RankCard(info: RankInfo, premium: Boolean, onPremium: () -> Unit) {
     Rank.APPRENTICE -> R.string.rank_apprentice
     Rank.SOLVER -> R.string.rank_solver
     Rank.EXPERT -> R.string.rank_expert
+    Rank.MASTER -> R.string.rank_master
     Rank.GRANDMASTER -> R.string.rank_grandmaster
 }
 

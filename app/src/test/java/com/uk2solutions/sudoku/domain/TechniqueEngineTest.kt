@@ -12,8 +12,8 @@ class TechniqueEngineTest {
         val gen = PuzzleGenerator()
         val used = HashMap<Technique, Int>()
         var solvedByHuman = 0
-        for (seed in 1L..250L) {
-            val pz = gen.generateUnique(seed, 24 + (seed % 4).toInt())
+        for (seed in 1L..600L) {
+            val pz = gen.generateUnique(seed, 22 + (seed % 4).toInt())
             val sol = Board.parse(pz.solution)
             val g = CandGrid.from(Board.parse(pz.givens))!!
             var guard = 0
@@ -28,8 +28,8 @@ class TechniqueEngineTest {
             if (g.solved) solvedByHuman++
         }
         println("기법 사용 횟수: " + Technique.entries.joinToString { "${it.name}=${used[it] ?: 0}" })
-        println("사람 기법만으로 푼 퍼즐: $solvedByHuman/250")
-        for (t in Technique.entries) assertTrue("$t 이(가) 한 번도 쓰이지 않음", (used[t] ?: 0) > 0)
+        println("사람 기법(18개)만으로 푼 퍼즐: $solvedByHuman/600")
+        for (t in Technique.entries.filter { it.level <= 4 }) assertTrue("$t 이(가) 한 번도 쓰이지 않음", (used[t] ?: 0) > 0)
     }
 
     @Test fun solveLevelOfGeneratedPuzzlesMatchesOldGrader() {

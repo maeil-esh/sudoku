@@ -367,4 +367,16 @@ class ScreenshotTest {
     @Test fun homeWithExpert() = shoot("57_home_expert_open_devil_locked") {
         HomeContent(ResumeInfo(Difficulty.EXPERT, 1_203_000, 22), DailyInfo(DailyStatus.NOT_STARTED, 0, 3), {}, {}, {})
     }
+
+    // ---------------------------------------------------------------- 초고수 확장팩
+    @Test fun lessonColoring() { val ui = lessonUi("simple_coloring", com.uk2solutions.sudoku.ui.training.LessonPhase.DEMO, 1).copy(locked = false); shoot("58_lesson_simple_coloring_demo2") { Lesson(ui) } }
+    @Test fun lessonXyChain() { val ui = lessonUi("xy_chain", com.uk2solutions.sudoku.ui.training.LessonPhase.DEMO, 0); shoot("59_lesson_xy_chain_demo1") { Lesson(ui) } }
+    @Test fun lessonUniqueRect() { val ui = lessonUi("unique_rectangle", com.uk2solutions.sudoku.ui.training.LessonPhase.DEMO, 1); shoot("60_lesson_unique_rectangle_demo2") { Lesson(ui) } }
+    @Test fun lessonSkyscraperQuiz() { val ui = lessonUi("skyscraper", com.uk2solutions.sudoku.ui.training.LessonPhase.QUIZ); shoot("61_lesson_skyscraper_quiz") { Lesson(ui) } }
+    @Test fun hubFullPremium() = shoot("62_training_hub_all_lessons_dark", dark = true) {
+        com.uk2solutions.sudoku.ui.training.TrainingContent(
+            com.uk2solutions.sudoku.domain.training.Lessons.all.associate { it.id to 3 }.toMutableMap().also { it["simple_coloring"] = 1; it["xy_chain"] = -1; it.remove("xy_chain") },
+            premium = true, onOpen = {}, onPremium = {},
+        )
+    }
 }

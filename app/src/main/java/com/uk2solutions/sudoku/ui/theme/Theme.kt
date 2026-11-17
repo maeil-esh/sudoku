@@ -16,6 +16,8 @@ data class SudokuColors(
     val accent: Color, val onAccent: Color, val accentSoft: Color,
     val cellPeer: Color, val cellSelected: Color, val cellSame: Color,
     val error: Color, val errorBg: Color,
+    /** 트레이닝에서 두 번째 색(단순 컬러링의 주황 쪽). */
+    val second: Color = Color(0xFF9A5B00),
 )
 
 val LightSudokuColors = SudokuColors(
@@ -31,7 +33,7 @@ val DarkSudokuColors = SudokuColors(
     muted = Color(0xFFA3A9BA), line = Color(0xFF3A3F4E),
     accent = Color(0xFF8FA5FF), onAccent = Color(0xFF101524), accentSoft = Color(0xFF262D4D),
     cellPeer = Color(0xFF242834), cellSelected = Color(0xFF2C3664), cellSame = Color(0xFF26305A),
-    error = Color(0xFFFF8A80), errorBg = Color(0xFF4A2523),
+    error = Color(0xFFFF8A80), errorBg = Color(0xFF4A2523), second = Color(0xFFFFB26B),
 )
 
 /** 추가 컬러 테마(프리미엄). 0=기본(블루). 강조색 위 텍스트 대비 4.5:1을 유지하도록 연한 톤을 쓴다. */

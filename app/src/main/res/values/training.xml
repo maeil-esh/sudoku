@@ -1,9 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources xmlns:tools="http://schemas.android.com/tools" tools:ignore="MissingTranslation">
-    <!-- 트레이닝 문장은 영어(기본)·한국어만 준비됨. 다른 언어는 영어로 표시되며 번역은 BACKLOG 참고. -->
+<resources>
     <string name="tab_training">Learn</string>
     <string name="training_title">Training</string>
-    <string name="training_subtitle">From the basics to expert techniques</string>
+    <string name="training_subtitle">From the basics to grandmaster techniques</string>
     <string name="training_group_basics">Basics</string>
     <string name="training_group_beginner">Beginner</string>
     <string name="training_group_intermediate">Intermediate</string>
@@ -104,7 +103,7 @@
     <string name="rank_premium_cta">Become a grandmaster with Premium</string>
     <string name="training_teaser_tag">Preview</string>
     <string name="training_paywall_title">This is where experts are made</string>
-    <string name="training_paywall_body">Premium unlocks the full lesson — the removal step and practice questions — plus %1$d advanced skills, up to Swordfish.</string>
+    <string name="training_paywall_body">Premium unlocks the full lesson — the removal step and practice questions — plus %1$d advanced skills, from hidden pairs to grandmaster techniques.</string>
     <string name="training_paywall_cta">See Premium</string>
     <string name="training_paywall_later">Maybe later</string>
     <string name="hint_learn_body">This spot uses the technique: %1$s</string>
@@ -112,4 +111,36 @@
     <string name="hint_learn_beyond">This spot needs advanced reasoning beyond the lessons</string>
     <string name="game_generating">Creating your puzzle…</string>
     <string name="hint_intro_technique">No single number is forced here — a technique is needed. Tap "Learn it" to see which one.</string>
+    <string name="training_group_master">Grandmaster</string>
+    <string name="rank_master">Master</string>
+    <string name="tr_skyscraper_title">Skyscraper</string>
+    <string name="tr_skyscraper_intro">Two lines each hold a number in exactly two places, and one end of each lines up in the same column (or row). The other two ends can\'t both be wrong — one of them holds the number — so any cell that sees both of those ends can\'t hold it.</string>
+    <string name="tr_skyscraper_s1">Number %1$d: two lines have it in only two cells each, and one end of each shares a column (or row) — the base. The other two ends, the tips, are marked.</string>
+    <string name="tr_skyscraper_s2">Number %1$d must be in at least one of the two tips, so cells that see both tips cannot hold it (red).</string>
+    <string name="tr_skyscraper_ask">Tap every cell where %1$d can be removed because of the Skyscraper.</string>
+    <string name="tr_two_string_kite_title">2-String Kite</string>
+    <string name="tr_two_string_kite_intro">A row and a column each hold a number in exactly two cells, and one cell of each sits in the same box. The two far ends can\'t both be wrong — so any cell that sees both far ends can\'t hold the number.</string>
+    <string name="tr_two_string_kite_s1">Number %1$d: a row and a column each have it in only two cells, linked through one box (the four marked cells).</string>
+    <string name="tr_two_string_kite_s2">One of the two far ends must hold %1$d, so cells that see both far ends cannot (red).</string>
+    <string name="tr_two_string_kite_ask">Tap every cell where %1$d can be removed because of the 2-String Kite.</string>
+    <string name="tr_xyz_wing_title">XYZ-Wing</string>
+    <string name="tr_xyz_wing_intro">A pivot cell with three candidates (X, Y, Z) sees two partner cells: one with (X, Z) and one with (Y, Z). Whatever the pivot turns out to be, Z ends up in the pivot or one of the partners — so a cell that sees all three can\'t be Z.</string>
+    <string name="tr_xyz_wing_s1">The pivot has %1$d, %2$d and %3$d. The wings have (%1$d, %3$d) and (%2$d, %3$d) — the three marked cells.</string>
+    <string name="tr_xyz_wing_s2">Whichever way it works out, one of the three marked cells is %3$d. Cells that see all three cannot be %3$d (red).</string>
+    <string name="tr_xyz_wing_ask">Tap every cell where %1$d can be removed because of the XYZ-Wing.</string>
+    <string name="tr_unique_rectangle_title">Unique Rectangle</string>
+    <string name="tr_unique_rectangle_intro">A valid puzzle has exactly one solution. If four cells in two rows, two columns and two boxes could be swapped between the same two numbers, the puzzle would have two solutions — so that pattern must be avoided, which lets you remove candidates.</string>
+    <string name="tr_unique_rectangle_s1">Three of these four corners hold only %1$s. The fourth corner has those numbers plus others.</string>
+    <string name="tr_unique_rectangle_s2">If the fourth corner also ended up as %1$s, the puzzle would have two solutions. So those numbers can be removed from it (red).</string>
+    <string name="tr_unique_rectangle_ask">Tap every cell where %1$d can be removed because of the Unique Rectangle.</string>
+    <string name="tr_simple_coloring_title">Simple coloring</string>
+    <string name="tr_simple_coloring_intro">Link the cells where a number has only two places in a house, and color them alternately (blue and orange). In each chain exactly one color is true — so cells that see both colors, or two cells of one color that see each other, show what to remove.</string>
+    <string name="tr_simple_coloring_s1">Number %1$d: the marked cells form a chain; alternate cells are blue and orange. Exactly one of the two colors holds %1$d.</string>
+    <string name="tr_simple_coloring_s2">One color turns out false (two cells of the same color see each other), or a cell sees both colors — so %1$d can be removed there (red).</string>
+    <string name="tr_simple_coloring_ask">Tap every cell where %1$d can be removed because of the coloring.</string>
+    <string name="tr_xy_chain_title">XY-Chain</string>
+    <string name="tr_xy_chain_intro">A chain of two-candidate cells where neighbors see each other and share one number. If the chain\'s two ends carry the same number, one end must hold it — so any cell that sees both ends can\'t hold it.</string>
+    <string name="tr_xy_chain_s1">Follow the marked chain: every cell has two candidates and links to the next. Both ends share the number %1$d.</string>
+    <string name="tr_xy_chain_s2">Number %1$d — one end of the chain must hold it, so cells that see both ends cannot (red).</string>
+    <string name="tr_xy_chain_ask">Tap every cell where %1$d can be removed because of the XY-Chain.</string>
 </resources>

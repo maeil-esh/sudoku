@@ -50,7 +50,7 @@ import com.uk2solutions.sudoku.domain.model.Board
 import com.uk2solutions.sudoku.ui.theme.SudokuTheme
 
 /** 트레이닝에서 후보(메모) 숫자를 강조하는 색: 패턴을 이루는 후보 / 지울 후보. */
-enum class NoteTone { PATTERN, REMOVE }
+enum class NoteTone { PATTERN, PATTERN2, REMOVE }
 
 /**
  * SPEC §6.1: 박스 경계 2dp(ink), 칸 경계 1dp(line), 바깥 2dp(ink).
@@ -209,7 +209,7 @@ private fun Cell(
                                 Text(
                                     d.toString(), fontSize = capped(10f, 1.0f), lineHeight = capped(10f, 1.0f),
                                     fontWeight = if (tone != null) FontWeight.ExtraBold else FontWeight.Normal,
-                                    color = when (tone) { NoteTone.PATTERN -> c.accent; NoteTone.REMOVE -> c.error; null -> c.muted },
+                                    color = when (tone) { NoteTone.PATTERN -> c.accent; NoteTone.PATTERN2 -> c.second; NoteTone.REMOVE -> c.error; null -> c.muted },
                                 )
                             }
                         }

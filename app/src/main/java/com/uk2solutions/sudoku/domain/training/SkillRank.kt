@@ -2,7 +2,7 @@ package com.uk2solutions.sudoku.domain.training
 
 /** 실력 단계. 레슨을 마스터(별 2개 이상)할수록 올라간다. */
 enum class Rank(val minMastered: Int) {
-    ROOKIE(0), APPRENTICE(2), SOLVER(6), EXPERT(9), GRANDMASTER(12),
+    ROOKIE(0), APPRENTICE(2), SOLVER(6), EXPERT(9), MASTER(12), GRANDMASTER(18),
 }
 
 /**

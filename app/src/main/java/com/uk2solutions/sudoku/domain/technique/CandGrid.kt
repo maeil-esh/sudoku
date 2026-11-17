@@ -36,12 +36,13 @@ class CandGrid(val v: IntArray, val c: IntArray) {
     }
 }
 
-/** 트레이닝 대상 기법(필요 등급 순). [level]: 0 단일 후보, 1 숨은 단일, 2 포인팅·쌍, 3 삼중·숨은 쌍, 4 X-윙·Y-윙·스워드피시. */
+/** 트레이닝 대상 기법(필요 등급 순). [level]: 0 단일 후보, 1 숨은 단일, 2 포인팅·쌍, 3 삼중·숨은 쌍, 4 X-윙·Y-윙·스워드피시, 5 초고수(스카이스크래퍼·카이트·XYZ-윙·유니크 렉탱글·컬러링·XY-체인). */
 enum class Technique(val level: Int) {
     NAKED_SINGLE(0), HIDDEN_SINGLE(1),
     POINTING(2), CLAIMING(2), NAKED_PAIR(2),
     HIDDEN_PAIR(3), NAKED_TRIPLE(3), HIDDEN_TRIPLE(3),
     X_WING(4), Y_WING(4), SWORDFISH(4),
+    SKYSCRAPER(5), TWO_STRING_KITE(5), XYZ_WING(5), UNIQUE_RECTANGLE(5), SIMPLE_COLORING(5), XY_CHAIN(5),
 }
 
 /**
@@ -51,4 +52,6 @@ enum class Technique(val level: Int) {
 data class Deduction(
     val technique: Technique, val pattern: Set<Int>, val digits: List<Int>, val houses: Set<Int>,
     val place: Pair<Int, Int>? = null, val eliminations: List<Pair<Int, Int>> = emptyList(),
+    /** 두 색으로 나누는 기법(단순 컬러링)에서 두 번째 색의 칸들(첫 번째 색은 [pattern] − [secondary]). */
+    val secondary: Set<Int> = emptySet(),
 )

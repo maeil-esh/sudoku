@@ -169,7 +169,8 @@ class AdvancedGenerationTest {
             tDevil[0] += System.nanoTime() - t0
             val dg = Board.parse(d.givens)
             assertEquals("악마 유일해", 1, Solver.countSolutions(dg, 2))
-            assertNull("악마는 사람 기법만으로 풀리면 안 됨", com.uk2solutions.sudoku.domain.technique.HumanSolver.solveLevel(dg, com.uk2solutions.sudoku.domain.technique.Finders.ORDER))
+            val dl = com.uk2solutions.sudoku.domain.technique.HumanSolver.solveLevel(dg, com.uk2solutions.sudoku.domain.technique.Finders.ORDER)
+            assertTrue("악마는 초고수 기법(등급 5)이 필요하거나 기법으로도 막혀야 함: $dl", dl == null || dl >= 5)
             assertTrue("악마 단서 수", Board.clueCount(dg) <= 26)
         }
         println("평균 생성 시간 EXPERT: ${tExpert[0] / 12 / 1_000_000.0} ms, DEVIL: ${tDevil[0] / 12 / 1_000_000.0} ms")

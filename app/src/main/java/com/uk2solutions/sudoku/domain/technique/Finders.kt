@@ -20,7 +20,18 @@ object Finders {
         Technique.X_WING -> fish(g, 2, Technique.X_WING)
         Technique.SWORDFISH -> fish(g, 3, Technique.SWORDFISH)
         Technique.Y_WING -> yWing(g)
+        Technique.SKYSCRAPER -> skyscraper(g)
+        Technique.TWO_STRING_KITE -> twoStringKite(g)
+        Technique.XYZ_WING -> xyzWing(g)
+        Technique.UNIQUE_RECTANGLE -> uniqueRectangle(g)
+        Technique.SIMPLE_COLORING -> simpleColoring(g)
+        Technique.XY_CHAIN -> xyChain(g)
     }
+
+    private val seesM = Array(81) { i -> BooleanArray(81).also { m -> Units.peers[i].forEach { m[it] = true } } }
+    private fun sees(a: Int, b: Int) = seesM[a][b]
+    private fun peersWith(g: CandGrid, d: Int, vararg of: Int, exclude: Set<Int>) =
+        (0 until 81).filter { c -> c !in exclude && g.has(c, d) && of.all { sees(it, c) } }
 
     fun nakedSingle(g: CandGrid): Deduction? {
         for (i in 0 until 81) if (g.v[i] == 0 && g.count(i) == 1) {
@@ -141,6 +152,137 @@ object Finders {
                     if (el.isNotEmpty()) return Deduction(Technique.Y_WING, setOf(pv, w1, w2), listOf(a, b, cdig), (Units.peers[pv] + Units.peers[w1] + Units.peers[w2]).toSet() + setOf(pv, w1, w2), eliminations = el)
                 }
             }
+        }
+        return null
+    }
+
+    /** 스카이스크래퍼: 두 줄에서 숫자가 각각 두 칸뿐이고 한쪽 끝이 같은 줄에 정렬 → 나머지 두 끝(꼭대기)을 모두 보는 칸에서 제거. */
+    fun skyscraper(g: CandGrid): Deduction? {
+        for (d in 1..9) for (byRow in listOf(true, false)) {
+            val lines = if (byRow) Units.rows else Units.cols
+            fun cov(c: Int) = if (byRow) Board.col(c) else Board.row(c)
+            val two = (0 until 9).map { li -> lines[li].filter { g.has(it, d) } }.filter { it.size == 2 }
+            for (x in two.indices) for (y in x + 1 until two.size) {
+                val a = two[x]; val b = two[y]
+                for (ia in 0..1) for (ib in 0..1) {
+                    if (cov(a[ia]) != cov(b[ib]) || cov(a[1 - ia]) == cov(b[1 - ib])) continue
+                    val tipA = a[1 - ia]; val tipB = b[1 - ib]
+                    val pattern = (a + b).toSet()
+                    val el = peersWith(g, d, tipA, tipB, exclude = pattern).map { it to d }
+                    if (el.isNotEmpty()) return Deduction(Technique.SKYSCRAPER, pattern, listOf(d), (Units.peers[tipA] + Units.peers[tipB]).toSet() + pattern, eliminations = el)
+                }
+            }
+        }
+        return null
+    }
+
+    /** 2-스트링 카이트: 한 행과 한 열에서 숫자가 각각 두 칸뿐이고 한 칸씩이 같은 박스 → 박스 밖 두 끝을 모두 보는 칸에서 제거. */
+    fun twoStringKite(g: CandGrid): Deduction? {
+        for (d in 1..9) {
+            val rows = Units.rows.map { r -> r.filter { g.has(it, d) } }.filter { it.size == 2 }
+            val cols = Units.cols.map { c -> c.filter { g.has(it, d) } }.filter { it.size == 2 }
+            for (r in rows) for (c in cols) {
+                val pattern = (r + c).toSet()
+                if (pattern.size != 4) continue
+                for (i in 0..1) for (j in 0..1) {
+                    if (Board.box(r[i]) != Board.box(c[j])) continue
+                    val re = r[1 - i]; val ce = c[1 - j]
+                    val el = peersWith(g, d, re, ce, exclude = pattern).map { it to d }
+                    if (el.isNotEmpty()) return Deduction(Technique.TWO_STRING_KITE, pattern, listOf(d), (Units.peers[re] + Units.peers[ce]).toSet() + pattern, eliminations = el)
+                }
+            }
+        }
+        return null
+    }
+
+    /** XYZ-윙: 피벗{X,Y,Z}와 날개{X,Z}·{Y,Z}(둘 다 피벗을 봄) → 세 칸을 모두 보는 칸에서 Z 제거. digits = [X, Y, Z]. */
+    fun xyzWing(g: CandGrid): Deduction? {
+        for (pv in 0 until 81) {
+            if (g.v[pv] != 0 || g.count(pv) != 3) continue
+            val pd = g.digits(pv)
+            val wings = Units.peers[pv].filter { g.v[it] == 0 && g.count(it) == 2 }
+            for (z in pd) {
+                val (x, y) = pd.filter { it != z }
+                val w1s = wings.filter { g.digits(it) == listOf(x, z).sorted() }
+                val w2s = wings.filter { g.digits(it) == listOf(y, z).sorted() }
+                for (w1 in w1s) for (w2 in w2s) {
+                    val pattern = setOf(pv, w1, w2)
+                    val el = peersWith(g, z, pv, w1, w2, exclude = pattern).map { it to z }
+                    if (el.isNotEmpty()) return Deduction(Technique.XYZ_WING, pattern, listOf(x, y, z), (Units.peers[pv] + Units.peers[w1] + Units.peers[w2]).toSet() + pattern, eliminations = el)
+                }
+            }
+        }
+        return null
+    }
+
+    /** 유니크 렉탱글(유형 1): 해가 하나뿐이라는 점을 이용. 세 꼭짓점이 {A,B}뿐이면 네 번째 꼭짓점에서 A·B 제거. */
+    fun uniqueRectangle(g: CandGrid): Deduction? {
+        for (r1 in 0 until 9) for (r2 in r1 + 1 until 9) for (c1 in 0 until 9) for (c2 in c1 + 1 until 9) {
+            val cells = listOf(r1 * 9 + c1, r1 * 9 + c2, r2 * 9 + c1, r2 * 9 + c2)
+            if (cells.any { g.v[it] != 0 }) continue
+            if (cells.map { Board.box(it) }.toSet().size != 2) continue
+            for (roof in cells) {
+                val floor = cells.filter { it != roof }
+                val m = g.c[floor[0]]
+                if (Integer.bitCount(m) != 2 || floor.any { g.c[it] != m }) continue
+                if (g.c[roof] and m != m || Integer.bitCount(g.c[roof]) <= 2) continue
+                val digs = (1..9).filter { m and (1 shl (it - 1)) != 0 }
+                val houses = (Units.rows[r1] + Units.rows[r2] + Units.cols[c1] + Units.cols[c2]).toSet()
+                return Deduction(Technique.UNIQUE_RECTANGLE, cells.toSet(), digs, houses, eliminations = digs.map { roof to it })
+            }
+        }
+        return null
+    }
+
+    /** 단순 컬러링: 한 숫자의 "두 칸뿐" 연결을 두 색으로 칠한다. 같은 색 두 칸이 마주 보면 그 색 제거, 두 색을 모두 보는 칸은 제거. */
+    fun simpleColoring(g: CandGrid): Deduction? {
+        for (d in 1..9) {
+            val adj = Array(81) { mutableListOf<Int>() }
+            for (u in Units.all) { val cs = u.filter { g.has(it, d) }; if (cs.size == 2) { adj[cs[0]] += cs[1]; adj[cs[1]] += cs[0] } }
+            val color = IntArray(81) { -1 }
+            for (s in 0 until 81) {
+                if (adj[s].isEmpty() || color[s] != -1) continue
+                val comp = ArrayList<Int>(); color[s] = 0; val q = ArrayDeque<Int>(); q.add(s)
+                while (q.isNotEmpty()) { val x = q.removeFirst(); comp += x; for (y in adj[x]) if (color[y] == -1) { color[y] = 1 - color[x]; q.add(y) } }
+                if (comp.size < 4) continue
+                val a = comp.filter { color[it] == 0 }; val b = comp.filter { color[it] == 1 }
+                val pattern = comp.toSet()
+                val houses = (0 until 81).filter { g.has(it, d) }.toSet()
+                for (side in listOf(a, b)) {
+                    val clash = side.any { x -> side.any { y -> x < y && sees(x, y) } }
+                    if (clash) return Deduction(Technique.SIMPLE_COLORING, pattern, listOf(d), houses, eliminations = side.map { it to d }, secondary = b.toSet())
+                }
+                val el = (0 until 81).filter { c -> c !in pattern && g.has(c, d) && a.any { sees(it, c) } && b.any { sees(it, c) } }.map { it to d }
+                if (el.isNotEmpty()) return Deduction(Technique.SIMPLE_COLORING, pattern, listOf(d), houses, eliminations = el, secondary = b.toSet())
+            }
+        }
+        return null
+    }
+
+    /** XY-체인: 후보 2개짜리 칸들을 이어(이웃은 서로 보고 숫자 하나 공유) 양 끝이 같은 숫자 X를 가지면, 양 끝을 모두 보는 칸에서 X 제거. */
+    fun xyChain(g: CandGrid): Deduction? {
+        val bi = (0 until 81).filter { g.v[it] == 0 && g.count(it) == 2 }
+        for (start in bi) for (x in g.digits(start)) {
+            val other = g.digits(start).first { it != x }
+            var found: Deduction? = null
+            fun dfs(path: List<Int>, carry: Int) {
+                if (found != null) return
+                val cur = path.last()
+                for (n in bi) {
+                    if (n in path || !sees(cur, n) || !g.has(n, carry)) continue
+                    val next = g.digits(n).first { it != carry }
+                    val p2 = path + n
+                    if (next == x && p2.size >= 4) {
+                        val pattern = p2.toSet()
+                        val el = peersWith(g, x, start, n, exclude = pattern).map { it to x }
+                        if (el.isNotEmpty()) { found = Deduction(Technique.XY_CHAIN, pattern, listOf(x), (Units.peers[start] + Units.peers[n]).toSet() + pattern, eliminations = el); return }
+                    }
+                    if (p2.size < 8) dfs(p2, next)
+                    if (found != null) return
+                }
+            }
+            dfs(listOf(start), other)
+            found?.let { return it }
         }
         return null
     }
