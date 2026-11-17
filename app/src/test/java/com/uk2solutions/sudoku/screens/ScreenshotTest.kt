@@ -42,10 +42,12 @@ import java.io.File
 @RunWith(RobolectricTestRunner::class)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 @Config(sdk = [34], application = Application::class, qualifiers = "ko-w390dp-h844dp-xxhdpi")
-class ScreenshotTest {
+open class ScreenshotTest {
     @get:Rule val rule = createAndroidComposeRule<androidx.activity.ComponentActivity>()
 
-    private val outDir = File(System.getProperty("user.dir"), "../docs/screens").apply { mkdirs() }
+    /** 하위 클래스(영어판 등)가 저장 폴더를 바꿀 수 있다. */
+    protected open fun outPath(): String = "../docs/screens"
+    private val outDir by lazy { File(System.getProperty("user.dir"), outPath()).apply { mkdirs() } }
 
     private fun shoot(name: String, dark: Boolean = false, advanceMs: Long = 0, palette: Int = 0, content: @Composable () -> Unit) {
         val show = androidx.compose.runtime.mutableStateOf(advanceMs == 0L)
