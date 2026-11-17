@@ -11,5 +11,6 @@ import org.robolectric.annotation.GraphicsMode
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 @Config(sdk = [34], application = Application::class, qualifiers = "ja-w390dp-h844dp-xxhdpi")
 class JapaneseScreenshotTest : ScreenshotTest() {
+    override val price: String get() = "¥500"
     override fun outPath() = "../docs/store/src-ja"
 }

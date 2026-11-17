@@ -81,7 +81,7 @@ class SemanticsTest {
         }
     }
 
-    @Test fun premium() { assertAllLabeled("프리미엄") { PremiumContent(false, false, "₩3,900", true, null, {}, {}, {}, {}) } }
+    @Test fun premium() { assertAllLabeled("프리미엄") { PremiumContent(false, false, "₩4,900", true, null, {}, {}, {}, {}) } }
 
     @Test fun challengeResult() {
         assertAllLabeled("도전 결과") { CompleteCard(1000, 0, 100, ChallengeResult(10, 1, 0, 90), {}, {}, {}) }

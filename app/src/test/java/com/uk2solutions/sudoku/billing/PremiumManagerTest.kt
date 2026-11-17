@@ -17,7 +17,7 @@ class FakeBillingGateway(var result: QueryResult = QueryResult.Success(emptyList
     override val purchaseUpdates: Flow<PurchaseUpdate> = updates
     val acknowledged = mutableListOf<String>()
     override suspend fun queryPurchases() = result
-    override suspend fun queryPrice(productId: String): String? = "₩3,900"
+    override suspend fun queryPrice(productId: String): String? = "₩4,900"
     override suspend fun acknowledge(token: String): Boolean { acknowledged += token; return true }
     override suspend fun launchPurchase(activity: Activity, productId: String) = true
 }

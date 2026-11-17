@@ -46,6 +46,8 @@ open class ScreenshotTest {
     @get:Rule val rule = createAndroidComposeRule<androidx.activity.ComponentActivity>()
 
     /** 하위 클래스(영어판 등)가 저장 폴더를 바꿀 수 있다. */
+    /** 프리미엄 화면에 보일 현지 가격(스토어 이미지용). 실제 앱은 Play가 주는 현지 가격 문자열을 그대로 쓴다. */
+    protected open val price: String get() = "₩4,900"
     protected open fun outPath(): String = "../docs/screens"
     private val outDir by lazy { File(System.getProperty("user.dir"), outPath()).apply { mkdirs() } }
 
@@ -178,11 +180,11 @@ open class ScreenshotTest {
     }
 
     @Test fun premiumScreen() = shoot("15_premium") {
-        PremiumContent(false, false, "₩3,900", true, null, {}, {}, {}, {})
+        PremiumContent(false, false, price, true, null, {}, {}, {}, {})
     }
 
     @Test fun premiumScreenPendingAndMessage() = shoot("16_premium_promo_not_confirmed") {
-        PremiumContent(false, true, "₩3,900", true, PremiumMessage.PROMO_NOT_CONFIRMED, {}, {}, {}, {})
+        PremiumContent(false, true, price, true, PremiumMessage.PROMO_NOT_CONFIRMED, {}, {}, {}, {})
     }
 
     @Test fun premiumActive() = shoot("17_premium_active", dark = true) {
@@ -268,7 +270,7 @@ open class ScreenshotTest {
     }
 
     @Test @Config(qualifiers = "ko-w390dp-h1400dp-xxhdpi", fontScale = 2.0f) fun premiumFontScale2() = shoot("35_premium_fontscale_200") {
-        PremiumContent(false, false, "₩3,900", true, null, {}, {}, {}, {})
+        PremiumContent(false, false, price, true, null, {}, {}, {}, {})
     }
 
     /** 틀린 칸 없이 중간쯤 진행한 게임에서 힌트 단계 [step]을 보여 준다. */
