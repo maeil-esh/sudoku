@@ -73,7 +73,7 @@
     <string name="theme_dark">Gelap</string>
     <string name="theme_pick_title">Mode gelap</string>
     <string name="set_sound">Efek suara</string>
-    <string name="set_sound_desc">Putar suara ketukan saat mengisi (mengikuti pengaturan suara sentuh perangkat)</string>
+    <string name="set_sound_desc">Suara saat mengisi, salah, dan selesai (memakai volume media)</string>
     <string name="set_vibration">Getar</string>
     <string name="set_vibration_desc">Bergetar saat mengisi, salah, dan selesai</string>
     <string name="set_timer">Timer</string>

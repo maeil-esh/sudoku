@@ -73,7 +73,7 @@
     <string name="theme_dark">Dunkel</string>
     <string name="theme_pick_title">Dunkelmodus</string>
     <string name="set_sound">Soundeffekte</string>
-    <string name="set_sound_desc">Spielt beim Eingeben einen Ton ab (folgt der Touch-Ton-Einstellung des Geräts)</string>
+    <string name="set_sound_desc">Töne beim Eingeben, bei Fehlern und beim Abschluss (Medienlautstärke)</string>
     <string name="set_vibration">Vibration</string>
     <string name="set_vibration_desc">Vibriert bei Eingaben, Fehlern und Abschlüssen</string>
     <string name="set_timer">Timer</string>

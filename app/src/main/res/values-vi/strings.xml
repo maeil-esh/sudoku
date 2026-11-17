@@ -73,7 +73,7 @@
     <string name="theme_dark">Tối</string>
     <string name="theme_pick_title">Chế độ tối</string>
     <string name="set_sound">Hiệu ứng âm thanh</string>
-    <string name="set_sound_desc">Phát âm thanh chạm khi nhập số (theo cài đặt âm thanh chạm của thiết bị)</string>
+    <string name="set_sound_desc">Âm thanh khi nhập, sai và hoàn thành (dùng âm lượng media)</string>
     <string name="set_vibration">Rung</string>
     <string name="set_vibration_desc">Rung khi nhập số, khi mắc lỗi và khi hoàn thành</string>
     <string name="set_timer">Đồng hồ bấm giờ</string>

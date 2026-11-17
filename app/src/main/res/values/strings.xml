@@ -73,7 +73,7 @@
     <string name="theme_dark">Dark</string>
     <string name="theme_pick_title">Dark mode</string>
     <string name="set_sound">Sound effects</string>
-    <string name="set_sound_desc">Play a tap sound on input (follows the device\'s touch sound setting)</string>
+    <string name="set_sound_desc">Tap, error and line-complete sounds (uses the media volume)</string>
     <string name="set_vibration">Vibration</string>
     <string name="set_vibration_desc">Vibrate on input, mistakes and completions</string>
     <string name="set_timer">Timer</string>

@@ -73,7 +73,7 @@
     <string name="theme_dark">ダーク</string>
     <string name="theme_pick_title">ダークモード</string>
     <string name="set_sound">効果音</string>
-    <string name="set_sound_desc">入力時にタップ音を鳴らします（端末のタッチ音の設定に従います）</string>
+    <string name="set_sound_desc">入力・ミス・完成の効果音を鳴らします（メディア音量で再生）</string>
     <string name="set_vibration">バイブレーション</string>
     <string name="set_vibration_desc">入力・ミス・完成のときに振動します</string>
     <string name="set_timer">タイマー</string>

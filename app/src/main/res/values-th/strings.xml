@@ -73,7 +73,7 @@
     <string name="theme_dark">มืด</string>
     <string name="theme_pick_title">โหมดมืด</string>
     <string name="set_sound">เสียงเอฟเฟกต์</string>
-    <string name="set_sound_desc">เล่นเสียงแตะเมื่อกรอกตัวเลข (ตามการตั้งค่าเสียงสัมผัสของอุปกรณ์)</string>
+    <string name="set_sound_desc">เสียงตอนกรอก ผิดพลาด และทำครบ (ใช้ระดับเสียงสื่อ)</string>
     <string name="set_vibration">การสั่น</string>
     <string name="set_vibration_desc">สั่นเมื่อกรอกตัวเลข ผิด และเมื่อทำสำเร็จ</string>
     <string name="set_timer">ตัวจับเวลา</string>

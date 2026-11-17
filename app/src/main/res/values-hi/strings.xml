@@ -73,7 +73,7 @@
     <string name="theme_dark">डार्क</string>
     <string name="theme_pick_title">डार्क मोड</string>
     <string name="set_sound">ध्वनि प्रभाव</string>
-    <string name="set_sound_desc">अंक भरते समय टैप की आवाज़ बजाएँ (डिवाइस की टच साउंड सेटिंग के अनुसार)</string>
+    <string name="set_sound_desc">अंक भरने, ग़लती और पूरा होने की आवाज़ें (मीडिया वॉल्यूम से)</string>
     <string name="set_vibration">वाइब्रेशन</string>
     <string name="set_vibration_desc">अंक भरने, गलती और पूरा होने पर वाइब्रेट करें</string>
     <string name="set_timer">टाइमर</string>

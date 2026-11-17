@@ -73,7 +73,7 @@
     <string name="theme_dark">Escuro</string>
     <string name="theme_pick_title">Modo escuro</string>
     <string name="set_sound">Efeitos sonoros</string>
-    <string name="set_sound_desc">Toca um som ao inserir (segue a configuração de sons de toque do aparelho)</string>
+    <string name="set_sound_desc">Sons ao inserir, errar e completar (usa o volume de mídia)</string>
     <string name="set_vibration">Vibração</string>
     <string name="set_vibration_desc">Vibra ao inserir, errar e completar</string>
     <string name="set_timer">Cronômetro</string>

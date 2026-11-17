@@ -73,7 +73,7 @@
     <string name="theme_dark">Тёмная</string>
     <string name="theme_pick_title">Тёмная тема</string>
     <string name="set_sound">Звуковые эффекты</string>
-    <string name="set_sound_desc">Звук нажатия при вводе (зависит от системной настройки звуков касания)</string>
+    <string name="set_sound_desc">Звуки ввода, ошибки и завершения (громкость мультимедиа)</string>
     <string name="set_vibration">Вибрация</string>
     <string name="set_vibration_desc">Вибрация при вводе, ошибках и завершении</string>
     <string name="set_timer">Таймер</string>

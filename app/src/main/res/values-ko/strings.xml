@@ -73,7 +73,7 @@
     <string name="theme_dark">다크</string>
     <string name="theme_pick_title">다크 모드</string>
     <string name="set_sound">음향 효과</string>
-    <string name="set_sound_desc">입력할 때 터치 소리를 냅니다 (기기의 터치 소리 설정을 따릅니다)</string>
+    <string name="set_sound_desc">입력·오답·완성 효과음을 냅니다 (미디어 볼륨으로 재생)</string>
     <string name="set_vibration">진동</string>
     <string name="set_vibration_desc">입력·실수·완성 때 진동합니다</string>
     <string name="set_timer">타이머</string>

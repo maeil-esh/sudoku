@@ -73,7 +73,7 @@
     <string name="theme_dark">Koyu</string>
     <string name="theme_pick_title">Karanlık mod</string>
     <string name="set_sound">Ses efektleri</string>
-    <string name="set_sound_desc">Sayı girerken dokunma sesi çalar (cihazın dokunma sesi ayarına uyar)</string>
+    <string name="set_sound_desc">Girişte, hatada ve tamamlamada ses çalar (medya sesini kullanır)</string>
     <string name="set_vibration">Titreşim</string>
     <string name="set_vibration_desc">Sayı girerken, hata yaparken ve tamamlarken titreşir</string>
     <string name="set_timer">Zamanlayıcı</string>

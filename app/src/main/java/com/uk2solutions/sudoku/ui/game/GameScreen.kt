@@ -1,6 +1,5 @@
 package com.uk2solutions.sudoku.ui.game
 
-import android.view.SoundEffectConstants
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
@@ -37,6 +36,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -56,7 +56,6 @@ import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
-import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
@@ -170,8 +169,9 @@ fun GameScreen(onExit: () -> Unit, onNewGame: (Difficulty) -> Unit, onLearn: (St
     val ui by vm.ui.collectAsStateWithLifecycle()
     val scope = rememberCoroutineScope()
     val haptic = LocalHapticFeedback.current
-    val view = LocalView.current
     val c = SudokuTheme.colors
+    val fx = remember { SoundFx() }
+    DisposableEffect(Unit) { onDispose { fx.release() } }
 
     LifecycleEventEffect(Lifecycle.Event.ON_STOP) { vm.onStop() }
     LaunchedEffect(ui.missing) { if (ui.missing) onExit() }
@@ -188,16 +188,19 @@ fun GameScreen(onExit: () -> Unit, onNewGame: (Difficulty) -> Unit, onLearn: (St
     }
     LaunchedEffect(ui.blockedNudge) {
         if (ui.blockedNudge > 0 && ui.settings.vibration) haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+        if (ui.blockedNudge > 0 && ui.settings.sound) fx.mistake()
     }
     LaunchedEffect(ui.effect?.id) {
         if (ui.effect != null && ui.settings.vibration) haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+        if (ui.effect != null && ui.settings.sound) fx.cheer()
     }
     fun feedback(r: InputResult) {
         if (r == InputResult.NONE) return
         if (ui.settings.vibration) {
             haptic.performHapticFeedback(if (r == InputResult.MISTAKE) HapticFeedbackType.LongPress else HapticFeedbackType.TextHandleMove)
         }
-        if (ui.settings.sound) view.playSoundEffect(SoundEffectConstants.CLICK)
+        if (ui.settings.sound && r == InputResult.MISTAKE) fx.mistake()
+        else if (ui.settings.sound) fx.tap()
     }
 
     val elapsedNow by vm.elapsedMs.collectAsState()

@@ -73,7 +73,7 @@
     <string name="theme_dark">深色</string>
     <string name="theme_pick_title">深色模式</string>
     <string name="set_sound">音效</string>
-    <string name="set_sound_desc">輸入時播放點按聲音（跟隨裝置的觸控音設定）</string>
+    <string name="set_sound_desc">播放輸入、錯誤和完成音效（使用媒體音量）</string>
     <string name="set_vibration">震動</string>
     <string name="set_vibration_desc">輸入、出錯和完成時震動</string>
     <string name="set_timer">計時器</string>

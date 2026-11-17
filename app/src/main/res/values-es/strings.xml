@@ -73,7 +73,7 @@
     <string name="theme_dark">Oscuro</string>
     <string name="theme_pick_title">Modo oscuro</string>
     <string name="set_sound">Efectos de sonido</string>
-    <string name="set_sound_desc">Reproduce un sonido al introducir (sigue el ajuste de sonidos táctiles del dispositivo)</string>
+    <string name="set_sound_desc">Sonidos al introducir, fallar y completar (usa el volumen multimedia)</string>
     <string name="set_vibration">Vibración</string>
     <string name="set_vibration_desc">Vibra al introducir, al fallar y al completar</string>
     <string name="set_timer">Temporizador</string>

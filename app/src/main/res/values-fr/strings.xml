@@ -73,7 +73,7 @@
     <string name="theme_dark">Sombre</string>
     <string name="theme_pick_title">Mode sombre</string>
     <string name="set_sound">Effets sonores</string>
-    <string name="set_sound_desc">Joue un son à la saisie (suit le réglage des sons tactiles de l’appareil)</string>
+    <string name="set_sound_desc">Sons de saisie, d’erreur et de complétion (volume média)</string>
     <string name="set_vibration">Vibration</string>
     <string name="set_vibration_desc">Vibre à la saisie, en cas d’erreur et à la complétion</string>
     <string name="set_timer">Minuteur</string>
