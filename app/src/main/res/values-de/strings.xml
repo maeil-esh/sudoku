@@ -40,8 +40,6 @@
     <string name="cell_desc_given">Zeile %1$d Spalte %2$d, %3$d, vorgegeben</string>
     <string name="cell_desc_error">Zeile %1$d Spalte %2$d, %3$d, Konflikt</string>
     <string name="game_hint">Tipp</string>
-    <string name="game_hint_msg">Tipp: Zeile %1$d, Spalte %2$d · %3$s
-Noch einmal tippen, um die Zahl einzutragen</string>
     <string name="game_hint_exhausted">Die kostenlosen Tipps für heute sind aufgebraucht</string>
     <string name="hint_naked_single">Nackter Einzelner</string>
     <string name="hint_hidden_single">Versteckter Einzelner</string>
@@ -175,4 +173,15 @@ Noch einmal tippen, um die Zahl einzutragen</string>
     <string name="challenge_you">Du</string>
     <string name="challenge_opponent">Gegner</string>
     <string name="challenge_compare_line">%1$s · %2$d Fehler · %3$d Pkt.</string>
+    <string name="hint_unit_row">Zeile</string>
+    <string name="hint_unit_col">Spalte</string>
+    <string name="hint_unit_box">Block</string>
+    <string name="hint_intro_naked">Lösen wir dieses Feld gemeinsam. In seiner Zeile, Spalte und seinem Block darf keine Zahl von 1 bis 9 doppelt vorkommen.</string>
+    <string name="hint_intro_hidden">Schau dir diesen Bereich an (%1$s). Wohin kann die Zahl %2$d?</string>
+    <string name="hint_intro_deduction">Hier gibt es kein einfaches Muster. Schauen wir uns dieses Feld und seine Umgebung an.</string>
+    <string name="hint_elim_naked">Diese Zahlen stehen schon in seiner Zeile, Spalte oder seinem Block: %1$s. Es bleibt nur eine Zahl übrig.</string>
+    <string name="hint_elim_hidden">Zahl %2$d: In allen anderen leeren Feldern dieses Bereichs (%1$s) steht dieselbe Zahl schon in Zeile, Spalte oder Block (blaue Felder). Sie passt nur in das markierte Feld.</string>
+    <string name="hint_answer">Die Lösung ist %1$d.</string>
+    <string name="hint_next">Weiter</string>
+    <string name="hint_fill">Eintragen</string>
 </resources>

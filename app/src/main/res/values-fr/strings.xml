@@ -40,8 +40,6 @@
     <string name="cell_desc_given">Ligne %1$d colonne %2$d, %3$d, chiffre donné</string>
     <string name="cell_desc_error">Ligne %1$d colonne %2$d, %3$d, conflit</string>
     <string name="game_hint">Indice</string>
-    <string name="game_hint_msg">Indice : ligne %1$d, colonne %2$d · %3$s
-Appuyez à nouveau pour placer le chiffre</string>
     <string name="game_hint_exhausted">Vous avez utilisé les indices gratuits du jour</string>
     <string name="hint_naked_single">Candidat unique</string>
     <string name="hint_hidden_single">Unique caché</string>
@@ -175,4 +173,15 @@ Appuyez à nouveau pour placer le chiffre</string>
     <string name="challenge_you">Vous</string>
     <string name="challenge_opponent">Adversaire</string>
     <string name="challenge_compare_line">%1$s · %2$d erreurs · %3$d pts</string>
+    <string name="hint_unit_row">ligne</string>
+    <string name="hint_unit_col">colonne</string>
+    <string name="hint_unit_box">bloc</string>
+    <string name="hint_intro_naked">Résolvons cette case ensemble. Dans sa ligne, sa colonne et son bloc, aucun chiffre de 1 à 9 ne peut se répéter.</string>
+    <string name="hint_intro_hidden">Regardez cette zone (%1$s). Où peut aller le chiffre %2$d ?</string>
+    <string name="hint_intro_deduction">Il n’y a pas de motif simple ici. Regardons cette case et son environnement.</string>
+    <string name="hint_elim_naked">Ces chiffres sont déjà dans sa ligne, sa colonne ou son bloc : %1$s. Il ne reste qu’un seul chiffre.</string>
+    <string name="hint_elim_hidden">Chiffre %2$d : dans les autres cases vides de cette zone (%1$s), ce même chiffre est déjà présent dans la ligne, la colonne ou le bloc (cases bleues). Il ne peut aller que dans la case marquée.</string>
+    <string name="hint_answer">La réponse est %1$d.</string>
+    <string name="hint_next">Suivant</string>
+    <string name="hint_fill">Remplir</string>
 </resources>

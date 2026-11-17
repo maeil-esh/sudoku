@@ -40,8 +40,6 @@
     <string name="cell_desc_given">Fila %1$d columna %2$d, %3$d, dato inicial</string>
     <string name="cell_desc_error">Fila %1$d columna %2$d, %3$d, conflicto</string>
     <string name="game_hint">Pista</string>
-    <string name="game_hint_msg">Pista: fila %1$d, columna %2$d · %3$s
-Toca de nuevo para poner el número</string>
     <string name="game_hint_exhausted">Has usado las pistas gratuitas de hoy</string>
     <string name="hint_naked_single">Candidato único</string>
     <string name="hint_hidden_single">Único oculto</string>
@@ -175,4 +173,15 @@ Toca de nuevo para poner el número</string>
     <string name="challenge_you">Tú</string>
     <string name="challenge_opponent">Rival</string>
     <string name="challenge_compare_line">%1$s · %2$d errores · %3$d pts</string>
+    <string name="hint_unit_row">fila</string>
+    <string name="hint_unit_col">columna</string>
+    <string name="hint_unit_box">cuadro</string>
+    <string name="hint_intro_naked">Resolvamos esta casilla juntos. En su fila, columna y cuadro no puede repetirse ningún número del 1 al 9.</string>
+    <string name="hint_intro_hidden">Mira esta zona (%1$s). ¿Dónde puede ir el número %2$d?</string>
+    <string name="hint_intro_deduction">Aquí no hay un patrón sencillo. Miremos esta casilla y lo que la rodea.</string>
+    <string name="hint_elim_naked">Estos números ya están en su fila, columna o cuadro: %1$s. Solo queda un número.</string>
+    <string name="hint_elim_hidden">Número %2$d: las demás casillas vacías de esta zona (%1$s) ya tienen el mismo número en su fila, columna o cuadro (casillas azules). Solo puede ir en la casilla marcada.</string>
+    <string name="hint_answer">La respuesta es %1$d.</string>
+    <string name="hint_next">Siguiente</string>
+    <string name="hint_fill">Rellenar</string>
 </resources>

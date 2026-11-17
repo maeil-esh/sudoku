@@ -102,3 +102,49 @@ class ScoringTest {
         assertEquals(0, f); assertEquals(81 - Board.clueCount(Board.parse(p.givens)), t)
     }
 }
+
+class HintPlanTest {
+    private fun fresh(d: Difficulty, seed: Long) = PuzzleGenerator().generate(d, seed).let { GameRules.newState(it.givens, it.solution) }
+
+    @Test fun nakedSinglePlanExplainsWithEightEliminatedDigits() {
+        for (seed in 1L..40L) {
+            val s = fresh(Difficulty.EASY, seed)
+            val h = Hints.next(s)!!
+            assertEquals(HintTechnique.NAKED_SINGLE, h.technique)
+            val plan = Hints.plan(s, h)
+            assertEquals(3, plan.steps.size)
+            val (intro, elim, answer) = plan.steps
+            assertTrue(h.index in intro.highlight && intro.highlight.size == 21)     // 행+열+박스(자기 포함)
+            assertEquals(8, elim.digits.size); assertFalse(h.digit in elim.digits)  // 8개 숫자를 빼면 하나만 남는다
+            assertTrue(elim.emphasis.all { s.values[it] in elim.digits })
+            assertEquals(listOf(h.digit), answer.digits)
+        }
+    }
+
+    @Test fun hiddenSinglePlanShowsBlockersForEveryOtherEmptyCell() {
+        var checked = 0
+        for (seed in 1L..40L) {
+            val s = fresh(Difficulty.MEDIUM, seed)
+            val h = Hints.next(s)!!
+            if (h.technique != HintTechnique.HIDDEN_SINGLE) continue
+            val plan = Hints.plan(s, h)
+            val (intro, elim, _) = plan.steps
+            assertNotNull(h.unit); assertTrue(h.index in intro.highlight && intro.highlight.size == 9)
+            assertTrue(elim.emphasis.all { s.values[it] == h.digit })
+            val others = intro.highlight.filter { it != h.index && s.values[it] == 0 }
+            for (c in others) assertTrue("칸 $c 를 막는 숫자가 보여야 함",
+                com.uk2solutions.sudoku.domain.model.Units.peers[c].any { it in elim.emphasis })
+            checked++
+        }
+        assertTrue("숨은 단일 힌트가 한 번은 나와야 함", checked > 0)
+    }
+
+    @Test fun wrongValueIsTreatedAsEmptyInPlan() {
+        var s = fresh(Difficulty.EASY, 5L)
+        val i = s.values.indexOfFirst { it == 0 }
+        s = GameRules.enter(s, i, (1..9).first { it != s.solution[i] }, false, true).first
+        val h = Hints.next(s, preferred = i)!!
+        val plan = Hints.plan(s, h)
+        assertTrue(plan.steps.isNotEmpty()); assertEquals(s.solution[h.index], h.digit)
+    }
+}

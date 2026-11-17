@@ -47,6 +47,9 @@ data class GameUiState(
     val conflicts: Set<Int> = emptySet(),
     val settings: AppSettings = AppSettings(),
     val hint: Hint? = null,
+    /** 힌트 단계별 설명(보드 스포트라이트 + 하단 카드)과 현재 단계. */
+    val hintPlan: com.uk2solutions.sudoku.domain.game.HintPlan? = null,
+    val hintStep: Int = 0,
     val hintsExhausted: Boolean = false,
     val effect: Effect? = null,
     val scoreGain: ScoreGain? = null,
@@ -217,7 +220,7 @@ class GameViewModel @Inject constructor(
             it.copy(
                 scoreGain = gain ?: it.scoreGain,
                 selectedDigit = nextDigit(it, next),
-                state = next, hint = null, hintsExhausted = false,
+                state = next, hint = null, hintPlan = null, hintStep = 0, hintsExhausted = false,
                 effect = c?.let { x -> Effect(++effectId, x.cells, x.digit) } ?: it.effect, conflicts = GameRules.conflicts(next.values), completed = done,
                 mistakeLimitReached = limitReached(next, it.settings),
             )
@@ -226,26 +229,36 @@ class GameViewModel @Inject constructor(
         else saveRequests.tryEmit(Unit)
     }
 
-    /** 1단계: 풀 수 있는 칸과 기법을 표시(하루 한도 소모). 2단계(다시 누름): 값을 채움. */
+    /** 힌트 시작(하루 한도 1회 소모): 풀 수 있는 칸을 찾아 단계별 설명을 연다. 이미 열려 있으면 무시. */
     fun onHint() {
         val u = _ui.value
         val s = u.state ?: return
-        if (u.paused || u.completed || u.mistakeLimitReached) return
+        if (u.paused || u.completed || u.mistakeLimitReached || u.hintPlan != null) return
         if (blockedByWrong(s)) return
-        val h = u.hint
-        if (h != null && s.values[h.index] != s.solution[h.index]) {
-            val (next, _) = GameRules.enter(s, h.index, h.digit, false, u.settings.autoRemoveNotes)
-            apply(next.copy(hintsUsed = next.hintsUsed + 1), h.index, s)
-            _ui.update { it.copy(selected = h.index) }
-            return
-        }
         viewModelScope.launch {
             if (settingsRepo.consumeHint(HintPolicy.FREE_PER_DAY, unlimited = u.premium)) {
-                val next = Hints.next(s, u.selected) ?: return@launch
-                _ui.update { it.copy(hint = next, selected = next.index, hintsExhausted = false) }
+                val h = Hints.next(s, u.selected) ?: return@launch
+                _ui.update { it.copy(hint = h, hintPlan = Hints.plan(s, h), hintStep = 0, selected = h.index, hintsExhausted = false) }
             } else _ui.update { it.copy(hintsExhausted = true) }
         }
     }
+
+    fun onHintNext() = _ui.update { u ->
+        val last = (u.hintPlan?.steps?.size ?: 1) - 1
+        u.copy(hintStep = (u.hintStep + 1).coerceAtMost(last))
+    }
+
+    /** 마지막 단계에서 정답을 채운다(힌트로 채운 칸으로 기록). */
+    fun onHintApply() {
+        val u = _ui.value
+        val s = u.state ?: return
+        val h = u.hint ?: return
+        val (next, _) = GameRules.enter(s, h.index, h.digit, false, u.settings.autoRemoveNotes)
+        apply(next.copy(hintsUsed = next.hintsUsed + 1), h.index, s)
+        _ui.update { it.copy(selected = h.index) }
+    }
+
+    fun onHintClose() = _ui.update { it.copy(hint = null, hintPlan = null, hintStep = 0) }
 
     /** 숫자 우선 모드: 고른 숫자를 다 놓았으면(남은 0) 남은 개수가 있는 다음 숫자로 자동 이동. */
     private fun nextDigit(u: GameUiState, s: GameState): Int {

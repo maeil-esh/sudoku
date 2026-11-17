@@ -40,7 +40,6 @@
     <string name="cell_desc_given">第%1$d行第%2$d列，%3$d，题目给定</string>
     <string name="cell_desc_error">第%1$d行第%2$d列，%3$d，冲突</string>
     <string name="game_hint">提示</string>
-    <string name="game_hint_msg">提示：第%1$d行第%2$d列 · %3$s\n再点一次即可填入数字</string>
     <string name="game_hint_exhausted">今天的免费提示已用完</string>
     <string name="hint_naked_single">唯一候选数</string>
     <string name="hint_hidden_single">隐性唯一数</string>
@@ -174,4 +173,15 @@
     <string name="challenge_you">你</string>
     <string name="challenge_opponent">对手</string>
     <string name="challenge_compare_line">%1$s · 错误 %2$d 次 · %3$d 分</string>
+    <string name="hint_unit_row">行</string>
+    <string name="hint_unit_col">列</string>
+    <string name="hint_unit_box">宫</string>
+    <string name="hint_intro_naked">一起来解这一格吧。每一格所在的行、列和宫里，1~9 都不能重复。</string>
+    <string name="hint_intro_hidden">数字 %2$d，在这个%1$s里能填在哪一格？</string>
+    <string name="hint_intro_deduction">这里没有简单的规律。我们一起看看这一格和它周围。</string>
+    <string name="hint_elim_naked">这一格的行、列、宫里已经有这些数字：%1$s。只剩下一个数字可填。</string>
+    <string name="hint_elim_hidden">数字 %2$d：这个%1$s里其他空格的行、列或宫中都已有相同数字（蓝色格），所以只能填在标记的这一格。</string>
+    <string name="hint_answer">答案是 %1$d。</string>
+    <string name="hint_next">下一步</string>
+    <string name="hint_fill">填入</string>
 </resources>

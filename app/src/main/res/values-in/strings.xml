@@ -40,7 +40,6 @@
     <string name="cell_desc_given">Baris %1$d kolom %2$d, %3$d, angka awal</string>
     <string name="cell_desc_error">Baris %1$d kolom %2$d, %3$d, bentrok</string>
     <string name="game_hint">Petunjuk</string>
-    <string name="game_hint_msg">Petunjuk: baris %1$d, kolom %2$d · %3$s\nKetuk lagi untuk mengisi angkanya</string>
     <string name="game_hint_exhausted">Petunjuk gratis hari ini sudah habis</string>
     <string name="hint_naked_single">Kandidat tunggal</string>
     <string name="hint_hidden_single">Tunggal tersembunyi</string>
@@ -174,4 +173,15 @@
     <string name="challenge_you">Kamu</string>
     <string name="challenge_opponent">Lawan</string>
     <string name="challenge_compare_line">%1$s · %2$d kesalahan · %3$d poin</string>
+    <string name="hint_unit_row">baris</string>
+    <string name="hint_unit_col">kolom</string>
+    <string name="hint_unit_box">kotak</string>
+    <string name="hint_intro_naked">Mari selesaikan sel ini bersama. Di baris, kolom, dan kotak sel ini, angka 1–9 tidak boleh berulang.</string>
+    <string name="hint_intro_hidden">Lihat area ini (%1$s). Di mana angka %2$d bisa ditempatkan?</string>
+    <string name="hint_intro_deduction">Tidak ada pola sederhana di sini. Mari lihat sel ini dan sekitarnya.</string>
+    <string name="hint_elim_naked">Angka-angka ini sudah ada di baris, kolom, atau kotak sel ini: %1$s. Hanya tersisa satu angka.</string>
+    <string name="hint_elim_hidden">Angka %2$d: pada sel kosong lain di area ini (%1$s), angka yang sama sudah ada di baris, kolom, atau kotak (sel biru). Jadi hanya bisa di sel yang ditandai.</string>
+    <string name="hint_answer">Jawabannya %1$d.</string>
+    <string name="hint_next">Lanjut</string>
+    <string name="hint_fill">Isi</string>
 </resources>

@@ -65,6 +65,9 @@ fun SudokuBoard(
     effect: Effect? = null,
     gain: ScoreGain? = null,
     hintCell: Int = -1,
+    spotlight: Set<Int>? = null,
+    emphasis: Set<Int> = emptySet(),
+    previewDigit: Int = 0,
     modifier: Modifier = Modifier,
 ) {
     val c = SudokuTheme.colors
@@ -100,7 +103,11 @@ fun SudokuBoard(
                             (Board.row(i) == Board.row(selected) || Board.col(i) == Board.col(selected) || Board.box(i) == Board.box(selected))
                         val isErr = (settings.showErrors && i in conflicts) || i in wrongCells
                         val isSame = settings.highlightSame && sameDigit != 0 && state.values[i] == sameDigit
+                        val inSpot = spotlight == null || i in spotlight
                         val bg = when {
+                            spotlight != null && i == hintCell -> c.cellSelected
+                            spotlight != null && i in emphasis -> c.cellSame
+                            spotlight != null -> if (inSpot) c.surface else Color.Transparent
                             isErr -> c.errorBg
                             isSame -> c.cellSame
                             isSel -> c.cellSelected
@@ -111,6 +118,7 @@ fun SudokuBoard(
                         Cell(
                             flash = f, hinted = i == hintCell, index = i, value = state.values[i], notes = state.notes[i],
                             given = state.isGiven(i), error = isErr, selected = isSel, background = bg,
+                            dim = spotlight != null && !inSpot, preview = if (spotlight != null && i == hintCell) previewDigit else 0,
                             onClick = { onCell(i) }, modifier = Modifier.weight(1f).fillMaxHeight(),
                         )
                     }
@@ -150,7 +158,7 @@ private fun ScoreFloat(gain: ScoreGain, cell: Dp) {
 
 @Composable
 private fun Cell(
-    flash: Float, hinted: Boolean, index: Int, value: Int, notes: Int, given: Boolean, error: Boolean, selected: Boolean,
+    dim: Boolean, preview: Int, flash: Float, hinted: Boolean, index: Int, value: Int, notes: Int, given: Boolean, error: Boolean, selected: Boolean,
     background: Color, onClick: () -> Unit, modifier: Modifier,
 ) {
     val c = SudokuTheme.colors
@@ -169,6 +177,7 @@ private fun Cell(
         modifier
             .background(bg)
             .then(if (selected || hinted) Modifier.border(if (hinted) 3.dp else 2.dp, c.accent) else Modifier)
+            .then(if (dim) Modifier.drawWithContent { drawContent(); drawRect(Color.Black.copy(alpha = 0.55f)) } else Modifier)
             .clickable(onClick = onClick)
             .semantics { contentDescription = desc; role = Role.Button; this.selected = selected },
         contentAlignment = Alignment.Center,
@@ -180,6 +189,9 @@ private fun Cell(
                 fontWeight = when { error -> FontWeight.ExtraBold; given -> FontWeight.SemiBold; else -> FontWeight.Medium },
                 color = when { error -> c.error; given -> c.ink; else -> c.accent },
             )
+        } else if (preview != 0) {
+            // 힌트의 정답 미리보기(아직 입력되지 않음)
+            Text(preview.toString(), fontSize = capped(24f, 1.3f), fontWeight = FontWeight.Bold, color = c.accent)
         } else if (notes != 0) {
             Column(Modifier.fillMaxSize()) {
                 for (r in 0 until 3) Row(Modifier.weight(1f).fillMaxWidth()) {

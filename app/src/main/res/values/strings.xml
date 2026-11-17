@@ -40,8 +40,6 @@
     <string name="cell_desc_given">Row %1$d column %2$d, %3$d, given</string>
     <string name="cell_desc_error">Row %1$d column %2$d, %3$d, conflict</string>
     <string name="game_hint">Hint</string>
-    <string name="game_hint_msg">Hint: row %1$d, column %2$d · %3$s
-Tap again to fill in the number</string>
     <string name="game_hint_exhausted">You\'ve used today\'s free hints</string>
     <string name="hint_naked_single">Naked single</string>
     <string name="hint_hidden_single">Hidden single</string>
@@ -188,4 +186,15 @@ Tap again to fill in the number</string>
     <string name="challenge_you">You</string>
     <string name="challenge_opponent">Opponent</string>
     <string name="challenge_compare_line">%1$s · %2$d mistakes · %3$d pts</string>
+    <string name="hint_unit_row">row</string>
+    <string name="hint_unit_col">column</string>
+    <string name="hint_unit_box">box</string>
+    <string name="hint_intro_naked">Let\'s solve this cell together. A cell\'s row, column and box can\'t repeat any number from 1 to 9.</string>
+    <string name="hint_intro_hidden">Look at this %1$s. Where can the number %2$d go?</string>
+    <string name="hint_intro_deduction">There is no simple pattern here. Let\'s look at this cell and its surroundings.</string>
+    <string name="hint_elim_naked">These numbers are already in its row, column or box: %1$s. Only one number is left.</string>
+    <string name="hint_elim_hidden">Every other empty cell in this %1$s already has a %2$d in its row, column or box, so %2$d can only go in the marked cell.</string>
+    <string name="hint_answer">The answer is %1$d.</string>
+    <string name="hint_next">Next</string>
+    <string name="hint_fill">Fill it in</string>
 </resources>

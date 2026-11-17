@@ -268,4 +268,24 @@ class ScreenshotTest {
     @Test @Config(qualifiers = "ko-w390dp-h1400dp-xxhdpi", fontScale = 2.0f) fun premiumFontScale2() = shoot("35_premium_fontscale_200") {
         PremiumContent(false, false, "₩3,900", true, null, {}, {}, {}, {})
     }
+
+    /** 틀린 칸 없이 중간쯤 진행한 게임에서 힌트 단계 [step]을 보여 준다. */
+    private fun hintUi(d: Difficulty, wantHidden: Boolean, step: Int): Pair<GameUiState, GameState> {
+        var seed = 1L
+        while (true) {
+            val p = PuzzleGenerator().generate(d, seed++)
+            var s = GameRules.newState(p.givens, p.solution)
+            s.values.indices.filter { s.values[it] == 0 }.take(if (wantHidden) 6 else 12).forEach { s = GameRules.enter(s, it, s.solution[it], false, true).first }
+            val h = com.uk2solutions.sudoku.domain.game.Hints.next(s) ?: continue
+            if (wantHidden && h.technique != com.uk2solutions.sudoku.domain.game.HintTechnique.HIDDEN_SINGLE) continue
+            val plan = com.uk2solutions.sudoku.domain.game.Hints.plan(s, h)
+            return GameUiState(loading = false, state = s, difficulty = d, selected = h.index, hint = h, hintPlan = plan, hintStep = step.coerceAtMost(plan.steps.lastIndex)) to s
+        }
+    }
+
+    @Test fun hintNaked1() { val (ui, s) = hintUi(Difficulty.EASY, false, 0); shoot("36_hint_naked_step1") { Game(ui, s) } }
+    @Test fun hintNaked2() { val (ui, s) = hintUi(Difficulty.EASY, false, 1); shoot("37_hint_naked_step2_eliminated_digits") { Game(ui, s) } }
+    @Test fun hintNaked3() { val (ui, s) = hintUi(Difficulty.EASY, false, 2); shoot("38_hint_naked_step3_answer") { Game(ui, s) } }
+    @Test fun hintHidden1() { val (ui, s) = hintUi(Difficulty.MEDIUM, true, 0); shoot("39_hint_hidden_step1") { Game(ui, s) } }
+    @Test fun hintHidden2Dark() { val (ui, s) = hintUi(Difficulty.MEDIUM, true, 1); shoot("40_hint_hidden_step2_blockers_dark", dark = true) { Game(ui, s) } }
 }

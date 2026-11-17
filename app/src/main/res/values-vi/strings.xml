@@ -40,7 +40,6 @@
     <string name="cell_desc_given">Hàng %1$d cột %2$d, %3$d, số cho sẵn</string>
     <string name="cell_desc_error">Hàng %1$d cột %2$d, %3$d, trùng lặp</string>
     <string name="game_hint">Gợi ý</string>
-    <string name="game_hint_msg">Gợi ý: hàng %1$d, cột %2$d · %3$s\nChạm lần nữa để điền số</string>
     <string name="game_hint_exhausted">Bạn đã dùng hết gợi ý miễn phí hôm nay</string>
     <string name="hint_naked_single">Ứng viên duy nhất</string>
     <string name="hint_hidden_single">Số đơn ẩn</string>
@@ -174,4 +173,15 @@
     <string name="challenge_you">Bạn</string>
     <string name="challenge_opponent">Đối thủ</string>
     <string name="challenge_compare_line">%1$s · %2$d lỗi · %3$d điểm</string>
+    <string name="hint_unit_row">hàng</string>
+    <string name="hint_unit_col">cột</string>
+    <string name="hint_unit_box">khối</string>
+    <string name="hint_intro_naked">Cùng giải ô này nhé. Trong hàng, cột và khối của ô, các số từ 1 đến 9 không được lặp lại.</string>
+    <string name="hint_intro_hidden">Hãy nhìn vùng này (%1$s). Số %2$d có thể đặt ở đâu?</string>
+    <string name="hint_intro_deduction">Ở đây không có mẫu đơn giản. Cùng xem ô này và các ô xung quanh.</string>
+    <string name="hint_elim_naked">Những số này đã có trong hàng, cột hoặc khối của ô: %1$s. Chỉ còn lại một số.</string>
+    <string name="hint_elim_hidden">Số %2$d: ở các ô trống khác trong vùng này (%1$s), số đó đã có sẵn trong hàng, cột hoặc khối (các ô xanh). Vì vậy nó chỉ có thể đặt ở ô được đánh dấu.</string>
+    <string name="hint_answer">Đáp án là %1$d.</string>
+    <string name="hint_next">Tiếp</string>
+    <string name="hint_fill">Điền</string>
 </resources>

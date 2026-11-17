@@ -40,7 +40,6 @@
     <string name="cell_desc_given">%1$d행 %2$d열, %3$d, 주어진 숫자</string>
     <string name="cell_desc_error">%1$d행 %2$d열, %3$d, 규칙 충돌</string>
     <string name="game_hint">힌트</string>
-    <string name="game_hint_msg">힌트: %1$d행 %2$d열 · %3$s\n한 번 더 누르면 숫자를 채웁니다</string>
     <string name="game_hint_exhausted">오늘 무료 힌트를 모두 사용했습니다</string>
     <string name="hint_naked_single">단일 후보</string>
     <string name="hint_hidden_single">숨은 단일</string>
@@ -174,4 +173,15 @@
     <string name="challenge_you">나</string>
     <string name="challenge_opponent">상대</string>
     <string name="challenge_compare_line">%1$s · 실수 %2$d번 · %3$d점</string>
+    <string name="hint_unit_row">행</string>
+    <string name="hint_unit_col">열</string>
+    <string name="hint_unit_box">박스</string>
+    <string name="hint_intro_naked">이 칸을 함께 풀어봅시다. 한 칸의 행·열·박스에는 1~9가 중복 없이 들어가야 합니다.</string>
+    <string name="hint_intro_hidden">숫자 %2$d, 이 %1$s에서 어디에 들어갈 수 있을까요?</string>
+    <string name="hint_intro_deduction">간단한 패턴이 없습니다. 이 칸과 주변을 함께 살펴봅시다.</string>
+    <string name="hint_elim_naked">이 칸의 행·열·박스에 이미 있는 숫자: %1$s. 그러면 남는 숫자는 하나뿐입니다.</string>
+    <string name="hint_elim_hidden">숫자 %2$d — 이 %1$s의 다른 빈칸들은 행·열·박스에 같은 숫자(파란 칸)가 이미 있어 넣을 수 없습니다. 그래서 표시된 칸만 가능합니다.</string>
+    <string name="hint_answer">정답은 %1$d입니다.</string>
+    <string name="hint_next">다음</string>
+    <string name="hint_fill">채우기</string>
 </resources>

@@ -40,7 +40,6 @@
     <string name="cell_desc_given">पंक्ति %1$d कॉलम %2$d, %3$d, दिया हुआ अंक</string>
     <string name="cell_desc_error">पंक्ति %1$d कॉलम %2$d, %3$d, टकराव</string>
     <string name="game_hint">संकेत</string>
-    <string name="game_hint_msg">संकेत: पंक्ति %1$d, कॉलम %2$d · %3$s\nअंक भरने के लिए फिर से टैप करें</string>
     <string name="game_hint_exhausted">आज के मुफ़्त संकेत ख़त्म हो गए</string>
     <string name="hint_naked_single">एकमात्र उम्मीदवार</string>
     <string name="hint_hidden_single">छिपा हुआ एकल</string>
@@ -174,4 +173,15 @@
     <string name="challenge_you">आप</string>
     <string name="challenge_opponent">प्रतिद्वंद्वी</string>
     <string name="challenge_compare_line">%1$s · %2$d गलतियाँ · %3$d अंक</string>
+    <string name="hint_unit_row">पंक्ति</string>
+    <string name="hint_unit_col">कॉलम</string>
+    <string name="hint_unit_box">बॉक्स</string>
+    <string name="hint_intro_naked">चलिए इस खाने को साथ मिलकर हल करें। किसी खाने की पंक्ति, कॉलम और बॉक्स में 1 से 9 तक कोई अंक दोहराया नहीं जा सकता।</string>
+    <string name="hint_intro_hidden">इस क्षेत्र (%1$s) को देखें। अंक %2$d कहाँ आ सकता है?</string>
+    <string name="hint_intro_deduction">यहाँ कोई सरल पैटर्न नहीं है। आइए इस खाने और उसके आसपास को देखें।</string>
+    <string name="hint_elim_naked">ये अंक इसकी पंक्ति, कॉलम या बॉक्स में पहले से हैं: %1$s। अब सिर्फ़ एक अंक बचता है।</string>
+    <string name="hint_elim_hidden">अंक %2$d: इस क्षेत्र (%1$s) के बाकी खाली खानों की पंक्ति, कॉलम या बॉक्स में वही अंक पहले से है (नीले खाने)। इसलिए यह सिर्फ़ चिह्नित खाने में आ सकता है।</string>
+    <string name="hint_answer">उत्तर %1$d है।</string>
+    <string name="hint_next">आगे</string>
+    <string name="hint_fill">भरें</string>
 </resources>

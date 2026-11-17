@@ -16,7 +16,7 @@
 • 오늘의 도전: 하루 한 판, 모든 사용자가 같은 퍼즐. 연속 일수 기록과 알림(선택)
 • 도전장: 푼 결과를 친구에게 보내고, 친구가 같은 퍼즐을 풀어 점수·시간을 비교해요(서버·가입 필요 없음)
 • 틀린 숫자는 바로 알려 줘요. 지우고 다시 도전해 보세요
-• 메모, 되돌리기, 힌트(하루 3회 무료), 같은 숫자·행·열·박스 강조
+• 메모, 되돌리기, 단계별 힌트(하루 3회 무료) — 정답만 알려 주지 않고 왜 그 숫자인지 보드에 표시하며 설명해요
 • 완성 효과와 점수 애니메이션, 진동·소리 설정
 • 라이트·다크 모드, 15개 언어, 글자 크기 확대 대응
 • 기록: 난이도별 완료 수·최고·평균, 연속 일수
@@ -39,7 +39,7 @@ Enjoy Sudoku the clean way — no ads, no internet needed, no account.
 • Daily Challenge: one puzzle a day, the same for everyone, with streaks and an optional reminder
 • Challenges: send your result to a friend; they solve the same puzzle and compare score and time — no server or sign-up
 • Wrong numbers are flagged instantly; clear them and try again
-• Notes, undo, hints (3 free per day), highlights for matching numbers, rows, columns and boxes
+• Notes, undo, step-by-step hints (3 free per day) that show why a number fits, highlights for matching numbers, rows, columns and boxes
 • Completion effects, score animations, haptics and sound options
 • Light and dark mode, 15 languages, large-text support
 • Statistics: solved count, best and average time per level, streaks

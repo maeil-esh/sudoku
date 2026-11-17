@@ -26,6 +26,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -109,6 +110,7 @@ fun GameBody(
     onBack: () -> Unit, onCell: (Int) -> Unit, onUndo: () -> Unit, onErase: () -> Unit, onNote: () -> Unit,
     onHint: () -> Unit, onPause: () -> Unit, onResume: () -> Unit, onDigit: (Int) -> Unit,
     onCancelWrong: () -> Unit = {},
+    onHintNext: () -> Unit = {}, onHintApply: () -> Unit = {}, onHintClose: () -> Unit = {},
 ) {
     val c = SudokuTheme.colors
     val padDigit = if (ui.settings.numberFirst) ui.selectedDigit else if (ui.selected >= 0) state.values[ui.selected] else 0
@@ -136,18 +138,27 @@ fun GameBody(
         if (ui.paused) PausedCover(onContinue = onResume, onExit = onBack)
         else SudokuBoard(
             state, ui.selected, padDigit, ui.conflicts, wrong, ui.settings,
-            onCell = onCell, effect = ui.effect, gain = ui.scoreGain, hintCell = ui.hint?.index ?: -1,
+            onCell = if (ui.hintPlan != null) ({ _ -> }) else onCell, effect = ui.effect, gain = ui.scoreGain, hintCell = ui.hint?.index ?: -1,
+            spotlight = ui.hintPlan?.steps?.getOrNull(ui.hintStep)?.highlight,
+            emphasis = ui.hintPlan?.steps?.getOrNull(ui.hintStep)?.emphasis.orEmpty(),
+            previewDigit = if (ui.hintPlan?.steps?.getOrNull(ui.hintStep)?.type == com.uk2solutions.sudoku.domain.game.StepType.ANSWER) ui.hint?.digit ?: 0 else 0,
         )
-        if (wrong.isNotEmpty() && !ui.paused) WrongBanner(ui.blockedNudge, onCancelWrong)
-        else HintBanner(ui.hint, ui.hintsExhausted)
-        Spacer(Modifier.height(14.dp))
-        ToolRow(
-            canUndo = state.undo.isNotEmpty() && !ui.paused, noteMode = ui.noteMode,
-            hintsLeft = if (ui.premium) null else (HintPolicy.FREE_PER_DAY - ui.settings.hintsUsedToday).coerceAtLeast(0),
-            onUndo = onUndo, onErase = onErase, onNote = onNote, onHint = onHint,
-        )
-        Spacer(Modifier.height(14.dp))
-        DigitRow(state, padDigit, ui.settings.showRemaining, enabled = !ui.paused && wrong.isEmpty(), effect = ui.effect, onDigit = onDigit)
+        val plan = ui.hintPlan
+        if (plan != null && !ui.paused) {
+            Spacer(Modifier.height(12.dp))
+            HintCard(plan, ui.hintStep, onNext = onHintNext, onApply = onHintApply, onClose = onHintClose)
+        } else {
+            if (wrong.isNotEmpty() && !ui.paused) WrongBanner(ui.blockedNudge, onCancelWrong)
+            else HintBanner(ui.hint, ui.hintsExhausted)
+            Spacer(Modifier.height(14.dp))
+            ToolRow(
+                canUndo = state.undo.isNotEmpty() && !ui.paused, noteMode = ui.noteMode,
+                hintsLeft = if (ui.premium) null else (HintPolicy.FREE_PER_DAY - ui.settings.hintsUsedToday).coerceAtLeast(0),
+                onUndo = onUndo, onErase = onErase, onNote = onNote, onHint = onHint,
+            )
+            Spacer(Modifier.height(14.dp))
+            DigitRow(state, padDigit, ui.settings.showRemaining, enabled = !ui.paused && wrong.isEmpty(), effect = ui.effect, onDigit = onDigit)
+        }
         Spacer(Modifier.height(16.dp))
     }
 
@@ -191,6 +202,7 @@ fun GameScreen(onExit: () -> Unit, onNewGame: (Difficulty) -> Unit, vm: GameView
         ui, state, elapsedNow, onBack = { leave() }, onCell = { feedback(vm.onCell(it)) }, onUndo = vm::onUndo,
         onErase = { feedback(vm.onErase()) }, onNote = vm::onToggleNote, onHint = vm::onHint, onPause = vm::pause,
         onResume = vm::resume, onDigit = { feedback(vm.onDigit(it)) }, onCancelWrong = { feedback(vm.onCancelWrong()) },
+        onHintNext = vm::onHintNext, onHintApply = { feedback(InputResult.FILLED); vm.onHintApply() }, onHintClose = vm::onHintClose,
     )
 
     if (ui.mistakeLimitReached) {
@@ -278,14 +290,6 @@ private fun PauseButton(onClick: () -> Unit) {
 private fun HintBanner(hint: Hint?, exhausted: Boolean) {
     val c = SudokuTheme.colors
     val text = when {
-        hint != null -> stringResource(
-            R.string.game_hint_msg, hint.index / 9 + 1, hint.index % 9 + 1,
-            stringResource(when (hint.technique) {
-                HintTechnique.NAKED_SINGLE -> R.string.hint_naked_single
-                HintTechnique.HIDDEN_SINGLE -> R.string.hint_hidden_single
-                HintTechnique.DEDUCTION -> R.string.hint_deduction
-            }),
-        )
         exhausted -> stringResource(R.string.game_hint_exhausted)
         else -> return
     }
@@ -404,6 +408,59 @@ private fun WrongBanner(nudge: Int, onCancel: () -> Unit) {
             TextButton(onClick = onCancel, modifier = Modifier.heightIn(min = 48.dp)) {
                 Text(stringResource(R.string.wrong_cancel), color = c.error, fontWeight = FontWeight.Bold)
             }
+        }
+    }
+}
+
+/** 힌트 설명 카드: 제목(기법 이름), 단계별 설명, 단계 점, 다음/채우기 버튼. 보드는 관련 칸만 밝게 남는다. */
+@Composable
+private fun HintCard(plan: com.uk2solutions.sudoku.domain.game.HintPlan, step: Int, onNext: () -> Unit, onApply: () -> Unit, onClose: () -> Unit) {
+    val c = SudokuTheme.colors
+    val st = plan.steps[step.coerceIn(0, plan.steps.lastIndex)]
+    val last = step >= plan.steps.lastIndex
+    val title = stringResource(when (plan.hint.technique) {
+        HintTechnique.NAKED_SINGLE -> R.string.hint_naked_single
+        HintTechnique.HIDDEN_SINGLE -> R.string.hint_hidden_single
+        HintTechnique.DEDUCTION -> R.string.hint_deduction
+    })
+    val unitName = stringResource(when (st.unit ?: plan.hint.unit) {
+        com.uk2solutions.sudoku.domain.game.UnitKind.ROW -> R.string.hint_unit_row
+        com.uk2solutions.sudoku.domain.game.UnitKind.COL -> R.string.hint_unit_col
+        else -> R.string.hint_unit_box
+    })
+    val text = when (st.type) {
+        com.uk2solutions.sudoku.domain.game.StepType.INTRO -> when (plan.hint.technique) {
+            HintTechnique.NAKED_SINGLE -> stringResource(R.string.hint_intro_naked)
+            HintTechnique.HIDDEN_SINGLE -> stringResource(R.string.hint_intro_hidden, unitName, plan.hint.digit)
+            HintTechnique.DEDUCTION -> stringResource(R.string.hint_intro_deduction)
+        }
+        com.uk2solutions.sudoku.domain.game.StepType.ELIMINATION -> when (plan.hint.technique) {
+            HintTechnique.HIDDEN_SINGLE -> stringResource(R.string.hint_elim_hidden, unitName, plan.hint.digit)
+            else -> stringResource(R.string.hint_elim_naked, st.digits.joinToString(", "))
+        }
+        com.uk2solutions.sudoku.domain.game.StepType.ANSWER -> stringResource(R.string.hint_answer, plan.hint.digit)
+    }
+    Surface(shape = RoundedCornerShape(24.dp), color = c.surface, border = BorderStroke(1.dp, c.line), shadowElevation = 6.dp, modifier = Modifier.fillMaxWidth()) {
+        Column(Modifier.padding(horizontal = 18.dp, vertical = 14.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(title, fontSize = 19.sp, fontWeight = FontWeight.Bold, color = c.ink, modifier = Modifier.weight(1f))
+                IconButton(onClick = onClose) {
+                    Icon(androidx.compose.material.icons.Icons.Filled.Close, contentDescription = stringResource(R.string.action_close), tint = c.ink)
+                }
+            }
+            Text(text, color = c.muted, fontSize = 15.sp, lineHeight = 22.sp, modifier = Modifier.heightIn(min = 66.dp))
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
+                plan.steps.indices.forEach { i ->
+                    Surface(
+                        shape = CircleShape, color = if (i == step) c.accent else c.line,
+                        modifier = Modifier.padding(horizontal = 3.dp).size(width = if (i == step) 22.dp else 8.dp, height = 6.dp),
+                    ) {}
+                }
+            }
+            Button(
+                onClick = if (last) onApply else onNext, shape = RoundedCornerShape(16.dp),
+                modifier = Modifier.fillMaxWidth().heightIn(min = 52.dp),
+            ) { Text(stringResource(if (last) R.string.hint_fill else R.string.hint_next), fontWeight = FontWeight.Bold, fontSize = 17.sp) }
         }
     }
 }

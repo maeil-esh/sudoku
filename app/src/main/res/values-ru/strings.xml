@@ -40,8 +40,6 @@
     <string name="cell_desc_given">Строка %1$d столбец %2$d, %3$d, исходная цифра</string>
     <string name="cell_desc_error">Строка %1$d столбец %2$d, %3$d, конфликт</string>
     <string name="game_hint">Подсказка</string>
-    <string name="game_hint_msg">Подсказка: строка %1$d, столбец %2$d · %3$s
-Нажмите ещё раз, чтобы вписать цифру</string>
     <string name="game_hint_exhausted">Бесплатные подсказки на сегодня закончились</string>
     <string name="hint_naked_single">Единственный кандидат</string>
     <string name="hint_hidden_single">Скрытый одиночка</string>
@@ -175,4 +173,15 @@
     <string name="challenge_you">Вы</string>
     <string name="challenge_opponent">Соперник</string>
     <string name="challenge_compare_line">%1$s · ошибок: %2$d · %3$d очк.</string>
+    <string name="hint_unit_row">строка</string>
+    <string name="hint_unit_col">столбец</string>
+    <string name="hint_unit_box">блок</string>
+    <string name="hint_intro_naked">Решим эту клетку вместе. В её строке, столбце и блоке цифры от 1 до 9 не повторяются.</string>
+    <string name="hint_intro_hidden">Смотрим на эту область (%1$s). Где может стоять цифра %2$d?</string>
+    <string name="hint_intro_deduction">Простого шаблона нет. Давайте посмотрим на эту клетку и её окружение.</string>
+    <string name="hint_elim_naked">Эти цифры уже есть в её строке, столбце или блоке: %1$s. Остаётся только одна цифра.</string>
+    <string name="hint_elim_hidden">Цифра %2$d: в остальных пустых клетках этой области (%1$s) та же цифра уже есть в строке, столбце или блоке (синие клетки). Она может стоять только в отмеченной клетке.</string>
+    <string name="hint_answer">Ответ: %1$d.</string>
+    <string name="hint_next">Далее</string>
+    <string name="hint_fill">Вписать</string>
 </resources>
