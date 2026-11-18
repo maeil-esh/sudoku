@@ -23,14 +23,16 @@ interface PremiumStore {
 class PremiumManager(
     private val gateway: BillingGateway,
     private val store: PremiumStore,
-    private val clock: () -> Long = System::currentTimeMillis,
+    /** 개인용 빌드 전용: 구매 여부와 무관하게 프리미엄 기능을 항상 연다. */
+    private val alwaysPremium: Boolean = false,
+    private val clock: () -> Long = System::currentTimeMillis, // 마지막 인자: 테스트에서 후행 람다로 전달
 ) {
     private val acknowledgedTokens = mutableSetOf<String>() // 같은 구매를 중복 승인하지 않기 위한 세션 메모
     private val _pending = MutableStateFlow(false)
     /** 결제가 보류 중이면 true(완료되면 프리미엄이 열린다). */
     val pending: StateFlow<Boolean> = _pending.asStateFlow()
 
-    val isPremium: Flow<Boolean> get() = store.premiumCached
+    val isPremium: Flow<Boolean> get() = if (alwaysPremium) kotlinx.coroutines.flow.flowOf(true) else store.premiumCached
 
     /** 앱 안 구매·앱 밖 상환·보류 완료 알림을 받아 반영한다. */
     fun start(scope: CoroutineScope) {

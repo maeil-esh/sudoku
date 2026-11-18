@@ -35,6 +35,16 @@ class PremiumManagerTest {
 
     private fun manager(g: FakeBillingGateway, s: FakePremiumStore) = PremiumManager(g, s) { 1000L }
 
+    @Test fun personalBuildIsAlwaysPremiumWithoutPurchase() = runBlocking {
+        val m = PremiumManager(FakeBillingGateway(), FakePremiumStore(), alwaysPremium = true)
+        assertTrue(m.isPremium.first())
+    }
+
+    @Test fun storeBuildIsNotPremiumWithoutPurchase() = runBlocking {
+        val m = PremiumManager(FakeBillingGateway(), FakePremiumStore())
+        assertFalse(m.isPremium.first())
+    }
+
     @Test fun notPurchased() = runBlocking {
         val s = FakePremiumStore(); val m = manager(FakeBillingGateway(), s)
         assertTrue(m.refresh()); assertFalse(s.state.value)

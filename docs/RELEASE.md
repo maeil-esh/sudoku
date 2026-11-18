@@ -42,3 +42,9 @@ Play Console에서 **Play 앱 서명**을 켜고, 이 키는 "업로드 키"로�
 - 전문가·악마 난이도 미구현(프리미엄 혜택 항목) — `BACKLOG.md`
 - 번역 원어민 검수, 스토어 문구의 언어별 번역
 - 실제 결제·상환·도전장 공유·알림은 실기기/테스트 트랙에서만 검증 가능
+
+## 개인용 전체 기능 빌드 (`personal`)
+- 목적: 소유자 본인이 프리미엄 구매 없이 모든 기능(악마 난이도, 전체 레슨, 무제한 힌트, 테마, 상세 통계)을 쓰는 복제본.
+- 빌드: `./gradlew assemblePersonal` → `app/build/outputs/apk/personal/app-personal.apk` (복사본: `dist/sudoku7979-full.apk`).
+- 패키지 `com.uk2solutions.sudoku.full`(정식 앱과 함께 설치 가능), 앱 이름 `sudoku7979 Full`, 디버그 키 서명. `BuildConfig.ALL_UNLOCKED=true`일 때만 `PremiumManager.isPremium`이 항상 true.
+- **스토어에 올리지 않는다.** 스토어용은 `release`(`ALL_UNLOCKED=false`)만 사용. `bundleRelease` 결과에는 영향 없음.

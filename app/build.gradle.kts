@@ -18,6 +18,9 @@ android {
         targetSdk = 36
         versionCode = 1
         versionName = "0.1.0"
+        // 개인용 빌드(personal)만 true. 스토어에 올리는 debug/release에서는 항상 false.
+        buildConfigField("boolean", "ALL_UNLOCKED", "false")
+        manifestPlaceholders["appLabel"] = "@string/app_name"
     }
 
     // 릴리스 서명: 저장소 루트의 keystore.properties(커밋 금지, .gitignore 등록)가 있을 때만 적용한다.
@@ -37,6 +40,16 @@ android {
     }
 
     buildTypes {
+        // 개인용: 프리미엄 기능 전부 열림 + 다른 패키지(.full)라 정식 앱과 함께 설치 가능. 디버그 키로 서명. 스토어 업로드 금지.
+        create("personal") {
+            initWith(getByName("release"))
+            applicationIdSuffix = ".full"
+            versionNameSuffix = "-full"
+            signingConfig = signingConfigs.getByName("debug")
+            buildConfigField("boolean", "ALL_UNLOCKED", "true")
+            manifestPlaceholders["appLabel"] = "sudoku7979 Full"
+            matchingFallbacks += "release"
+        }
         release {
             signingConfig = signingConfigs.findByName("release")
             isMinifyEnabled = true
@@ -49,7 +62,7 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
     kotlinOptions { jvmTarget = "17" }
-    buildFeatures { compose = true }
+    buildFeatures { compose = true; buildConfig = true }
     testOptions { unitTests { isIncludeAndroidResources = true } }
     lint { warningsAsErrors = false; abortOnError = true }
 }
@@ -93,4 +106,5 @@ dependencies {
 // 스크린샷 테스트는 ui-test-manifest(debug 전용)가 필요하므로 릴리스 변형에서는 제외한다.
 tasks.withType<Test>().configureEach {
     if (name.contains("Release")) exclude("**/screens/**", "**/a11y/SemanticsTest*")
+    if (name.contains("Personal")) enabled = false // 개인용 빌드는 단위 테스트를 debug/release에서만 돌린다
 }

@@ -27,5 +27,5 @@ abstract class BillingBindings {
 object BillingProvides {
     @Provides @Singleton
     fun premiumManager(gateway: BillingGateway, store: PremiumStore): PremiumManager =
-        PremiumManager(gateway, store).also { it.start(CoroutineScope(SupervisorJob() + Dispatchers.Default)) }
+        PremiumManager(gateway, store, alwaysPremium = com.uk2solutions.sudoku.BuildConfig.ALL_UNLOCKED).also { it.start(CoroutineScope(SupervisorJob() + Dispatchers.Default)) }
 }
