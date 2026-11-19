@@ -113,7 +113,7 @@ fun GameBody(
     onLearn: (String) -> Unit = {},
 ) {
     val c = SudokuTheme.colors
-    val padDigit = if (ui.settings.numberFirst) ui.selectedDigit else if (ui.selected >= 0) state.values[ui.selected] else 0
+    val padDigit = if (ui.selectedDigit > 0) ui.selectedDigit else if (ui.selected >= 0) state.values[ui.selected] else 0
     val score = remember(state.values, state.mistakes, state.hintsUsed, ui.difficulty) { Scoring.score(state, ui.difficulty) }
     val wrong = remember(state.values) { GameRules.wrongCells(state) }
 

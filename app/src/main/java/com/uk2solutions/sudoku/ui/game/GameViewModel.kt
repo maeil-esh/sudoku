@@ -140,14 +140,17 @@ class GameViewModel @Inject constructor(
         val u = _ui.value
         val s = u.state ?: return InputResult.NONE
         if (u.paused || u.completed || u.mistakeLimitReached) return InputResult.NONE
-        if (u.settings.numberFirst && u.selectedDigit > 0) {
+        // 숫자를 먼저 눌러 둔 상태(숫자 우선 모드이거나, 칸이 선택되지 않은 채 숫자를 누른 경우)에서 빈칸을 누르면 바로 입력한다.
+        val armedFill = u.selectedDigit > 0 && (u.settings.numberFirst || (s.values[i] == 0 && !s.isGiven(i)))
+        if (armedFill) {
             if (blockedByWrong(s)) { _ui.update { it.copy(selected = i) }; return InputResult.NONE }
             _ui.update { it.copy(selected = i) }
             val (next, r) = GameRules.enter(s, i, u.selectedDigit, u.noteMode, u.settings.autoRemoveNotes)
             if (r != InputResult.NONE) { apply(next, i, s); if (r == InputResult.MISTAKE) _ui.update { it.copy(selected = i) } }
             return r
         }
-        _ui.update { it.copy(selected = if (it.selected == i) -1 else i) }
+        // 이미 채워진 칸을 누르면 눌러 둔 숫자를 해제하고 그 칸을 선택한다(같은 숫자 강조는 칸의 값 기준).
+        _ui.update { it.copy(selected = if (it.selected == i) -1 else i, selectedDigit = if (u.settings.numberFirst) it.selectedDigit else 0) }
         return InputResult.NONE
     }
 
@@ -161,10 +164,14 @@ class GameViewModel @Inject constructor(
             _ui.update { it.copy(selectedDigit = if (it.selectedDigit == d) 0 else d) }
             return InputResult.NONE
         }
-        if (u.selected < 0) return InputResult.NONE
+        // 선택된 칸이 없거나 이미 채워진 칸이면 입력하지 않고 숫자를 "눌러 둔" 상태로 만든다 → 같은 숫자 강조 + 이후 빈칸 탭 시 즉시 입력.
+        if (u.selected < 0 || s.values[u.selected] != 0) {
+            _ui.update { it.copy(selectedDigit = if (it.selectedDigit == d) 0 else d) }
+            return InputResult.NONE
+        }
         if (blockedByWrong(s)) return InputResult.NONE
         val (next, r) = GameRules.enter(s, u.selected, d, u.noteMode, u.settings.autoRemoveNotes)
-        if (r != InputResult.NONE) apply(next, u.selected, s)
+        if (r != InputResult.NONE) { apply(next, u.selected, s); if (!u.settings.numberFirst) _ui.update { it.copy(selectedDigit = 0) } }
         return r
     }
 
@@ -263,7 +270,9 @@ class GameViewModel @Inject constructor(
     /** 숫자 우선 모드: 고른 숫자를 다 놓았으면(남은 0) 남은 개수가 있는 다음 숫자로 자동 이동. */
     private fun nextDigit(u: GameUiState, s: GameState): Int {
         val cur = u.selectedDigit
-        if (cur == 0 || !u.settings.numberFirst || !u.settings.autoNextNumber || GameRules.remaining(s, cur) > 0) return cur
+        if (cur == 0 || GameRules.remaining(s, cur) > 0) return cur
+        if (!u.settings.numberFirst) return 0 // 일반 모드: 다 놓은 숫자는 해제
+        if (!u.settings.autoNextNumber) return cur
         for (k in 1..9) {
             val d = (cur - 1 + k) % 9 + 1
             if (GameRules.remaining(s, d) > 0) return d
